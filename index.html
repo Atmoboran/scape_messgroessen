@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Messgrößen der Wetterstation – SCAPE°</title>
+<meta name="description" content="SCAPE° – Vertiefung zur Wetterstation: Was misst die Station vor dem Museum? Alle Messgrößen mit kleinen interaktiven Simulationen.">
+<!--
+  Schrift: Laut CD ist Founders Grotesk (Klim Type Foundry, kommerzielle Lizenz) die einzige Hausschrift.
+  Ist sie lokal installiert, wird sie verwendet. Sonst greift ersatzweise eine neutrale Grotesk
+  (Helvetica Neue / Inter / Arial). Diese Ersetzung ist bewusst und nur für die Web-Version gedacht.
+-->
+<style>
+:root{
+  --font:"Founders Grotesk","Helvetica Neue",Inter,Arial,sans-serif;
+  --black:#000; --white:#fff;
+  --orange:#EE7518; --yellow-pastel:#FFF487; --cream:#F2E4BA; --navy:#28348B;
+  --green:#62BA91; --mint:#CFE6CE; --teal:#007B73; --purple:#442683;
+  --lilac:#C5B8DB; --gold:#E09F00; --cyan:#0097BE; --ice:#D4EDF8;
+  --gutter:clamp(16px,4vw,48px);
+  --accent:var(--orange);
+  --accent-pale:var(--yellow-pastel);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--white);color:var(--black);font-family:var(--font);font-size:17px;line-height:1.45;overflow-x:hidden}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+[hidden]{display:none !important}
+
+/* ---------- Kopf ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;padding:20px var(--gutter) 16px;border-bottom:2px solid var(--black);background:var(--white);position:sticky;top:0;z-index:20}
+.logo{display:inline-flex;flex-direction:column;text-decoration:none;color:var(--black);line-height:1}
+.logo-word{font-size:42px;font-weight:300;letter-spacing:.01em;line-height:.85}
+.logo-sub{display:flex;justify-content:space-between;font-size:9.5px;font-weight:500;letter-spacing:.04em;margin-top:5px}
+.nav{display:flex;flex-wrap:wrap;gap:6px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:6px 12px;border:2px solid var(--black);text-decoration:none;font-weight:500;font-size:14px;letter-spacing:.04em;text-transform:uppercase;background:var(--white)}
+.nav a[aria-current="page"]{background:var(--black);color:var(--white)}
+.nav a:hover{background:var(--yellow-pastel)}
+.nav a[aria-current="page"]:hover{background:var(--black)}
+
+/* ---------- Plakat-Kopf mit drei Gestaltungsebenen ---------- */
+.poster{position:relative;overflow:hidden;min-height:300px;padding:40px var(--gutter) 48px;isolation:isolate}
+.poster .f{position:absolute;z-index:-3}
+.poster .f1{inset:0;background:var(--f1)}
+.poster .f2{top:0;right:0;width:30%;height:58%;background:var(--f2)}
+.poster .f3{bottom:0;right:0;width:30%;height:42%;background:var(--f3)}
+.poster .l2{position:absolute;z-index:-2;right:calc(30% - 60px);top:calc(58% - 60px);width:120px;height:120px}
+.poster .l3{position:absolute;z-index:-1;right:-12%;top:-40%;width:min(66vw,700px);height:auto;pointer-events:none;fill:none;stroke-width:3}
+.poster .l3 *{vector-effect:non-scaling-stroke}
+.poster-text{position:relative;max-width:min(66%,900px)}
+.kicker{font-weight:500;font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+.headline{font-weight:300;text-transform:uppercase;font-size:clamp(44px,8.2vw,120px);line-height:.86;letter-spacing:-.005em;margin-bottom:22px;overflow-wrap:anywhere;hyphens:manual}
+.lead{font-size:clamp(17px,1.8vw,21px);max-width:40em}
+.poster.small{min-height:0;padding:30px var(--gutter) 34px}
+.poster.small .headline{font-size:clamp(38px,6.4vw,92px);margin-bottom:16px}
+.poster.small .l2{width:96px;height:96px;right:calc(30% - 48px);top:calc(58% - 48px)}
+
+/* ---------- Display (Startseite) ---------- */
+.display-wrap{padding:28px var(--gutter) 40px}
+.display-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 24px;margin-bottom:14px}
+.display-head h2{font-weight:500;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.display-head p{font-size:15px}
+.display{border:10px solid var(--black);background:var(--black);display:flex;flex-wrap:wrap;gap:2px}
+.group{display:flex;flex-direction:column;flex:var(--n) 1 calc(var(--n) * 190px);min-width:0}
+.gtitle{background:var(--black);color:var(--white);font-weight:500;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:8px 10px 6px}
+.gtiles{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:2px;flex:1}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:150px;padding:14px 14px 12px;text-decoration:none;color:var(--black);background:var(--tile);isolation:isolate;border:0;text-align:left;cursor:pointer}
+.tile .t-name{font-weight:500;font-size:13px;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;padding-right:22px;overflow-wrap:anywhere}
+.tile .t-val{font-weight:300;font-size:clamp(36px,3.6vw,52px);line-height:.9;white-space:nowrap}
+.tile .t-unit{font-weight:500;font-size:15px;letter-spacing:.04em;margin-left:4px}
+.tile .t-note{font-weight:500;font-size:13px;letter-spacing:.05em;margin-left:6px}
+.tile svg.ic{position:absolute;z-index:-1;right:-22px;bottom:-22px;width:96px;height:96px;fill:none;stroke:var(--black);stroke-width:1.2;opacity:.85;pointer-events:none}
+.tile .go{position:absolute;right:12px;top:10px;font-weight:500;font-size:18px;line-height:1}
+.tile:hover,.tile:focus-visible{background:var(--black);color:var(--white);outline:none}
+.tile:hover svg.ic,.tile:focus-visible svg.ic{stroke:var(--white)}
+.tile canvas.moon{width:52px;height:52px;display:block}
+
+.why{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:0;border-top:2px solid var(--black)}
+.why > div{padding:24px var(--gutter) 30px;border-right:2px solid var(--black)}
+.why > div:last-child{border-right:0}
+.why h2{font-weight:300;text-transform:uppercase;font-size:clamp(30px,3.4vw,48px);line-height:.92}
+.why p{font-size:16px}
+.why .n{font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+
+/* ---------- Detailseite ---------- */
+.strip{display:flex;gap:0;overflow-x:auto;border-top:2px solid var(--black);border-bottom:2px solid var(--black);scrollbar-width:thin;background:var(--white)}
+.strip a{flex:0 0 auto;display:flex;align-items:center;min-height:44px;padding:6px 12px;border-right:2px solid var(--black);text-decoration:none;font-weight:500;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.strip a:hover{background:var(--accent-pale)}
+.strip a[aria-current="true"]{background:var(--black);color:var(--white)}
+.stage-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);gap:28px;padding:26px var(--gutter) 30px;align-items:start}
+.sim-frame{border:2px solid var(--black);background:var(--white)}
+.sim-frame canvas{display:block;width:100%;height:auto;aspect-ratio:3/2;touch-action:manipulation;background:var(--white)}
+.sim-frame canvas.drag{touch-action:none;cursor:grab}
+.controls{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:8px 14px;border:2px solid var(--black);background:var(--white);font-weight:500;font-size:14px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;text-decoration:none}
+.btn:hover{background:var(--accent-pale)}
+.btn.primary{background:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--black);color:var(--white)}
+.btn.hold:active,.btn.hold.held{background:var(--black);color:var(--white)}
+.seg{display:flex;flex-wrap:wrap;gap:0}
+.seg .btn{margin-right:-2px}
+.range{display:flex;align-items:center;gap:12px;flex:1 1 300px;min-height:46px}
+.range label{font-weight:500;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;min-width:7.5em}
+.range input{flex:1;min-width:0;accent-color:var(--black);height:32px}
+.range output{font-weight:500;font-size:14px;letter-spacing:.02em;min-width:5.6em;text-align:right;white-space:nowrap}
+.readout{margin-top:12px;font-weight:500;font-size:14px;letter-spacing:.04em;text-transform:uppercase;min-height:1.5em}
+.hint{margin-top:8px;font-size:16px;max-width:48em}
+.side{display:flex;flex-direction:column;gap:14px}
+.card{border:2px solid var(--black);padding:14px 16px;background:var(--white)}
+.card h3{font-weight:500;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.card p{font-size:15.5px;line-height:1.42}
+.card.tip{background:var(--accent-pale)}
+.card.dark{background:var(--black);color:var(--white)}
+.pager{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;padding:0 var(--gutter) 40px}
+.pager .btn{min-height:56px;min-width:0}
+.pager .prev{justify-content:flex-start}
+.pager .next{justify-content:flex-end}
+.pager .btn span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- Fuß ---------- */
+.foot{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:24px;padding:36px var(--gutter);background:var(--navy);color:var(--white)}
+.foot .claim{font-weight:300;font-size:clamp(28px,4vw,54px);line-height:.92;text-transform:uppercase}
+.foot .info{font-weight:500;font-size:13px;letter-spacing:.05em;text-transform:uppercase;line-height:1.6}
+
+/* ---------- Responsiv ---------- */
+@media (max-width:900px){
+  .stage-body{grid-template-columns:minmax(0,1fr)}
+  .why{grid-template-columns:minmax(0,1fr)}
+  .why > div{border-right:0;border-bottom:2px solid var(--black)}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  .top{position:static;padding-top:16px}
+  .logo-word{font-size:34px}
+  .logo-sub{font-size:8px}
+  .nav{width:100%}
+  .nav a{flex:1 1 auto;justify-content:center;font-size:13px;padding:6px 8px}
+  .poster,.poster.small{min-height:0;padding:28px var(--gutter) 100px}
+  .poster-text{max-width:100%}
+  .poster .f2{top:auto;bottom:0;left:0;right:auto;width:58%;height:72px}
+  .poster .f3{bottom:0;right:0;width:42%;height:72px}
+  .poster .l2,.poster.small .l2{right:auto;left:calc(58% - 42px);top:auto;bottom:30px;width:84px;height:84px}
+  .poster .l3{width:150vw;right:-70%;top:-20%}
+  .display{border-width:6px}
+  .group{flex-basis:100%}
+  .gtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile{min-height:120px}
+  .btn{flex:1 1 auto}
+  .seg{width:100%}
+  .seg .btn{flex:1 1 0;padding:8px 6px;font-size:13px}
+  .range{flex-wrap:wrap;gap:4px 12px}
+  .range label{min-width:0}
+  .pager{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pager .btn{min-width:0;font-size:12.5px;padding:8px 10px}
+  .pager .home{grid-column:1/-1;order:-1}
+  .foot{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="#start" aria-label="SCAPE° – Wetter Klima Mensch, zur Startseite">
+    <span class="logo-word">SCAPE°</span>
+    <span class="logo-sub" aria-hidden="true"><span>WETTER</span><span>KLIMA</span><span>MENSCH</span></span>
+  </a>
+  <nav class="nav" aria-label="Hauptnavigation">
+    <a href="#start" data-route="start">Display</a>
+    <a href="#warum" data-route="warum">Warum messen?</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= START: das Display ================= -->
+  <section class="stage" id="page-start" hidden>
+    <div class="poster" style="--f1:#D4EDF8;--f2:#E09F00;--f3:#44ABCC">
+      <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
+      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"><path d="M5 95 A45 45 0 0 1 95 95 L75 95 A25 25 0 0 0 25 95 Z" fill="#C5B8DB"/></svg>
+      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true" stroke="#FFE547"><circle cx="200" cy="200" r="80"/><path d="M200 40 V90 M200 310 V360 M40 200 H90 M310 200 H360 M87 87 L122 122 M278 278 L313 313 M87 313 L122 278 M278 122 L313 87"/></svg>
+      <div class="poster-text">
+        <p class="kicker">Vertiefung – Die Wetterstation vor dem SCAPE°</p>
+        <h1 class="headline">Was misst die Wetter–<br>station?</h1>
+        <p class="lead">Draußen vor dem Museum steht eine Wetterstation. Sie misst rund um die Uhr – und zeigt hier auf dem Display, was sie herausfindet. Tippe auf einen Wert und finde heraus, was dahintersteckt.</p>
+      </div>
+    </div>
+    <div class="display-wrap">
+      <div class="display-head">
+        <h2>Das Display der Wetterstation</h2>
+        <p>Die Zahlen sind Beispielwerte. Tippe auf ein Feld.</p>
+      </div>
+      <div class="display" id="display"></div>
+    </div>
+  </section>
+
+  <!-- ================= WARUM MESSEN? ================= -->
+  <section class="stage" id="page-warum" hidden>
+    <div class="poster" style="--f1:#E0E5F5;--f2:#FFE547;--f3:#D0E8DC">
+      <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
+      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"><path d="M0 70 L20 40 L40 70 L60 40 L80 70 L100 40 L100 60 L80 90 L60 60 L40 90 L20 60 L0 90 Z" fill="#0097BE"/></svg>
+      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true" stroke="#0097BE"><path d="M110 280 a70 70 0 0 1 10 -138 a90 90 0 0 1 170 20 a60 60 0 0 1 -10 118 Z"/><circle cx="150" cy="330" r="6"/><circle cx="210" cy="345" r="6"/><circle cx="270" cy="330" r="6"/></svg>
+      <div class="poster-text">
+        <p class="kicker">Vertiefung – Die Wetterstation</p>
+        <h1 class="headline">Warum messen wir Wetter?</h1>
+        <p class="lead" id="whyLead"></p>
+      </div>
+    </div>
+    <div class="why">
+      <div><p class="n">1 · Momentaufnahme</p><p id="why2"></p></div>
+      <div><p class="n">2 · Der Ort zählt</p><p>Ein Sensor misst immer nur die Luft direkt um sich herum. Darum steht er im Schatten, gut belüftet und mit Abstand zu Wänden, Boden und Dächern – sonst misst er eher die Hauswand als das Wetter.</p></div>
+      <div><p class="n">3 · Gemessen oder berechnet?</p><p>Manche Werte misst die Station direkt (Temperatur, Feuchte, Druck, Wind, Regen, UV, Licht). Andere rechnet sie aus: Taupunkt, Windkühle, gefühlte und scheinbare Temperatur – und die Mondphase aus dem Datum.</p><p style="margin-top:16px"><a class="btn primary" href="#start">Zum Display →</a></p></div>
+    </div>
+  </section>
+
+  <!-- ================= DETAIL: eine Messgröße ================= -->
+  <section class="stage" id="page-detail" hidden>
+    <div class="poster small" id="dPoster">
+      <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
+      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true" id="dL2"></svg>
+      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true" id="dL3"></svg>
+      <div class="poster-text">
+        <p class="kicker" id="dKicker"></p>
+        <h2 class="headline" id="dHead"></h2>
+        <p class="lead" id="dLead"></p>
+      </div>
+    </div>
+    <nav class="strip" id="strip" aria-label="Alle Messgrößen"></nav>
+    <div class="stage-body">
+      <div class="sim" id="simHost"></div>
+      <aside class="side">
+        <div class="card"><h3>So misst die Station</h3><p id="dMessung"></p></div>
+        <div class="card"><h3>Zum Einordnen</h3><p id="dEinordnung"></p></div>
+        <div class="card tip"><h3>Gut zu wissen</h3><p id="dHinweis"></p></div>
+      </aside>
+    </div>
+    <div class="pager">
+      <a class="btn prev" id="dPrev" href="#"><span>←</span><span class="t"></span></a>
+      <a class="btn home" href="#start">Display</a>
+      <a class="btn next" id="dNext" href="#"><span class="t"></span><span>→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="claim">Wetter, Klima, Wandel. Wir erklären es.</p>
+  <p class="info">SCAPE°<br>Frankfurter Straße 39<br>63065 Offenbach am Main<br>Instagram: @scape_offenbach<br>scape@offenbach.de</p>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/sims.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
