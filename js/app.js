@@ -3,22 +3,8 @@
    App: Display, Navigation, Detailseiten, Hauptschleife
    ========================================================= */
 
-/* Linien-Icons für die Display-Felder (Ebene 3, angeschnitten) */
-const ICONS = {
-  sonne:   '<circle cx="50" cy="50" r="22"/><path d="M50 8V20M50 80V92M8 50H20M80 50H92M20 20L29 29M71 71L80 80M20 80L29 71M71 29L80 20"/>',
-  haus:    '<path d="M12 48L50 14L88 48V90H12Z"/><rect x="40" y="58" width="20" height="32"/>',
-  tropfen: '<path d="M50 8C50 8 20 48 20 64a30 30 0 0 0 60 0C80 48 50 8 50 8Z"/>',
-  fenster: '<rect x="14" y="10" width="72" height="80"/><path d="M50 10V90M14 50H86"/><circle cx="30" cy="70" r="3"/><circle cx="66" cy="30" r="3"/><circle cx="70" cy="66" r="3"/>',
-  nebel:   '<path d="M8 36H70M24 52H92M8 68H76M30 84H90"/>',
-  druck:   '<circle cx="50" cy="50" r="40"/><path d="M50 50L76 30"/><circle cx="50" cy="50" r="4"/>',
-  regen:   '<path d="M22 60a16 16 0 0 1 4 -32a22 22 0 0 1 42 4a14 14 0 0 1 -2 28Z"/><path d="M34 70L30 82M52 70L48 82M70 70L66 82"/>',
-  kompass: '<circle cx="50" cy="50" r="40"/><path d="M50 14L58 50L50 86L42 50Z"/>',
-  wind:    '<path d="M8 40H64a12 12 0 1 0 -12 -12M8 60H80a12 12 0 1 1 -12 12"/>',
-  boee:    '<path d="M6 70L22 60L34 66L48 30L60 62L74 54L94 58"/>',
-  person:  '<circle cx="50" cy="22" r="12"/><path d="M28 92V58a22 22 0 0 1 44 0V92"/>',
-  licht:   '<circle cx="50" cy="44" r="22"/><path d="M40 72H60M42 82H58"/>',
-  mond:    '<path d="M62 12a40 40 0 1 0 0 76a32 32 0 1 1 0 -76Z"/>'
-};
+const { groups: THEMES, shapes: L2, outlines: L3, icons: ICONS } = THEME;
+const SUFFIX = THEME.brand.titleSuffix || '';
 
 const BY_ID = Object.fromEntries(VARS.map((v, i) => [v.id, Object.assign(v, { index: i })]));
 
@@ -68,14 +54,7 @@ function showDetail(v) {
   const sec = $('#page-detail');
   sec.style.setProperty('--accent', th.accent);
   sec.style.setProperty('--accent-pale', th.pale);
-  const poster = $('#dPoster');
-  poster.style.setProperty('--f1', th.f1);
-  poster.style.setProperty('--f2', th.f2);
-  poster.style.setProperty('--f3', th.f3);
-  $('#dL2').innerHTML = L2[v.l2](th.l2);
-  const l3 = $('#dL3');
-  l3.innerHTML = L3[v.l3];
-  l3.setAttribute('stroke', th.l3);
+  paintPoster($('#dPoster'), th, v.l2, v.l3);
   const nr = v.index + 1;
   $('#dKicker').textContent = `Messgröße ${nr} von ${VARS.length}${v.unit ? ' · Einheit: ' + v.unit : ''}`;
   $('#dHead').innerHTML = v.head.join('<br>');
@@ -96,9 +75,9 @@ function showDetail(v) {
   });
 
   if (sim && sim.destroy) sim.destroy();
-  const host = $('#simHost');
-  host.innerHTML = '';
-  sim = SIMS[v.sim](host, v.variant);
+  const view = $('#simView'), ctrl = $('#simCtrl');
+  view.innerHTML = ''; ctrl.innerHTML = '';
+  sim = SIMS[v.sim]({ view, ctrl }, v.variant);
 }
 
 /* ---------- Navigation ---------- */
@@ -114,11 +93,11 @@ function route() {
   if (page === 'detail') {
     const v = BY_ID[id];
     showDetail(v);
-    document.title = `${v.name} – Messgrößen – SCAPE°`;
+    document.title = `${v.name} – Messgrößen${SUFFIX}`;
   } else {
     if (sim && sim.destroy) sim.destroy();
     sim = null;
-    document.title = 'Messgrößen der Wetterstation – SCAPE°';
+    document.title = 'Messgrößen der Wetterstation' + SUFFIX;
   }
   window.scrollTo(0, 0);
 }
@@ -132,7 +111,21 @@ function resetIdle() {
 }
 ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => window.addEventListener(ev, resetIdle, { passive: true }));
 
+/* ---------- Plakatköpfe ---------- */
+function paintPoster(el, th, l2, l3) {
+  el.style.setProperty('--f1', th.f1);
+  el.style.setProperty('--f2', th.f2);
+  el.style.setProperty('--f3', th.f3);
+  $('.l2', el).innerHTML = L2[l2](th.l2);
+  const o = $('.l3', el);
+  o.innerHTML = L3[l3];
+  o.setAttribute('stroke', th.l3);
+}
+
 /* ---------- Start ---------- */
+for (const [key, p] of Object.entries(THEME.posters)) {
+  paintPoster($(`[data-poster="${key}"]`), { f1: p.f1, f2: p.f2, f3: p.f3, l2: p.l2c, l3: p.l3c }, p.l2, p.l3);
+}
 $('#whyLead').textContent = INTRO.text[0];
 $('#why2').textContent = INTRO.text[1];
 buildDisplay();

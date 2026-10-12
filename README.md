@@ -33,11 +33,23 @@ Jede Messgröße ist direkt aufrufbar, z. B. `index.html#luftdruck`, `index.html
 Nach 3 Minuten ohne Bedienung springt die App zurück zum Display (Ausstellungsbetrieb).
 
 ## Dateien
-- `index.html` – Seitenaufbau und Gestaltung
-- `js/data.js` – alle Texte, Farbthemen und Formen (hier lassen sich Texte ändern)
+- `index.html` – Seitenaufbau und Layout (nur Variablen aus `theme/theme.css`, keine Farbwerte)
+- `js/data.js` – alle Inhalte: Gruppen, Messgrößen, Texte (hier lassen sich Texte ändern)
 - `js/sims.js` – die Simulationen
 - `js/app.js` – Display, Navigation, Hauptschleife
+- `js/brand.js` – setzt Logo, Claim und Adresse aus dem Theme in die Seite
+- `theme/` – **die Gestaltung**: Schrift, Farben, Logo, Adresse, Farbthemen je Gruppe, Formen des Grafiksystems, Icons (siehe `theme/README.md`)
+
+## Layout
+Die Simulationen zeichnen in ein **quadratisches** Feld (600 × 600 Einheiten) – der beste Kompromiss
+aus Querformat am Desktop und Hochformat am Handy. Beschriftungen sind nie kleiner als 20 Einheiten,
+auf einem Handy also gut 12 px.
+
+- **Handy:** Simulation in voller Breite, darunter Bedienung, darunter die Erklärkarten.
+- **Desktop (ab 1000 px):** Simulation links, nur so groß, dass sie ohne Scrollen ganz sichtbar ist;
+  Bedienung, Anzeige und Hinweis rechts daneben; Erklärkarten darunter (ab 1500 px als dritte Spalte).
 
 ## Gestaltung
 Nach dem SCAPE°-Corporate-Design (Bureau Mitte): Farbfelder, Flächenformen, Linienillustrationen, Versalien für Überschriften, kräftige Töne immer mit Pastelltönen.
-Hausschrift ist Founders Grotesk (lizenzpflichtig); ist sie nicht installiert, wird ersatzweise Helvetica Neue / Inter / Arial verwendet.
+Hausschrift ist Founders Grotesk (lizenzpflichtig, nicht im Repository); ist sie weder installiert noch unter `theme/fonts/` abgelegt, wird ersatzweise Helvetica Neue / Inter / Arial verwendet.
+Für eine Version mit anderem Erscheinungsbild genügt es, den Ordner `theme/` anzupassen.

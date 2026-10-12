@@ -1,49 +1,10 @@
 "use strict";
 /* =========================================================
-   Inhalte: Messgrößen der Wetterstation vor dem SCAPE°
+   Inhalte: Messgrößen der Wetterstation vor dem Museum
    Quelle: „Vertiefungsebene Wetterstation“ (Arbeitsfassung CMS),
    Gerät: BRESSER 7-in-1 LORA Profi-Wetterstation Terral, Art. 15013.
    Texte gekürzt; die Physik/Chemie-Spalte steckt vor allem in den Simulationen.
    ========================================================= */
-
-/* Farbthemen nach CD: immer kräftige Töne mit Pastelltönen kombinieren */
-const THEMES = {
-  temp:     { f1: '#FFF487', f2: '#EE7518', f3: '#28348B', l2: '#62BA91', l3: '#F8E1E6', accent: '#EE7518', pale: '#FFF487', tile: '#FFF487' },
-  feuchte:  { f1: '#CFE6CE', f2: '#007B73', f3: '#442683', l2: '#E09F00', l3: '#C5B8DB', accent: '#E09F00', pale: '#CFE6CE', tile: '#CFE6CE' },
-  tau:      { f1: '#D4EDF8', f2: '#E09F00', f3: '#44ABCC', l2: '#C5B8DB', l3: '#FFE547', accent: '#44ABCC', pale: '#D4EDF8', tile: '#D4EDF8' },
-  druck:    { f1: '#E0E5F5', f2: '#FFE547', f3: '#D0E8DC', l2: '#0097BE', l3: '#0097BE', accent: '#0097BE', pale: '#FFE547', tile: '#E0E5F5' },
-  wind:     { f1: '#FDF6B7', f2: '#C5B8DB', f3: '#EE7518', l2: '#D4EDF8', l3: '#EE7518', accent: '#EE7518', pale: '#FDF6B7', tile: '#FDF6B7' },
-  koerper:  { f1: '#F8E1E6', f2: '#EF887F', f3: '#D55117', l2: '#FFE547', l3: '#FFFFFF', accent: '#EF887F', pale: '#F8E1E6', tile: '#F8E1E6' },
-  himmel:   { f1: '#D0E8DC', f2: '#0097BE', f3: '#FFF487', l2: '#EE7518', l3: '#FFFFFF', accent: '#44ABCC', pale: '#FFF487', tile: '#D0E8DC' }
-};
-
-/* Ebene 2: gefüllte Formen (klein, ganz sichtbar) – viewBox 0 0 100 100 */
-const L2 = {
-  halbkreise: c => `<path d="M0 50 A50 50 0 0 1 100 50 Z" fill="${c}"/><path d="M0 100 A50 50 0 0 1 100 100 Z" fill="${c}"/>`,
-  halbkreis:  c => `<path d="M0 90 A50 50 0 0 1 100 90 Z" fill="${c}"/>`,
-  kreis:      c => `<circle cx="50" cy="50" r="46" fill="${c}"/>`,
-  bogen:      c => `<path d="M5 95 A45 45 0 0 1 95 95 L75 95 A25 25 0 0 0 25 95 Z" fill="${c}"/>`,
-  zickzack:   c => `<path d="M0 70 L20 40 L40 70 L60 40 L80 70 L100 40 L100 60 L80 90 L60 60 L40 90 L20 60 L0 90 Z" fill="${c}"/>`,
-  welle:      c => `<path d="M0 80 C15 20 35 20 50 60 C65 20 85 20 100 80 L100 100 L80 100 C70 60 60 60 50 95 C40 60 30 60 20 100 L0 100 Z" fill="${c}"/>`,
-  blume:      c => `<g fill="${c}"><circle cx="50" cy="26" r="24"/><circle cx="74" cy="50" r="24"/><circle cx="50" cy="74" r="24"/><circle cx="26" cy="50" r="24"/></g>`,
-  tropfen:    c => `<path d="M50 4 C50 4 18 46 18 64 a32 32 0 0 0 64 0 C82 46 50 4 50 4 Z" fill="${c}"/>`,
-  scheiben:   c => `<path d="M50 0 A50 50 0 0 1 50 100 Z" fill="${c}"/><path d="M44 0 A50 50 0 0 0 44 100 Z" fill="${c}"/>`
-};
-
-/* Ebene 3: Linienillustrationen (groß, angeschnitten) – viewBox 0 0 400 400 */
-const L3 = {
-  tropfen:  `<path d="M200 30 C200 30 90 170 90 240 a110 110 0 0 0 220 0 C310 170 200 30 200 30 Z"/><circle cx="200" cy="245" r="60"/>`,
-  tropfen2: `<path d="M140 60 C140 60 60 170 60 220 a80 80 0 0 0 160 0 C220 170 140 60 140 60 Z"/><path d="M270 140 C270 140 190 250 190 300 a80 80 0 0 0 160 0 C350 250 270 140 270 140 Z"/>`,
-  wolke:    `<path d="M110 280 a70 70 0 0 1 10 -138 a90 90 0 0 1 170 20 a60 60 0 0 1 -10 118 Z"/><circle cx="150" cy="330" r="6"/><circle cx="210" cy="345" r="6"/><circle cx="270" cy="330" r="6"/>`,
-  kreise:   `<circle cx="160" cy="200" r="120"/><circle cx="250" cy="200" r="120"/>`,
-  stern4:   `<path d="M200 20 L222 178 L380 200 L222 222 L200 380 L178 222 L20 200 L178 178 Z"/>`,
-  sonne:    `<circle cx="200" cy="200" r="80"/><path d="M200 40 V90 M200 310 V360 M40 200 H90 M310 200 H360 M87 87 L122 122 M278 278 L313 313 M87 313 L122 278 M278 122 L313 87"/>`,
-  pillen:   `<rect x="60" y="80" width="280" height="80" rx="40"/><rect x="100" y="200" width="260" height="80" rx="40"/>`,
-  blume:    `<circle cx="200" cy="120" r="80"/><circle cx="280" cy="200" r="80"/><circle cx="200" cy="280" r="80"/><circle cx="120" cy="200" r="80"/>`,
-  sonnewolke: `<circle cx="250" cy="150" r="80"/><path d="M90 300 a60 60 0 0 1 10 -118 a80 80 0 0 1 150 20 a50 50 0 0 1 -10 98 Z"/>`,
-  mond:     `<path d="M260 60 a150 150 0 1 0 0 280 a120 120 0 1 1 0 -280 Z"/>`,
-  kiesel:   `<path d="M80 200 C80 110 170 70 240 90 C330 115 350 200 310 260 C270 320 160 330 110 290 C90 272 80 240 80 200 Z"/>`
-};
 
 const GROUPS = [
   { id: 'temp',    title: 'Temperatur' },

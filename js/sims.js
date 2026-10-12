@@ -2,7 +2,16 @@
 /* =========================================================
    Hilfsfunktionen
    ========================================================= */
-const FONT = '"Founders Grotesk","Helvetica Neue",Inter,Arial,sans-serif';
+/* Schrift und Farben kommen aus dem Theme (theme/theme.js). */
+const FONT = THEME.font;
+const C = THEME.palette;
+/* Alle Simulationen zeichnen in ein quadratisches Feld von 600 × 600
+   Einheiten. Quadratisch ist der beste Kompromiss aus Querformat (Desktop)
+   und Hochformat (Handy). Schriftgrößen sind in diesen Einheiten angegeben:
+   nie unter 20, damit Beschriftungen auch auf dem Handy (≈ 350 px breit)
+   noch gut 12 px groß sind. */
+const W = 600, H = 600;
+const FS = { s: 20, m: 22, l: 26, xl: 34 };
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -17,15 +26,6 @@ function fmt(n, d = 0) {
   s = f ? i + ',' + f : i;
   return (n < 0 && !zero ? '−' : '') + s;
 }
-const C = {
-  black: '#000000', white: '#FFFFFF', orange: '#EE7518', yellowP: '#FFF487', cream: '#F2E4BA', navy: '#28348B',
-  green: '#62BA91', green2: '#00983A', mint: '#CFE6CE', teal: '#007B73', purple: '#442683', purple2: '#523E91', lilac: '#C5B8DB',
-  gold: '#E09F00', cyan: '#0097BE', cyan2: '#44ABCC', cyan3: '#80C0DA', petrol: '#1F6C8E', ice: '#D4EDF8',
-  lavender: '#E0E5F5', yellow: '#FFE547', yellowS: '#FDC618', yellowK: '#FFD500', paleGreen: '#D0E8DC', paleYellow: '#FDF6B7',
-  pink: '#F8E1E6', red: '#E41513', red2: '#E8472E', blue: '#0253A0', blue2: '#3274BA', blueP: '#98B8DD',
-  sand: '#D4BFA3', grey: '#AEC4C2', amber: '#F59E24', salmon: '#EF887F', rust: '#D55117'
-};
-
 function makeView(canvas, W, H) {
   const ctx = canvas.getContext('2d');
   let lw = 0, lh = 0;
@@ -84,23 +84,25 @@ function el(tag, cls, html) {
 }
 
 let uid = 0;
-/* Grundgerüst jeder Simulation: Leinwand, Bedienzeilen, Anzeige, Hinweis */
+/* Grundgerüst jeder Simulation: quadratische Leinwand (host.view),
+   Bedienzeilen, Anzeige und Hinweis (host.ctrl) */
 function simShell(host, { label = 'Simulation', drag = false } = {}) {
   const frame = el('div', 'sim-frame');
   const canvas = el('canvas', drag ? 'drag' : '');
-  canvas.width = 900; canvas.height = 600;
+  canvas.width = W; canvas.height = H;
   canvas.setAttribute('role', 'img');
   canvas.setAttribute('aria-label', label);
   frame.appendChild(canvas);
-  host.appendChild(frame);
-  const view = makeView(canvas, 900, 600);
+  host.view.appendChild(frame);
+  const view = makeView(canvas, W, H);
+  const ctrl = host.ctrl;
   let readEl = null, lastRead = '';
   return {
-    view, ctx: view.ctx, canvas,
-    row() { const r = el('div', 'controls'); host.appendChild(r); return r; },
-    readout() { readEl = el('p', 'readout'); host.appendChild(readEl); },
+    view, ctx: view.ctx, canvas, ctrl,
+    row() { const r = el('div', 'controls'); ctrl.appendChild(r); return r; },
+    readout() { readEl = el('p', 'readout'); readEl.setAttribute('aria-live', 'polite'); ctrl.appendChild(readEl); },
     setRead(t) { if (readEl && t !== lastRead) { readEl.textContent = t; lastRead = t; } },
-    hint(t) { host.appendChild(el('p', 'hint', t)); }
+    hint(t) { const p = el('p', 'hint', t); ctrl.appendChild(p); return p; }
   };
 }
 
@@ -162,9 +164,9 @@ function dragOn(view, h) {
   c.addEventListener('pointercancel', up);
 }
 
-/* Thermometer (senkrecht) */
-function thermo(ctx, x, top, bottom, tMin, tMax, T, color, label, value) {
-  const w = 26, br = 22;
+/* Thermometer (senkrecht); ticks = false lässt die Skalenzahlen weg */
+function thermo(ctx, x, top, bottom, tMin, tMax, T, color, label, value, ticks = true) {
+  const w = 24, br = 20;
   const yOf = t => bottom - (clamp(t, tMin, tMax) - tMin) / (tMax - tMin) * (bottom - top);
   ctx.fillStyle = C.white; ctx.fillRect(x - w / 2, top, w, bottom - top + 6);
   ctx.fillStyle = color; const y = yOf(T); ctx.fillRect(x - w / 2 + 5, y, w - 10, bottom - y + 8);
@@ -175,10 +177,10 @@ function thermo(ctx, x, top, bottom, tMin, tMax, T, color, label, value) {
   for (let t = Math.ceil(tMin / 10) * 10; t <= tMax; t += 10) {
     const yy = yOf(t);
     ctx.beginPath(); ctx.moveTo(x + w / 2, yy); ctx.lineTo(x + w / 2 + 8, yy); ctx.stroke();
-    text(ctx, fmt(t), x + w / 2 + 12, yy + 5, 14, C.black, 500);
+    if (ticks) text(ctx, fmt(t), x + w / 2 + 11, yy + 7, FS.s, C.black, 500);
   }
-  if (label) label.split('\n').forEach((l, i, a) => text(ctx, l, x, top - 12 - (a.length - 1 - i) * 17, 14, C.black, 500, 'center'));
-  if (value) text(ctx, value, x, bottom + br * 2 + 22, 24, C.black, 500, 'center');
+  if (label) label.split('\n').forEach((l, i, a) => text(ctx, l, x, top - 12 - (a.length - 1 - i) * 23, FS.s, C.black, 500, 'center'));
+  if (value) text(ctx, value, x, bottom + br * 2 + 26, FS.m, C.black, 500, 'center');
 }
 
 /* elastische Stöße zwischen gleich schweren Teilchen */
@@ -215,11 +217,13 @@ function collide(P, W, H, cell = 18) {
 function speedColor(s) {
   return s > 300 ? C.red : s > 230 ? C.orange : s > 160 ? C.yellowS : s > 100 ? C.cyan3 : C.blue;
 }
-function speedLegend(ctx, x, y) {
+/* Legende unter dem Kasten: LANGSAM ● ● ● ● ● SCHNELL, zentriert um cx */
+function speedLegend(ctx, cx, y) {
   const cols = [C.blue, C.cyan3, C.yellowS, C.orange, C.red];
-  text(ctx, 'LANGSAM', x, y + 5, 13, C.black, 500, 'right');
-  cols.forEach((c, i) => circle(ctx, x + 16 + i * 22, y, 8, c));
-  text(ctx, 'SCHNELL', x + 16 + 4 * 22 + 14, y + 5, 13, C.black, 500, 'left');
+  const x0 = cx - 2 * 26;
+  text(ctx, 'LANGSAM', x0 - 18, y + 7, FS.s, C.black, 500, 'right');
+  cols.forEach((c, i) => circle(ctx, x0 + i * 26, y, 9, c));
+  text(ctx, 'SCHNELL', x0 + 4 * 26 + 18, y + 7, FS.s, C.black, 500, 'left');
 }
 
 /* Feuchte-Physik (Magnus-Formel) */
@@ -299,23 +303,24 @@ const SIMS = {};
 SIMS.temperatur = (host, variant) => {
   const innen = variant === 'innen';
   const ui = simShell(host, { label: innen ? 'Raum mit Heizung, Fenster und verschiebbarem Sensor' : 'Luftteilchen in einem Kasten', drag: innen });
-  const { view, ctx } = ui, W = 900, H = 600;
-  const box = innen ? { x0: 24, y0: 24, x1: 876, y1: 576 } : { x0: 24, y0: 24, x1: 640, y1: 576 };
+  const { view, ctx } = ui;
+  const box = innen ? { x0: 16, y0: 16, x1: 584, y1: 540 } : { x0: 16, y0: 16, x1: 400, y1: 540 };
   const R = 7;
   const speedOf = T => 40 + 6 * (T + 20);            // Darstellung: −20 °C → 40 px/s, 40 °C → 400 px/s
   const HOT = 330, COLD = 110, COLD_OPEN = 50;
   const tOfSpeed = s => innen ? 21 + (s - 220) / 12 : -20 + (s - 40) / 6;
   const realSpeed = T => Math.sqrt(8 * 8.314 * (T + 273.15) / (Math.PI * 0.02896));
   let T = 14, heater = true, windowOpen = false;
-  const sensor = { x: 450, y: 300 }, RS = 90;
+  const HOME = { x: 300, y: 278 };
+  const sensor = { x: HOME.x, y: HOME.y }, RS = 80;
   let sensorT = 21, roomT = 21, dragging = false;
   const P = [];
-  const N = innen ? 170 : 120;
+  const N = innen ? 115 : 80;
   for (let i = 0; i < N; i++) {
     const a = rnd(0, TAU), s = innen ? 220 : speedOf(T);
     P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R });
   }
-  const heaterY = [360, 556], windowY = [100, 360];
+  const heaterY = [320, 520], windowY = [80, 300];
 
   function step(dt) {
     let rms = 0;
@@ -347,7 +352,7 @@ SIMS.temperatur = (host, variant) => {
 
   function draw() {
     ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = innen ? C.cream : C.paleYellow;
+    ctx.fillStyle = innen ? C.cream : C.yellowPale;
     ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
     if (innen) {
       // Heizung
@@ -355,25 +360,24 @@ SIMS.temperatur = (host, variant) => {
       ctx.fillRect(box.x0, heaterY[0], 16, heaterY[1] - heaterY[0]);
       ctx.strokeStyle = C.black; ctx.lineWidth = 2;
       for (let y = heaterY[0] + 14; y < heaterY[1]; y += 22) { ctx.beginPath(); ctx.moveTo(box.x0, y); ctx.lineTo(box.x0 + 16, y); ctx.stroke(); }
-      text(ctx, heater ? 'HEIZUNG AN' : 'HEIZUNG AUS', box.x0 + 26, heaterY[0] - 10, 15, C.black);
+      text(ctx, heater ? 'HEIZUNG AN' : 'HEIZUNG AUS', box.x0 + 26, heaterY[0] - 10, FS.s, C.black);
       // Fenster
       ctx.fillStyle = windowOpen ? C.blue2 : C.ice;
       ctx.fillRect(box.x1 - 16, windowY[0], 16, windowY[1] - windowY[0]);
       ctx.strokeStyle = C.black; ctx.strokeRect(box.x1 - 16, windowY[0], 16, windowY[1] - windowY[0]);
-      text(ctx, windowOpen ? 'FENSTER OFFEN' : 'KALTES FENSTER', box.x1 - 26, windowY[0] - 10, 15, C.black, 500, 'right');
+      text(ctx, windowOpen ? 'FENSTER OFFEN' : 'KALTES FENSTER', box.x1 - 26, windowY[0] - 10, FS.s, C.black, 500, 'right');
     }
     for (const p of P) circle(ctx, p.x, p.y, p.r, speedColor(Math.hypot(p.vx, p.vy)));
     ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
     if (innen) {
       ctx.setLineDash([8, 7]); circle(ctx, sensor.x, sensor.y, RS, null, C.black, 2); ctx.setLineDash([]);
-      ctx.fillStyle = C.black; ctx.fillRect(sensor.x - 52, sensor.y - 22, 104, 44);
-      text(ctx, fmt(sensorT, 1) + ' °C', sensor.x, sensor.y + 8, 22, C.white, 500, 'center');
-      if (!dragging) text(ctx, '↔ ZIEH MICH', sensor.x, sensor.y + 44, 13, C.black, 500, 'center');
-      speedLegend(ctx, 120, box.y1 - 18);
+      ctx.fillStyle = C.black; ctx.fillRect(sensor.x - 64, sensor.y - 25, 128, 50);
+      text(ctx, fmt(sensorT, 1) + ' °C', sensor.x, sensor.y + 10, 28, C.white, 500, 'center');
+      if (!dragging) text(ctx, '↔ ZIEH MICH', sensor.x, sensor.y + 50, FS.s, C.black, 500, 'center');
     } else {
-      thermo(ctx, 760, 90, 470, -20, 40, T, T >= 20 ? C.red2 : T >= 5 ? C.orange : C.cyan2, 'THERMOMETER', fmt(T) + ' °C');
-      speedLegend(ctx, 120, box.y1 - 18);
+      thermo(ctx, 500, 100, 410, -20, 40, T, T >= 20 ? C.red2 : T >= 5 ? C.orange : C.cyan2, 'THERMO–\nMETER', fmt(T) + ' °C');
     }
+    speedLegend(ctx, W / 2, 570);
   }
 
   let readT = 0;
@@ -403,10 +407,10 @@ SIMS.temperatur = (host, variant) => {
     const r = ui.row();
     toggle(r, ['Heizung an', 'Heizung aus'], heater, v => { heater = v; });
     toggle(r, ['Fenster offen', 'Fenster zu'], windowOpen, v => { windowOpen = v; });
-    button(r, 'Sensor in die Mitte', () => { sensor.x = 450; sensor.y = 300; });
+    button(r, 'Sensor in die Mitte', () => { sensor.x = HOME.x; sensor.y = HOME.y; });
     dragOn(view, {
       down: p => { if (Math.hypot(p.x - sensor.x, p.y - sensor.y) > RS) return false; dragging = true; },
-      move: p => { sensor.x = clamp(p.x, box.x0 + 60, box.x1 - 60); sensor.y = clamp(p.y, box.y0 + 30, box.y1 - 30); },
+      move: p => { sensor.x = clamp(p.x, box.x0 + 64, box.x1 - 64); sensor.y = clamp(p.y, box.y0 + 30, box.y1 - 30); },
       up: () => { dragging = false; }
     });
     ui.readout();
@@ -430,13 +434,13 @@ SIMS.temperatur = (host, variant) => {
 SIMS.feuchte = (host, variant) => {
   const innen = variant === 'innen';
   const ui = simShell(host, { label: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge zeigt' });
-  const { view, ctx } = ui, W = 900, H = 600;
-  const box = { x0: 24, y0: 60, x1: 520, y1: 576 };
+  const { view, ctx } = ui;
+  const box = { x0: 16, y0: 110, x1: 344, y1: 584 };
   let T = innen ? 21 : 14, Wt = innen ? 8.9 : 8.7;
   let Tt = T, Wtt = Wt;
-  const PX = 11, GB = 556;  // Gefäß: Pixel pro g/m³, Boden
+  const PX = 8.5, GB = 584, GX0 = 384, GX1 = 584;  // Gefäß: Einheiten pro g/m³, Boden, Breite
   const P = [];
-  for (let i = 0; i < 160; i++) {
+  for (let i = 0; i < 110; i++) {
     const a = rnd(0, TAU);
     P.push({ x: rnd(box.x0 + 10, box.x1 - 10), y: rnd(box.y0 + 10, box.y1 - 10), vx: Math.cos(a) * 60, vy: Math.sin(a) * 60 });
   }
@@ -466,7 +470,7 @@ SIMS.feuchte = (host, variant) => {
     if (Math.abs(Tt - T) > 0.01) { T += (Tt - T) * k; if (Math.abs(Tt - T) < 0.05) T = Tt; sT.set(Math.round(T * 2) / 2); }
     if (Math.abs(Wtt - Wt) > 0.01) { Wt += (Wtt - Wt) * k; if (Math.abs(Wtt - Wt) < 0.02) Wt = Wtt; sW.set(Math.round(Wt * 10) / 10); }
     const ps = satDens(T), vap = Math.min(Wt, ps), liq = Wt - vap, rh = vap / ps * 100;
-    const nV = Math.round(vap * 4), nL = Math.min(P.length - nV, Math.round(liq * 4));
+    const nV = Math.min(P.length, Math.round(vap * 2.6)), nL = Math.min(P.length - nV, Math.round(liq * 2.6));
     for (let i = 0; i < P.length; i++) {
       const p = P[i];
       const sp = i < nV ? 1 : 0.25;
@@ -478,40 +482,43 @@ SIMS.feuchte = (host, variant) => {
       if (p.y < box.y0 + 10) { p.y = box.y0 + 10; p.vy = Math.abs(p.vy); }
       if (p.y > box.y1 - 10) { p.y = box.y1 - 10; p.vy = -Math.abs(p.vy); }
     }
-    // Zeichnen
+    // Kopfzeile
     ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
+    text(ctx, '1 m³ LUFT', 16, 34, FS.l, C.black);
+    text(ctx, 'BEI ' + fmt(T, 1) + ' °C', 16, 64, FS.m, C.black);
+    circle(ctx, 24, 88, 7, C.teal); text(ctx, 'WASSERDAMPF', 40, 95, FS.s, C.black);
+    text(ctx, fmt(rh) + ' %', 584, 60, 52, C.black, 300, 'right');
+    text(ctx, 'RELATIVE FEUCHTE', 584, 90, FS.s, C.black, 500, 'right');
+    // Kasten
     ctx.fillStyle = T > 22 ? C.pink : T > 8 ? C.paleGreen : C.ice;
     ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
     for (let i = 0; i < nV + nL; i++) {
       const p = P[i];
       if (i < nV) circle(ctx, p.x, p.y, 6, C.teal);
-      else { circle(ctx, p.x, p.y, 24, 'rgba(255,255,255,0.75)'); circle(ctx, p.x, p.y, 8, C.cyan, C.black, 1.5); }
+      else { circle(ctx, p.x, p.y, 22, 'rgba(255,255,255,0.75)'); circle(ctx, p.x, p.y, 8, C.cyan, C.black, 1.5); }
     }
     ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
-    text(ctx, '1 m³ LUFT BEI ' + fmt(T, 1) + ' °C', box.x0, 42, 18, C.black);
-    circle(ctx, box.x1 - 150, 36, 6, C.teal); text(ctx, 'WASSERDAMPF', box.x1 - 138, 42, 13, C.black);
-    if (nL > 0) text(ctx, 'TRÖPFCHEN (NEBEL)', box.x1, box.y1 - 14, 14, C.black, 500, 'right');
-    // Gefäß
-    const gx0 = 600, gx1 = 760, gh = ps * PX, top = GB - gh;
-    ctx.fillStyle = C.white; ctx.fillRect(gx0, top, gx1 - gx0, gh);
-    ctx.fillStyle = C.teal; ctx.fillRect(gx0, GB - vap * PX, gx1 - gx0, vap * PX);
+    if (nL > 0) { ctx.fillStyle = C.white; ctx.fillRect(box.x0 + 2, box.y1 - 36, box.x1 - box.x0 - 4, 34); text(ctx, 'TRÖPFCHEN (NEBEL)', box.x1 - 10, box.y1 - 12, FS.s, C.black, 500, 'right'); }
+    // Gefäß: so viel Wasserdampf passt höchstens hinein
+    const gh = ps * PX, top = GB - gh;
+    ctx.fillStyle = C.white; ctx.fillRect(GX0, top, GX1 - GX0, gh);
+    ctx.fillStyle = C.teal; ctx.fillRect(GX0, GB - vap * PX, GX1 - GX0, vap * PX);
     if (innen) {
       ctx.setLineDash([6, 6]); ctx.strokeStyle = C.black; ctx.lineWidth = 2;
-      for (const f of [0.4, 0.6]) { const y = GB - gh * f; ctx.beginPath(); ctx.moveTo(gx0 - 10, y); ctx.lineTo(gx1 + 10, y); ctx.stroke(); }
+      for (const f of [0.4, 0.6]) { const y = GB - gh * f; ctx.beginPath(); ctx.moveTo(GX0, y); ctx.lineTo(GX1, y); ctx.stroke(); }
       ctx.setLineDash([]);
-      text(ctx, 'BEHAGLICH', gx1 + 14, GB - gh * 0.5 + 5, 13, C.black);
-      text(ctx, '40–60 %', gx1 + 14, GB - gh * 0.5 + 21, 13, C.black);
+      const ym = GB - gh * 0.5;
+      ctx.fillStyle = C.white; ctx.fillRect((GX0 + GX1) / 2 - 76, ym - 24, 152, 48);
+      text(ctx, 'BEHAGLICH', (GX0 + GX1) / 2, ym - 3, FS.s, C.black, 500, 'center');
+      text(ctx, '40–60 %', (GX0 + GX1) / 2, ym + 19, FS.s, C.black, 500, 'center');
     }
     ctx.strokeStyle = C.black; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(gx0, top - 8); ctx.lineTo(gx0, GB); ctx.lineTo(gx1, GB); ctx.lineTo(gx1, top - 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(GX0, top - 8); ctx.lineTo(GX0, GB); ctx.lineTo(GX1, GB); ctx.lineTo(GX1, top - 8); ctx.stroke();
+    text(ctx, 'HÖCHSTENS ' + fmt(ps, 1) + ' g', GX0, top - 16, FS.s, C.black);
     if (liq > 0.05) {
-      for (let i = 0; i < Math.min(8, Math.ceil(liq)); i++) circle(ctx, gx1 + 14 + (i % 4) * 22, top + 10 + Math.floor(i / 4) * 22, 7, C.cyan, C.black, 1.5);
-      text(ctx, '+ ' + fmt(liq, 1) + ' g als Tröpfchen', gx1 + 8, top - 18, 15, C.black);
+      for (let i = 0; i < Math.min(5, Math.ceil(liq)); i++) circle(ctx, GX0 + 10 + i * 22, top - 52, 7, C.cyan, C.black, 1.5);
+      text(ctx, '+ ' + fmt(liq, 1) + ' g', GX1, top - 45, FS.s, C.black, 500, 'right');
     }
-    text(ctx, 'HÖCHSTENS', gx0, top - 40, 13, C.black);
-    text(ctx, fmt(ps, 1) + ' g', gx0, top - 18, 18, C.black);
-    text(ctx, fmt(rh) + ' %', 830, 70, 54, C.black, 300, 'right');
-    text(ctx, 'RELATIVE FEUCHTE', 830, 92, 13, C.black, 500, 'right');
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -524,29 +531,31 @@ SIMS.feuchte = (host, variant) => {
 /* =========================================================
    TAUPUNKT – beschlagenes Fenster (innen) / Nacht mit Tau & Nebel (außen)
    ========================================================= */
+/* Temperaturskala im unteren Drittel (ab y = 400) mit beschrifteten Markern */
 function tempScale(ctx, y, tMin, tMax, marks) {
-  const x0 = 60, x1 = 840;
+  const x0 = 40, x1 = 560;
   const xOf = t => x0 + (clamp(t, tMin, tMax) - tMin) / (tMax - tMin) * (x1 - x0);
-  ctx.fillStyle = C.white; ctx.fillRect(0, 450, 900, 150);
+  ctx.fillStyle = C.white; ctx.fillRect(0, 400, W, 200);
   ctx.strokeStyle = C.black; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(0, 450); ctx.lineTo(900, 450); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, 400); ctx.lineTo(W, 400); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
   ctx.lineWidth = 2;
   for (let t = Math.ceil(tMin / 5) * 5; t <= tMax; t += 5) {
     ctx.beginPath(); ctx.moveTo(xOf(t), y); ctx.lineTo(xOf(t), y + 8); ctx.stroke();
-    text(ctx, fmt(t) + '°', xOf(t), y + 26, 13, C.black, 500, 'center');
+    text(ctx, fmt(t) + '°', xOf(t), y + 30, FS.s, C.black, 500, 'center');
   }
-  // Marker: oben die Beschriftung, darunter ein Dreieck
+  // Marker: oben die Beschriftung, darunter ein Dreieck; überlappende Beschriftungen rücken eine Zeile höher
   const placed = [];
   for (const m of marks) {
     const x = xOf(m.t);
-    let row = 0; while (placed.some(p => p.row === row && Math.abs(p.x - x) < 150)) row++;
+    let row = 0; while (placed.some(p => p.row === row && Math.abs(p.x - x) < 200)) row++;
     placed.push({ x, row });
     ctx.fillStyle = m.color;
-    ctx.beginPath(); ctx.moveTo(x, y - 2); ctx.lineTo(x - 9, y - 18); ctx.lineTo(x + 9, y - 18); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x, y - 2); ctx.lineTo(x - 10, y - 20); ctx.lineTo(x + 10, y - 20); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = C.black; ctx.lineWidth = 1.5; ctx.stroke();
-    const ty = y - 25 - row * 18;
-    text(ctx, `${m.label} ${fmt(m.t, 1)} °C`, clamp(x, 70, 830), ty, 14, C.black, 500, 'center');
+    const ty = y - 30 - row * 28;
+    if (row > 0) { ctx.strokeStyle = m.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 20); ctx.lineTo(x, ty + 6); ctx.stroke(); }
+    text(ctx, `${m.label} ${fmt(m.t, 1)} °C`, clamp(x, 100, 500), ty, FS.s, C.black, 500, 'center');
   }
 }
 
@@ -556,11 +565,12 @@ SIMS.taupunkt = (host, variant) => {
 
 function taupunktInnen(host) {
   const ui = simShell(host, { label: 'Raum, Fensterscheibe und Außenluft – die Scheibe beschlägt, wenn sie kälter als der Taupunkt ist' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
+  const PX0 = 330, PX1 = 420;     // Scheibe
   let Tin = 21, RH = 50, Tout = 8, glass = 0.45, cover = 0;
-  const drops = Array.from({ length: 170 }, () => ({ x: rnd(574, 686), y: rnd(46, 430), r: rnd(2, 6.5), k: Math.random() }));
-  const vap = Array.from({ length: 90 }, () => ({ x: rnd(30, 540), y: rnd(60, 420), ph: rnd(0, TAU) }));
-  const flakes = Array.from({ length: 30 }, () => ({ x: rnd(712, 890), y: rnd(0, 440), s: rnd(20, 50) }));
+  const drops = Array.from({ length: 120 }, () => ({ x: rnd(PX0 + 12, PX1 - 12), y: rnd(36, 380), r: rnd(2, 6), k: Math.random() }));
+  const vap = Array.from({ length: 70 }, () => ({ x: rnd(20, 310), y: rnd(100, 380), ph: rnd(0, TAU) }));
+  const flakes = Array.from({ length: 22 }, () => ({ x: rnd(430, 592), y: rnd(0, 400), s: rnd(20, 50) }));
   const r1 = ui.row();
   slider(r1, { label: 'Raumluft', min: 16, max: 26, step: 0.5, value: Tin, format: v => fmt(v, 1) + ' °C', onInput: v => { Tin = v; } });
   slider(r1, { label: 'Luftfeuchte', min: 30, max: 85, step: 1, value: RH, format: v => fmt(v) + ' %', onInput: v => { RH = v; } });
@@ -577,29 +587,29 @@ function taupunktInnen(host) {
     const pane = Tout + glass * (Tin - Tout);
     const target = clamp((td - pane) / 3, 0, 1);
     cover += (target - cover) * Math.min(1, dt * 0.9);
-    ctx.fillStyle = C.cream; ctx.fillRect(0, 0, 560, 450);
-    ctx.fillStyle = Tout < 0 ? C.blueP : C.ice; ctx.fillRect(700, 0, 200, 450);
+    ctx.fillStyle = C.cream; ctx.fillRect(0, 0, PX0, 400);
+    ctx.fillStyle = Tout < 0 ? C.bluePale : C.ice; ctx.fillRect(PX1, 0, W - PX1, 400);
     // Wasserdampf im Raum
-    const nv = Math.round(satDens(Tin) * RH / 100 * 6);
+    const nv = Math.round(satDens(Tin) * RH / 100 * 4.5);
     for (let i = 0; i < Math.min(nv, vap.length); i++) {
       const v = vap[i]; v.ph += dt;
       circle(ctx, v.x + Math.sin(v.ph * 1.3 + i) * 8, v.y + Math.cos(v.ph + i) * 8, 5, C.teal);
     }
-    if (Tout < 0) for (const f of flakes) { f.y = (f.y + f.s * dt) % 440; circle(ctx, f.x, f.y, 3, C.white); }
+    if (Tout < 0) for (const f of flakes) { f.y = (f.y + f.s * dt) % 400; circle(ctx, f.x, f.y, 3, C.white); }
     // Scheibe
-    ctx.fillStyle = C.lavender; ctx.fillRect(560, 0, 140, 450);
-    ctx.fillStyle = `rgba(255,255,255,${(cover * 0.55).toFixed(3)})`; ctx.fillRect(566, 30, 128, 404);
+    ctx.fillStyle = C.lavender; ctx.fillRect(PX0, 0, PX1 - PX0, 400);
+    ctx.fillStyle = `rgba(255,255,255,${(cover * 0.55).toFixed(3)})`; ctx.fillRect(PX0 + 6, 30, PX1 - PX0 - 12, 356);
     const nd = Math.round(cover * drops.length);
     for (let i = 0; i < nd; i++) { const d = drops[i]; circle(ctx, d.x, d.y, d.r * (0.6 + 0.4 * cover), C.cyan2, C.petrol, 1); }
-    ctx.strokeStyle = C.black; ctx.lineWidth = 6; ctx.strokeRect(563, 27, 134, 410);
-    ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(560, 0); ctx.lineTo(560, 440); ctx.moveTo(700, 0); ctx.lineTo(700, 440); ctx.stroke();
-    text(ctx, 'RAUM ' + fmt(Tin, 1) + ' °C', 24, 40, 18, C.black);
-    text(ctx, 'LUFTFEUCHTE ' + fmt(RH) + ' %', 24, 64, 15, C.black);
-    text(ctx, 'SCHEIBE', 630, 470 - 60, 14, C.black, 500, 'center');
-    text(ctx, 'DRAUSSEN', 800, 40, 18, C.black, 500, 'center');
-    text(ctx, fmt(Tout, 1) + ' °C', 800, 64, 15, C.black, 500, 'center');
-    if (cover > 0.15) { ctx.fillStyle = C.black; ctx.fillRect(566, 190, 128, 40); text(ctx, 'BESCHLÄGT', 630, 217, 16, C.white, 500, 'center'); }
-    tempScale(ctx, 550, -10, 30, [
+    ctx.strokeStyle = C.black; ctx.lineWidth = 6; ctx.strokeRect(PX0 + 3, 27, PX1 - PX0 - 6, 362);
+    ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(PX0, 0); ctx.lineTo(PX0, 400); ctx.moveTo(PX1, 0); ctx.lineTo(PX1, 400); ctx.stroke();
+    text(ctx, 'RAUM ' + fmt(Tin, 1) + ' °C', 16, 36, FS.l, C.black);
+    text(ctx, 'LUFTFEUCHTE ' + fmt(RH) + ' %', 16, 66, FS.s, C.black);
+    text(ctx, 'SCHEIBE', (PX0 + PX1) / 2, 20, FS.s, C.black, 500, 'center');
+    text(ctx, 'DRAUSSEN', (PX1 + W) / 2, 56, FS.m, C.black, 500, 'center');
+    text(ctx, fmt(Tout, 1) + ' °C', (PX1 + W) / 2, 86, FS.m, C.black, 500, 'center');
+    if (cover > 0.15) { ctx.fillStyle = C.black; ctx.fillRect(PX0 - 40, 180, PX1 - PX0 + 80, 44); text(ctx, 'BESCHLÄGT', (PX0 + PX1) / 2, 210, FS.m, C.white, 500, 'center'); }
+    tempScale(ctx, 545, -10, 30, [
       { t: Tin, label: 'Raumluft', color: C.orange },
       { t: td, label: 'Taupunkt', color: C.teal },
       { t: pane, label: 'Scheibe', color: C.cyan2 }
@@ -615,10 +625,10 @@ function taupunktInnen(host) {
 
 function taupunktAussen(host) {
   const ui = simShell(host, { label: 'Landschaft in der Nacht: Die Luft kühlt ab, bis Tau und Nebel entstehen' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   let T0 = 18, RH0 = 75, t = 0, playing = false, dew = 0, fog = 0;
-  const blades = Array.from({ length: 70 }, (_, i) => ({ x: 10 + i * 12.8 + rnd(-4, 4), h: rnd(18, 40), lean: rnd(-6, 6) }));
-  const stars = Array.from({ length: 26 }, () => ({ x: rnd(20, 880), y: rnd(20, 200) }));
+  const blades = Array.from({ length: 48 }, (_, i) => ({ x: 8 + i * 12.4 + rnd(-4, 4), h: rnd(16, 34), lean: rnd(-6, 6) }));
+  const stars = Array.from({ length: 20 }, () => ({ x: rnd(16, 584), y: rnd(80, 180) }));
   const r1 = ui.row();
   const reset = () => { t = 0; dew = 0; fog = 0; };
   slider(r1, { label: 'Abends', min: 8, max: 28, step: 0.5, value: T0, format: v => fmt(v, 1) + ' °C', onInput: v => { T0 = v; reset(); } });
@@ -639,38 +649,38 @@ function taupunktAussen(host) {
     dew += ((grass < td ? clamp((td - grass) / 2, 0.15, 1) : 0) - dew) * Math.min(1, dt * 0.8);
     fog += ((air - td < 0.3 ? 1 : air - td < 1.2 ? 0.35 : 0) - fog) * Math.min(1, dt * 0.5);
     const night = clamp(t / 1.5, 0, 1) * clamp((10 - t) / 1.2, 0, 1);
-    ctx.fillStyle = night > 0.5 ? C.navy : C.cyan2; ctx.fillRect(0, 0, W, 360);
+    ctx.fillStyle = night > 0.5 ? C.navy : C.cyan2; ctx.fillRect(0, 0, W, 320);
     if (night > 0.5) {
       for (const s of stars) circle(ctx, s.x, s.y, 2, C.white);
-      ctx.fillStyle = C.yellowP; ctx.beginPath(); ctx.arc(760, 80, 34, 0, TAU); ctx.fill();
-      ctx.fillStyle = C.navy; ctx.beginPath(); ctx.arc(776, 70, 30, 0, TAU); ctx.fill();
+      ctx.fillStyle = C.yellowPastel; ctx.beginPath(); ctx.arc(520, 60, 30, 0, TAU); ctx.fill();
+      ctx.fillStyle = C.navy; ctx.beginPath(); ctx.arc(534, 51, 27, 0, TAU); ctx.fill();
     }
     // Baum und Haus als flache Formen
-    ctx.fillStyle = C.green2; ctx.beginPath(); ctx.arc(170, 250, 70, 0, TAU); ctx.fill(); ctx.fillRect(162, 280, 16, 90);
-    ctx.fillStyle = C.sand; ctx.fillRect(560, 250, 160, 110);
-    ctx.fillStyle = C.rust; ctx.beginPath(); ctx.moveTo(545, 252); ctx.lineTo(640, 190); ctx.lineTo(735, 252); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = night > 0.5 ? C.yellow : C.ice; ctx.fillRect(590, 280, 36, 36); ctx.fillRect(655, 280, 36, 36);
+    ctx.fillStyle = C.greenStrong; ctx.beginPath(); ctx.arc(110, 210, 58, 0, TAU); ctx.fill(); ctx.fillRect(102, 236, 16, 90);
+    ctx.fillStyle = C.sand; ctx.fillRect(370, 222, 130, 98);
+    ctx.fillStyle = C.rust; ctx.beginPath(); ctx.moveTo(356, 224); ctx.lineTo(435, 170); ctx.lineTo(514, 224); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = night > 0.5 ? C.yellow : C.ice; ctx.fillRect(392, 248, 32, 32); ctx.fillRect(448, 248, 32, 32);
     // Wiese
-    ctx.fillStyle = C.green; ctx.fillRect(0, 360, W, 90);
-    ctx.strokeStyle = C.green2; ctx.lineWidth = 3;
+    ctx.fillStyle = C.green; ctx.fillRect(0, 320, W, 80);
+    ctx.strokeStyle = C.greenStrong; ctx.lineWidth = 3;
     const nd = Math.round(dew * blades.length);
     blades.forEach((b, i) => {
-      ctx.beginPath(); ctx.moveTo(b.x, 440); ctx.lineTo(b.x + b.lean, 440 - b.h); ctx.stroke();
-      if (i < nd) circle(ctx, b.x + b.lean, 440 - b.h - 3, 4, C.white, C.cyan, 1.5);
+      ctx.beginPath(); ctx.moveTo(b.x, 394); ctx.lineTo(b.x + b.lean, 394 - b.h); ctx.stroke();
+      if (i < nd) circle(ctx, b.x + b.lean, 394 - b.h - 3, 4, C.white, C.cyan, 1.5);
     });
     // Nebel: flache, halbtransparente Bänder
     if (fog > 0.02) {
       for (let i = 0; i < 4; i++) {
         ctx.fillStyle = `rgba(255,255,255,${(fog * (0.55 - i * 0.1)).toFixed(3)})`;
-        ctx.fillRect(0, 300 - i * 60, W, 140 + i * 60);
+        ctx.fillRect(0, 270 - i * 55, W, 130 + i * 55);
       }
     }
     const hh = (20 + Math.floor(t)) % 24, mm = Math.floor((t % 1) * 60);
-    ctx.fillStyle = C.black; ctx.fillRect(16, 16, 150, 44);
-    text(ctx, `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} UHR`, 91, 46, 22, C.white, 500, 'center');
-    if (fog > 0.4) { ctx.fillStyle = C.black; ctx.fillRect(350, 120, 200, 44); text(ctx, 'NEBEL', 450, 150, 22, C.white, 500, 'center'); }
-    else if (dew > 0.3) { ctx.fillStyle = C.black; ctx.fillRect(350, 120, 200, 44); text(ctx, 'TAU AUF DEM GRAS', 450, 150, 18, C.white, 500, 'center'); }
-    tempScale(ctx, 550, 0, 30, [
+    ctx.fillStyle = C.black; ctx.fillRect(12, 12, 176, 50);
+    text(ctx, `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} UHR`, 100, 47, FS.l, C.white, 500, 'center');
+    if (fog > 0.4) { ctx.fillStyle = C.black; ctx.fillRect(200, 96, 200, 48); text(ctx, 'NEBEL', 300, 129, FS.l, C.white, 500, 'center'); }
+    else if (dew > 0.3) { ctx.fillStyle = C.black; ctx.fillRect(170, 96, 260, 48); text(ctx, 'TAU AUF DEM GRAS', 300, 128, FS.m, C.white, 500, 'center'); }
+    tempScale(ctx, 545, 0, 30, [
       { t: air, label: 'Luft', color: C.orange },
       { t: td, label: 'Taupunkt', color: C.teal },
       { t: grass, label: 'Gras', color: C.green }
@@ -689,44 +699,45 @@ function taupunktAussen(host) {
    ========================================================= */
 SIMS.druck = (host) => {
   const ui = simShell(host, { label: 'Luftdruck: Teilchen stoßen gegen eine Messfläche, oder: Luftsäule über der Erde', drag: true });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   let mode = 'teilchen';
   // --- Teilchen-Modus
-  const box = { x0: 24, y0: 24, x1: 610, y1: 576 }, R = 7, MEM = [200, 400];
+  const box = { x0: 16, y0: 16, x1: 392, y1: 540 }, R = 7, MEM = [190, 370];
+  const N0 = 70;
   const speedOf = T => 40 + 6 * (T + 20);
-  let n = 110, T = 15, rate = 0, flash = 0;
+  let n = N0, T = 15, rate = 0, flash = 0;
   const P = [];
   const add = () => { const a = rnd(0, TAU), s = speedOf(T); P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R }); };
   for (let i = 0; i < n; i++) add();
   // --- Höhen-Modus
-  const HMAX = 12000, Y0 = 560, Y1 = 40;
+  const HMAX = 12000, Y0 = 560, Y1 = 40, CX0 = 64, CX1 = 380;
   let h = 100, p0 = 1013.25;
   const pAt = (hh, base) => base * Math.pow(1 - 2.25577e-5 * hh, 5.25588);
   const yOfH = hh => Y0 - hh / HMAX * (Y0 - Y1);
   const hOfY = y => clamp((Y0 - y) / (Y0 - Y1) * HMAX, 0, HMAX);
   const air = [];
-  while (air.length < 520) {
+  while (air.length < 380) {
     const hh = rnd(0, HMAX);
-    if (Math.random() < Math.pow(1 - 2.25577e-5 * hh, 4.25588)) air.push({ x: rnd(84, 500), h: hh, ph: rnd(0, TAU) });
+    if (Math.random() < Math.pow(1 - 2.25577e-5 * hh, 4.25588)) air.push({ x: rnd(CX0 + 4, CX1 - 4), h: hh, ph: rnd(0, TAU) });
   }
-  const MARKS = [[100, 'Offenbach, rund 100 m'], [880, 'Großer Feldberg, 880 m'], [2962, 'Zugspitze, 2.962 m'], [4806, 'Mont Blanc, 4.806 m'], [8849, 'Mount Everest, 8.849 m'], [11000, 'Reiseflughöhe, ca. 11 km']];
+  const MARKS = [[100, 'Offenbach, 100 m'], [880, 'Gr. Feldberg, 880 m'], [2962, 'Zugspitze, 2.962 m'], [4806, 'Mont Blanc, 4.806 m'], [8849, 'Everest, 8.849 m'], [11000, 'Flugzeug, ca. 11 km']];
 
   // Bedienung
   const rm = ui.row();
   seg(rm, [{ label: 'Teilchen-Stöße', value: 'teilchen' }, { label: 'Druck und Höhe', value: 'hoehe' }], mode, v => { mode = v; show(); }, 'Ansicht');
   const rA = ui.row(), rA2 = ui.row();
-  const sN = slider(rA, { label: 'Teilchen', min: 50, max: 170, step: 1, value: n, format: v => v + ' Stück', onInput: v => { n = v; } });
+  const sN = slider(rA, { label: 'Teilchen', min: 30, max: 110, step: 1, value: n, format: v => v + ' Stück', onInput: v => { n = v; } });
   const sT = slider(rA2, { label: 'Temperatur', min: -20, max: 40, step: 1, value: T, format: v => fmt(v) + ' °C', onInput: v => { T = v; } });
   const rA3 = ui.row();
-  button(rA3, 'Tief: weniger Luft', () => { n = 80; sN.set(n); });
-  button(rA3, 'Normal', () => { n = 110; T = 15; sN.set(n); sT.set(T); });
-  button(rA3, 'Hoch: mehr Luft', () => { n = 145; sN.set(n); });
+  button(rA3, 'Tief: weniger Luft', () => { n = 50; sN.set(n); });
+  button(rA3, 'Normal', () => { n = N0; T = 15; sN.set(n); sT.set(T); });
+  button(rA3, 'Hoch: mehr Luft', () => { n = 92; sN.set(n); });
   const rB = ui.row();
   const sH = slider(rB, { label: 'Höhe', min: 0, max: HMAX, step: 10, value: h, format: v => fmt(v) + ' m', onInput: v => { h = v; } });
   const rB2 = ui.row();
   seg(rB2, [{ label: 'Tief 995 hPa', value: 995 }, { label: 'Normal 1013 hPa', value: 1013.25 }, { label: 'Hoch 1030 hPa', value: 1030 }], p0, v => { p0 = v; }, 'Wetterlage');
   ui.readout();
-  const hintEl = el('p', 'hint'); host.appendChild(hintEl);
+  const hintEl = ui.hint('');
   function show() {
     const a = mode === 'teilchen';
     [rA, rA2, rA3].forEach(r => { r.hidden = !a; });
@@ -738,7 +749,7 @@ SIMS.druck = (host) => {
   }
   show();
   dragOn(view, {
-    down: p => { if (mode !== 'hoehe' || p.x > 600) return false; h = Math.round(hOfY(p.y) / 10) * 10; sH.set(h); },
+    down: p => { if (mode !== 'hoehe' || p.x > 392) return false; h = Math.round(hOfY(p.y) / 10) * 10; sH.set(h); },
     move: p => { h = Math.round(hOfY(p.y) / 10) * 10; sH.set(h); }
   });
 
@@ -765,16 +776,17 @@ SIMS.druck = (host) => {
     const hits = stepGas(dt / 2) + stepGas(dt / 2);
     rate += (hits / dt - rate) * Math.min(1, dt * 1.2);
     if (hits) flash = 1; else flash = Math.max(0, flash - dt * 6);
-    const p = 1013.25 * (n / 110) * ((T + 273.15) / 288.15);
+    const p = 1013.25 * (n / N0) * ((T + 273.15) / 288.15);
     ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = C.lavender; ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
     for (const q of P) circle(ctx, q.x, q.y, q.r, speedColor(Math.hypot(q.vx, q.vy)));
     ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
     ctx.fillStyle = flash > 0.5 ? C.black : C.orange; ctx.fillRect(box.x1 - 6, MEM[0], 14, MEM[1] - MEM[0]);
-    text(ctx, 'MESS–', box.x1 - 14, MEM[0] - 30, 13, C.black, 500, 'right');
-    text(ctx, 'FLÄCHE', box.x1 - 14, MEM[0] - 14, 13, C.black, 500, 'right');
+    ctx.fillStyle = C.white; ctx.fillRect(box.x1 - 120, MEM[0] - 64, 112, 54);
+    text(ctx, 'MESS–', box.x1 - 14, MEM[0] - 40, FS.s, C.black, 500, 'right');
+    text(ctx, 'FLÄCHE', box.x1 - 14, MEM[0] - 17, FS.s, C.black, 500, 'right');
     // Zeigerinstrument
-    const cx = 760, cy = 230, r = 104;
+    const cx = 498, cy = 114, r = 84;
     circle(ctx, cx, cy, r, C.white, C.black, 4);
     const ang = v => Math.PI * (0.75 + 1.5 * clamp((v - 500) / 1100, 0, 1));
     ctx.lineWidth = 2; ctx.strokeStyle = C.black;
@@ -782,17 +794,18 @@ SIMS.druck = (host) => {
       const a = ang(v);
       ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (r - 4), cy + Math.sin(a) * (r - 4)); ctx.lineTo(cx + Math.cos(a) * (r - 16), cy + Math.sin(a) * (r - 16)); ctx.stroke();
     }
-    text(ctx, 'TIEF', cx - 50, cy + 52, 14, C.black, 500, 'center');
-    text(ctx, 'HOCH', cx + 50, cy + 52, 14, C.black, 500, 'center');
+    text(ctx, 'TIEF', cx - 62, cy + r + 26, FS.s, C.black, 500, 'center');
+    text(ctx, 'HOCH', cx + 62, cy + r + 26, FS.s, C.black, 500, 'center');
     const a = ang(p);
     ctx.strokeStyle = C.orange; ctx.lineWidth = 6;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (r - 22), cy + Math.sin(a) * (r - 22)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (r - 20), cy + Math.sin(a) * (r - 20)); ctx.stroke();
     circle(ctx, cx, cy, 9, C.black);
-    text(ctx, '≈ ' + fmt(p) + ' hPa', cx, cy + r + 40, 26, C.black, 500, 'center');
-    text(ctx, 'STÖSSE PRO SEKUNDE', cx, cy + r + 92, 13, C.black, 500, 'center');
-    text(ctx, 'AUF DIE MESSFLÄCHE', cx, cy + r + 108, 13, C.black, 500, 'center');
-    text(ctx, fmt(rate), cx, cy + r + 146, 34, C.black, 300, 'center');
-    speedLegend(ctx, 120, box.y1 - 18);
+    text(ctx, '≈ ' + fmt(p) + ' hPa', cx, cy + r + 70, 30, C.black, 500, 'center');
+    text(ctx, 'STÖSSE PRO', cx, 340, FS.s, C.black, 500, 'center');
+    text(ctx, 'SEKUNDE AUF', cx, 364, FS.s, C.black, 500, 'center');
+    text(ctx, 'DIE FLÄCHE', cx, 388, FS.s, C.black, 500, 'center');
+    text(ctx, fmt(rate), cx, 440, 44, C.black, 300, 'center');
+    speedLegend(ctx, W / 2, 570);
     return p;
   }
 
@@ -800,47 +813,49 @@ SIMS.druck = (host) => {
   function drawHeight(dt) {
     time += dt;
     ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = C.ice; ctx.fillRect(80, Y1, 424, Y0 - Y1);
+    ctx.fillStyle = C.ice; ctx.fillRect(CX0, Y1, CX1 - CX0, Y0 - Y1);
     for (const a of air) circle(ctx, a.x + Math.sin(time * 1.7 + a.ph) * 3, yOfH(a.h) + Math.cos(time * 1.3 + a.ph) * 3, 3.5, C.purple);
-    ctx.fillStyle = C.green; ctx.fillRect(80, Y0, 424, 16);
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(80, Y1, 424, Y0 - Y1 + 16);
+    ctx.fillStyle = C.green; ctx.fillRect(CX0, Y0, CX1 - CX0, 16);
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(CX0, Y1, CX1 - CX0, Y0 - Y1 + 16);
     // Achse
     ctx.lineWidth = 2;
     for (let k = 0; k <= 12; k += 2) {
       const y = yOfH(k * 1000);
-      ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(80, y); ctx.stroke();
-      text(ctx, k + ' km', 64, y + 5, 13, C.black, 500, 'right');
+      ctx.beginPath(); ctx.moveTo(CX0 - 8, y); ctx.lineTo(CX0, y); ctx.stroke();
+      text(ctx, k + ' km', CX0 - 10, y + 7, FS.s, C.black, 500, 'right');
     }
     ctx.setLineDash([5, 6]);
     for (const [mh, label] of MARKS) {
       const y = yOfH(mh);
       ctx.strokeStyle = C.black; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(84, y); ctx.lineTo(500, y); ctx.stroke();
-      if (mh > 200) text(ctx, label, 92, y - 6, 13, C.black, 500);
+      ctx.beginPath(); ctx.moveTo(CX0 + 4, y); ctx.lineTo(CX1 - 4, y); ctx.stroke();
+      if (mh > 200) text(ctx, label, CX0 + 8, y - 7, FS.s, C.black, 500);
     }
     ctx.setLineDash([]);
-    text(ctx, MARKS[0][1], 92, Y0 - 14, 13, C.black, 500);
-    // Ballon
-    const by = yOfH(h), bx = 420;
+    text(ctx, MARKS[0][1], CX0 + 8, Y0 - 12, FS.s, C.black, 500);
+    // Ballon (rechts in der Säule, damit er die Beschriftungen nicht verdeckt)
+    const by = yOfH(h), bx = CX1 - 34;
     ctx.strokeStyle = C.black; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + 30); ctx.stroke();
-    ctx.fillStyle = C.black; ctx.fillRect(bx - 9, by + 30, 18, 14);
-    circle(ctx, bx, by - 26, 26, C.orange, C.black, 3);
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + 26); ctx.stroke();
+    ctx.fillStyle = C.black; ctx.fillRect(bx - 8, by + 26, 16, 12);
+    circle(ctx, bx, by - 22, 22, C.orange, C.black, 3);
     // rechte Seite
-    const pa = pAt(h, p0), frac = pa / p0;
-    text(ctx, 'ABSOLUTER DRUCK', 560, 70, 14, C.black);
-    text(ctx, 'IN ' + fmt(h) + ' m HÖHE', 560, 90, 14, C.black);
-    text(ctx, fmt(pa) + ' hPa', 560, 146, 52, C.black, 300);
-    text(ctx, 'LUFT ÜBER DEM BALLON', 560, 200, 14, C.black);
-    ctx.fillStyle = C.white; ctx.fillRect(560, 214, 300, 34);
-    ctx.fillStyle = C.purple; ctx.fillRect(560, 214, 300 * frac, 34);
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(560, 214, 300, 34);
-    text(ctx, fmt(frac * 100) + ' %', 560, 276, 18, C.black);
-    ctx.fillStyle = C.yellow; ctx.fillRect(560, 320, 300, 150);
-    text(ctx, 'AUF MEERESHÖHE', 576, 350, 14, C.black);
-    text(ctx, 'UMGERECHNET (RELATIV)', 576, 368, 14, C.black);
-    text(ctx, fmt(p0) + ' hPa', 576, 420, 40, C.black, 300);
-    text(ctx, p0 > 1014 ? 'HOCHDRUCK' : p0 < 1012 ? 'TIEFDRUCK' : 'STANDARD-LUFTDRUCK', 576, 452, 14, C.black);
+    const pa = pAt(h, p0), frac = pa / p0, X = 404;
+    text(ctx, 'ABSOLUT IN', X, 50, FS.s, C.black);
+    text(ctx, fmt(h) + ' m HÖHE', X, 74, FS.s, C.black);
+    text(ctx, fmt(pa) + ' hPa', X, 128, 44, C.black, 300);
+    text(ctx, 'LUFT ÜBER', X, 176, FS.s, C.black);
+    text(ctx, 'DEM BALLON', X, 200, FS.s, C.black);
+    ctx.fillStyle = C.white; ctx.fillRect(X, 214, 584 - X, 32);
+    ctx.fillStyle = C.purple; ctx.fillRect(X, 214, (584 - X) * frac, 32);
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(X, 214, 584 - X, 32);
+    text(ctx, fmt(frac * 100) + ' %', X, 276, FS.l, C.black);
+    ctx.fillStyle = C.yellow; ctx.fillRect(X - 8, 320, 592 - X, 170);
+    text(ctx, 'AUF MEERES–', X + 6, 352, FS.s, C.black);
+    text(ctx, 'HÖHE UMGE–', X + 6, 376, FS.s, C.black);
+    text(ctx, 'RECHNET', X + 6, 400, FS.s, C.black);
+    text(ctx, fmt(p0) + ' hPa', X + 6, 446, 36, C.black, 300);
+    text(ctx, p0 > 1014 ? 'HOCHDRUCK' : p0 < 1012 ? 'TIEFDRUCK' : 'STANDARD', X + 6, 476, FS.s, C.black);
     return pa;
   }
 
@@ -864,11 +879,12 @@ SIMS.druck = (host) => {
    ========================================================= */
 SIMS.regen = (host) => {
   const ui = simShell(host, { label: 'Kipp-Regenmesser mit Trichter und Wippe, daneben eine Fläche von einem Quadratmeter' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   const STEP = 0.254, SPEED = 2;            // 1 Sekunde = 2 Minuten
   let rate = 4, minutes = 0, tips = 0, fill = 0, tilt = 1, anim = 0;
   const drops = [], spill = [];
-  const PIV = { x: 260, y: 430 }, A = 0.32;
+  const PIV = { x: 180, y: 360 }, A = 0.32, ARM = 72;
+  const FUN = { x0: 70, x1: 290, y: 130, neck: 230 };   // Trichter
   const r1 = ui.row();
   const s = slider(r1, { label: 'Regenstärke', min: 0, max: 30, step: 0.5, value: rate, format: v => fmt(v, 1) + ' mm/h', onInput: v => { rate = v; } });
   const r2 = ui.row();
@@ -889,64 +905,68 @@ SIMS.regen = (host) => {
       fill += mm / STEP;
       if (fill >= 1) {
         fill -= 1; tips++; tilt = -tilt; anim = 1;
-        for (let i = 0; i < 6; i++) spill.push({ x: PIV.x - tilt * 100 + rnd(-6, 6), y: PIV.y + 20, vy: rnd(40, 120) });
+        for (let i = 0; i < 6; i++) spill.push({ x: PIV.x - tilt * ARM + rnd(-6, 6), y: PIV.y + 16, vy: rnd(40, 120) });
       }
     }
     // Regentropfen
-    const spawn = rate * 3 * dt;
-    for (let i = 0; i < Math.floor(spawn) + (Math.random() < spawn % 1 ? 1 : 0); i++) drops.push({ x: rnd(10, 510), y: rnd(-40, 0) });
-    ctx.fillStyle = C.lavender; ctx.fillRect(0, 0, 540, H);
-    ctx.fillStyle = C.white; ctx.fillRect(540, 0, 360, H);
+    const spawn = rate * 2.2 * dt;
+    for (let i = 0; i < Math.floor(spawn) + (Math.random() < spawn % 1 ? 1 : 0); i++) drops.push({ x: rnd(10, 340), y: rnd(-40, 0) });
+    ctx.fillStyle = C.lavender; ctx.fillRect(0, 0, 360, H);
+    ctx.fillStyle = C.white; ctx.fillRect(360, 0, 240, H);
     ctx.strokeStyle = C.cyan; ctx.lineWidth = 3;
     for (let i = drops.length - 1; i >= 0; i--) {
-      const d = drops[i]; d.y += 520 * dt;
-      const caught = d.y > 150 && d.x > 132 && d.x < 388;
+      const d = drops[i]; d.y += 480 * dt;
+      const caught = d.y > FUN.y && d.x > FUN.x0 + 2 && d.x < FUN.x1 - 2;
       if (caught || d.y > H) { drops.splice(i, 1); continue; }
       ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 2, d.y - 14); ctx.stroke();
     }
-    // Gehäuse & Trichter
+    // Trichter
+    const mid = (FUN.x0 + FUN.x1) / 2;
     ctx.fillStyle = C.white; ctx.strokeStyle = C.black; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(130, 150); ctx.lineTo(390, 150); ctx.lineTo(272, 270); ctx.lineTo(272, 300); ctx.lineTo(248, 300); ctx.lineTo(248, 270); ctx.closePath(); ctx.fill(); ctx.stroke();
-    text(ctx, 'TRICHTER', 260, 140, 14, C.black, 500, 'center');
-    if (rate > 0) { ctx.strokeStyle = C.cyan; ctx.lineWidth = 4; ctx.setLineDash([6, 8]); ctx.lineDashOffset = -minutes * 20; ctx.beginPath(); ctx.moveTo(260, 300); ctx.lineTo(260, PIV.y - 34); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.beginPath(); ctx.moveTo(FUN.x0, FUN.y); ctx.lineTo(FUN.x1, FUN.y); ctx.lineTo(mid + 12, FUN.neck); ctx.lineTo(mid + 12, FUN.neck + 26); ctx.lineTo(mid - 12, FUN.neck + 26); ctx.lineTo(mid - 12, FUN.neck); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.white; ctx.fillRect(mid - 64, FUN.y - 38, 128, 30);
+    text(ctx, 'TRICHTER', mid, FUN.y - 15, FS.s, C.black, 500, 'center');
+    if (rate > 0) { ctx.strokeStyle = C.cyan; ctx.lineWidth = 4; ctx.setLineDash([6, 8]); ctx.lineDashOffset = -minutes * 20; ctx.beginPath(); ctx.moveTo(mid, FUN.neck + 26); ctx.lineTo(mid, PIV.y - 30); ctx.stroke(); ctx.setLineDash([]); }
     // Wippe
     const ang = (anim > 0 ? lerp(tilt * A, -tilt * A, anim) : tilt * A);
     ctx.save(); ctx.translate(PIV.x, PIV.y); ctx.rotate(ang);
     const upSide = -tilt; // −1: linke Schale oben, +1: rechte Schale oben
     if (anim === 0) {
       ctx.fillStyle = C.cyan;
-      const hgt = 34 * clamp(fill, 0, 1);
-      if (upSide < 0) ctx.fillRect(-96, -hgt, 92, hgt); else ctx.fillRect(4, -hgt, 92, hgt);
+      const hgt = 26 * clamp(fill, 0, 1);
+      if (upSide < 0) ctx.fillRect(-ARM + 6, -hgt, ARM - 9, hgt); else ctx.fillRect(3, -hgt, ARM - 9, hgt);
     }
     ctx.strokeStyle = C.black; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(-108, -40); ctx.lineTo(-98, 0); ctx.lineTo(98, 0); ctx.lineTo(108, -40); ctx.moveTo(0, 0); ctx.lineTo(0, -50); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-ARM - 8, -30); ctx.lineTo(-ARM, 0); ctx.lineTo(ARM, 0); ctx.lineTo(ARM + 8, -30); ctx.moveTo(0, 0); ctx.lineTo(0, -38); ctx.stroke();
     ctx.restore();
-    ctx.fillStyle = C.black; ctx.beginPath(); ctx.moveTo(PIV.x, PIV.y); ctx.lineTo(PIV.x - 16, PIV.y + 40); ctx.lineTo(PIV.x + 16, PIV.y + 40); ctx.closePath(); ctx.fill();
-    text(ctx, 'WIPPE', PIV.x, PIV.y + 70, 14, C.black, 500, 'center');
+    ctx.fillStyle = C.black; ctx.beginPath(); ctx.moveTo(PIV.x, PIV.y); ctx.lineTo(PIV.x - 14, PIV.y + 34); ctx.lineTo(PIV.x + 14, PIV.y + 34); ctx.closePath(); ctx.fill();
+    text(ctx, 'WIPPE', PIV.x, PIV.y + 64, FS.s, C.black, 500, 'center');
     for (let i = spill.length - 1; i >= 0; i--) {
       const d = spill[i]; d.vy += 600 * dt; d.y += d.vy * dt;
       if (d.y > H) { spill.splice(i, 1); continue; }
       circle(ctx, d.x, d.y, 4, C.cyan);
     }
-    ctx.fillStyle = C.black; ctx.fillRect(20, 20, 196, 70);
-    text(ctx, 'GEKIPPT', 34, 46, 14, C.white);
-    text(ctx, tips + ' ×', 34, 80, 30, C.white, 300);
+    ctx.fillStyle = C.black; ctx.fillRect(12, 12, 150, 76);
+    text(ctx, 'GEKIPPT', 26, 40, FS.s, C.white);
+    text(ctx, tips + ' ×', 26, 78, 32, C.white, 300);
     // 1 m²
-    const total = tips * STEP, hmax = Math.max(5, Math.ceil((total + 0.01) / 5) * 5), px = 360 / hmax;
-    const bx0 = 620, bx1 = 800, by = 520;
+    const total = tips * STEP, hmax = Math.max(5, Math.ceil((total + 0.01) / 5) * 5), px = 340 / hmax;
+    const bx0 = 430, bx1 = 530, by = 520;
     ctx.fillStyle = C.cyan2; ctx.fillRect(bx0, by - total * px, bx1 - bx0, total * px);
     ctx.strokeStyle = C.black; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(bx0, by - 380); ctx.lineTo(bx0, by); ctx.lineTo(bx1, by); ctx.lineTo(bx1, by - 380); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx0, by - 356); ctx.lineTo(bx0, by); ctx.lineTo(bx1, by); ctx.lineTo(bx1, by - 356); ctx.stroke();
     ctx.lineWidth = 2;
     for (let v = 0; v <= hmax; v += hmax / 5) {
       const y = by - v * px;
-      ctx.beginPath(); ctx.moveTo(bx0 - 10, y); ctx.lineTo(bx0, y); ctx.stroke();
-      text(ctx, fmt(v) + ' mm', bx0 - 14, y + 5, 13, C.black, 500, 'right');
-      text(ctx, fmt(v) + ' l', bx1 + 12, y + 5, 13, C.black, 500, 'left');
+      ctx.beginPath(); ctx.moveTo(bx0 - 8, y); ctx.lineTo(bx0, y); ctx.stroke();
+      text(ctx, fmt(v), bx0 - 12, y + 7, FS.s, C.black, 500, 'right');
+      text(ctx, fmt(v), bx1 + 10, y + 7, FS.s, C.black, 500, 'left');
     }
-    text(ctx, 'BODEN: 1 m × 1 m', (bx0 + bx1) / 2, by + 30, 14, C.black, 500, 'center');
-    text(ctx, fmt(total, 2) + ' mm', (bx0 + bx1) / 2, 64, 34, C.black, 300, 'center');
-    text(ctx, '= ' + fmt(total, 2) + ' LITER AUF 1 m²', (bx0 + bx1) / 2, 90, 14, C.black, 500, 'center');
+    text(ctx, 'mm', bx0 - 12, by - 368, FS.s, C.black, 500, 'right');
+    text(ctx, 'Liter', bx1 + 10, by - 368, FS.s, C.black, 500, 'left');
+    text(ctx, 'BODEN 1 m × 1 m', (bx0 + bx1) / 2, by + 34, FS.s, C.black, 500, 'center');
+    text(ctx, fmt(total, 2) + ' mm', 480, 54, FS.xl, C.black, 300, 'center');
+    text(ctx, '= ' + fmt(total, 2) + ' l / m²', 480, 84, FS.s, C.black, 500, 'center');
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -966,10 +986,10 @@ const dirIdx = deg => Math.round((((deg % 360) + 360) % 360) / 22.5) % 16;
 
 SIMS.windrichtung = (host) => {
   const ui = simShell(host, { label: 'Kompass mit Windfahne – zieh, um die Windrichtung zu ändern', drag: true });
-  const { view, ctx } = ui, W = 900, H = 600;
-  const cx = 450, cy = 300, RR = 230;
+  const { view, ctx } = ui;
+  const cx = 300, cy = 316, RR = 178;
   let from = 248, vane = 200, omega = 0, offset = 0;
-  const parts = Array.from({ length: 110 }, () => ({ x: rnd(0, W), y: rnd(0, H), l: rnd(14, 34) }));
+  const parts = Array.from({ length: 80 }, () => ({ x: rnd(0, W), y: rnd(0, H), l: rnd(14, 34) }));
   const r = ui.row();
   for (const [lbl, d] of [['Nordwind', 0], ['Ostwind', 90], ['Südwind', 180], ['Westwind', 270]]) button(r, lbl, () => { from = d; });
   const r2 = ui.row();
@@ -988,12 +1008,12 @@ SIMS.windrichtung = (host) => {
     vane = (vane + omega * dt + 360) % 360;
     const to = (from + 180) * Math.PI / 180;
     const fx = Math.sin(to), fy = -Math.cos(to);
-    ctx.fillStyle = C.paleYellow; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C.yellowPale; ctx.fillRect(0, 0, W, H);
     circle(ctx, cx, cy, RR, C.white, C.black, 4);
     // Luftteilchen strömen
     ctx.strokeStyle = C.cyan2; ctx.lineWidth = 3;
     for (const p of parts) {
-      p.x += fx * 170 * dt; p.y += fy * 170 * dt;
+      p.x += fx * 150 * dt; p.y += fy * 150 * dt;
       if (p.x < -40) p.x += W + 80; if (p.x > W + 40) p.x -= W + 80;
       if (p.y < -40) p.y += H + 80; if (p.y > H + 40) p.y -= H + 80;
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - fx * p.l, p.y - fy * p.l); ctx.stroke();
@@ -1003,39 +1023,39 @@ SIMS.windrichtung = (host) => {
     for (let i = 0; i < 16; i++) {
       const a = i * 22.5 * Math.PI / 180, big = i % 4 === 0, mid = i % 2 === 0;
       ctx.lineWidth = big ? 4 : 2;
-      const r0 = RR - (big ? 26 : mid ? 18 : 12);
+      const r0 = RR - (big ? 24 : mid ? 16 : 10);
       ctx.beginPath(); ctx.moveTo(cx + Math.sin(a) * r0, cy - Math.cos(a) * r0); ctx.lineTo(cx + Math.sin(a) * RR, cy - Math.cos(a) * RR); ctx.stroke();
-      const rl = RR + (big ? 30 : 24);
-      text(ctx, DIR16[i], cx + Math.sin(a) * rl, cy - Math.cos(a) * rl, big ? 22 : 13, C.black, 500, 'center', 'middle');
+      const rl = RR + (big ? 26 : 24);
+      text(ctx, DIR16[i], cx + Math.sin(a) * rl, cy - Math.cos(a) * rl, big ? 28 : FS.s, C.black, 500, 'center', 'middle');
     }
     for (let d = 0; d < 360; d += 90) {
       const a = d * Math.PI / 180;
-      text(ctx, d + '°', cx + Math.sin(a) * (RR - 44), cy - Math.cos(a) * (RR - 44), 14, C.black, 500, 'center', 'middle');
+      text(ctx, d + '°', cx + Math.sin(a) * (RR - 46), cy - Math.cos(a) * (RR - 46), FS.s, C.black, 500, 'center', 'middle');
     }
     // Herkunftsmarke
     const fa = from * Math.PI / 180;
     ctx.fillStyle = C.orange;
-    ctx.beginPath(); ctx.arc(cx + Math.sin(fa) * (RR - 36), cy - Math.cos(fa) * (RR - 36), 14, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + Math.sin(fa) * (RR - 34), cy - Math.cos(fa) * (RR - 34), 13, 0, TAU); ctx.fill();
     ctx.strokeStyle = C.black; ctx.lineWidth = 2; ctx.stroke();
     // Windfahne
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(vane * Math.PI / 180);
     ctx.fillStyle = C.black;
-    ctx.fillRect(-4, -110, 8, 230);
-    ctx.beginPath(); ctx.moveTo(0, -150); ctx.lineTo(-20, -104); ctx.lineTo(20, -104); ctx.closePath(); ctx.fill();
+    ctx.fillRect(-4, -88, 8, 186);
+    ctx.beginPath(); ctx.moveTo(0, -122); ctx.lineTo(-17, -84); ctx.lineTo(17, -84); ctx.closePath(); ctx.fill();
     ctx.fillStyle = C.orange; ctx.strokeStyle = C.black; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(0, 60); ctx.lineTo(-42, 150); ctx.lineTo(42, 150); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 48); ctx.lineTo(-34, 122); ctx.lineTo(34, 122); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
-    circle(ctx, cx, cy, 10, C.white, C.black, 3);
+    circle(ctx, cx, cy, 9, C.white, C.black, 3);
     // Anzeige
     const shown = Math.round((vane + offset + 360) % 360);
-    ctx.fillStyle = C.black; ctx.fillRect(16, 16, 196, 86);
-    text(ctx, 'ANZEIGE', 30, 42, 13, C.white);
-    text(ctx, shown + '°  ' + DIR16[dirIdx(shown)], 30, 86, 32, C.white, 300);
-    if (offset) { ctx.fillStyle = C.red2; ctx.fillRect(16, 106, 196, 30); text(ctx, '30° FALSCH!', 114, 127, 15, C.white, 500, 'center'); }
-    text(ctx, 'WIND KOMMT AUS', 884, 40, 13, C.black, 500, 'right');
-    text(ctx, DIR16L[dirIdx(from)].toUpperCase(), 884, 64, 18, C.black, 500, 'right');
-    text(ctx, 'WEHT NACH', 884, 540, 13, C.black, 500, 'right');
-    text(ctx, DIR16L[dirIdx(from + 180)].toUpperCase(), 884, 564, 18, C.black, 500, 'right');
+    ctx.fillStyle = C.black; ctx.fillRect(10, 10, 184, 84);
+    text(ctx, 'ANZEIGE', 22, 38, FS.s, C.white);
+    text(ctx, shown + '° ' + DIR16[dirIdx(shown)], 22, 80, 34, C.white, 300);
+    if (offset) { ctx.fillStyle = C.red2; ctx.fillRect(10, 98, 184, 34); text(ctx, '30° FALSCH!', 102, 123, FS.s, C.white, 500, 'center'); }
+    text(ctx, 'WIND KOMMT AUS', 590, 32, FS.s, C.black, 500, 'right');
+    text(ctx, DIR16L[dirIdx(from)].toUpperCase(), 590, 60, FS.m, C.black, 500, 'right');
+    text(ctx, 'WEHT NACH', 590, 560, FS.s, C.black, 500, 'right');
+    text(ctx, DIR16L[dirIdx(from + 180)].toUpperCase(), 590, 588, FS.m, C.black, 500, 'right');
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -1052,11 +1072,12 @@ SIMS.windrichtung = (host) => {
 SIMS.wind = (host, variant) => {
   const boeen = variant === 'boeen';
   const ui = simShell(host, { label: 'Schalenkreuz-Windmesser, Baum und Verlauf der Windgeschwindigkeit' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   const SIM_PER_S = 20, WIN = 600 / SIM_PER_S, MEAN_WIN = 120 / SIM_PER_S; // 10 min Verlauf, 2 min Mittel
   let mean = boeen ? 6 : 4, gusty = boeen ? 0.45 : 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0;
   const S = [];
-  const streaks = Array.from({ length: 46 }, () => ({ x: rnd(0, W), y: rnd(20, 320), l: rnd(20, 50) }));
+  const GROUND = 290;
+  const streaks = Array.from({ length: 32 }, () => ({ x: rnd(0, W), y: rnd(20, GROUND - 20), l: rnd(20, 50) }));
   const r1 = ui.row();
   slider(r1, { label: 'Mittlerer Wind', min: 0, max: 25, step: 0.5, value: mean, format: v => fmt(v, 1) + ' m/s', onInput: v => { mean = v; } });
   const r2 = ui.row();
@@ -1082,62 +1103,63 @@ SIMS.wind = (host, variant) => {
     const avg = recent.reduce((a, s) => a + s.v, 0) / Math.max(1, recent.length);
     let mx = 0, mxS = null; for (const s of S) if (s.v > mx) { mx = s.v; mxS = s; }
     // Szene
-    ctx.fillStyle = C.ice; ctx.fillRect(0, 0, W, 340);
-    ctx.fillStyle = C.green; ctx.fillRect(0, 320, W, 20);
+    ctx.fillStyle = C.ice; ctx.fillRect(0, 0, W, GROUND + 18);
+    ctx.fillStyle = C.green; ctx.fillRect(0, GROUND, W, 18);
     ctx.strokeStyle = C.white; ctx.lineWidth = 3;
-    const sp = 30 + cur * 32;
+    const sp = 30 + cur * 28;
     for (const s of streaks) {
-      s.x += sp * dt; if (s.x > W + 60) { s.x = -60; s.y = rnd(20, 310); }
+      s.x += sp * dt; if (s.x > W + 60) { s.x = -60; s.y = rnd(20, GROUND - 20); }
       const len = s.l * (0.3 + cur / 10);
       ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - len, s.y); ctx.stroke();
     }
     // Schalenkreuz (von oben)
     rot += cur * 0.45 * dt * TAU / 3;
-    const ax = 200, ay = 170;
+    const ax = 136, ay = 150;
     ctx.strokeStyle = C.black; ctx.lineWidth = 6;
     for (let i = 0; i < 3; i++) {
-      const a = rot + i * TAU / 3, ex = ax + Math.cos(a) * 92, ey = ay + Math.sin(a) * 92;
+      const a = rot + i * TAU / 3, ex = ax + Math.cos(a) * 76, ey = ay + Math.sin(a) * 76;
       ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ex, ey); ctx.stroke();
-      ctx.fillStyle = C.orange; ctx.beginPath(); ctx.arc(ex, ey, 26, a + Math.PI / 2, a + Math.PI * 1.5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = C.orange; ctx.beginPath(); ctx.arc(ex, ey, 22, a + Math.PI / 2, a + Math.PI * 1.5); ctx.closePath(); ctx.fill();
       ctx.lineWidth = 3; ctx.stroke(); ctx.lineWidth = 6;
     }
-    circle(ctx, ax, ay, 12, C.black);
-    text(ctx, 'WINDSCHALEN VON OBEN', ax, 312, 13, C.black, 500, 'center');
+    circle(ctx, ax, ay, 11, C.black);
+    text(ctx, 'WINDSCHALEN', ax, 262, FS.s, C.black, 500, 'center');
     // Baum biegt sich mit dem Momentanwert
     const bend = clamp(cur / 28, 0, 1) * 0.7;
-    const tx = 700, ty = 320, th = 200;
+    const tx = 470, ty = GROUND, th = 170;
     const topX = tx + Math.sin(bend) * th, topY = ty - Math.cos(bend) * th;
-    ctx.strokeStyle = C.rust; ctx.lineWidth = 16;
+    ctx.strokeStyle = C.rust; ctx.lineWidth = 14;
     ctx.beginPath(); ctx.moveTo(tx, ty); ctx.quadraticCurveTo(tx, ty - th * 0.6, topX, topY); ctx.stroke();
-    ctx.fillStyle = C.green2;
-    ctx.beginPath(); ctx.ellipse(topX + bend * 30, topY + 10, 70 - bend * 15, 58, bend, 0, TAU); ctx.fill();
+    ctx.fillStyle = C.greenStrong;
+    ctx.beginPath(); ctx.ellipse(topX + bend * 26, topY + 8, 58 - bend * 12, 48, bend, 0, TAU); ctx.fill();
     // Anzeige
-    ctx.fillStyle = C.black; ctx.fillRect(380, 16, 200, 70);
-    text(ctx, 'JETZT', 394, 40, 13, C.white);
-    text(ctx, fmt(cur, 1) + ' m/s', 394, 74, 28, C.white, 300);
+    ctx.fillStyle = C.black; ctx.fillRect(250, 12, 170, 76);
+    text(ctx, 'JETZT', 264, 40, FS.s, C.white);
+    text(ctx, fmt(cur, 1) + ' m/s', 264, 78, 32, C.white, 300);
     // Verlauf
-    const gx0 = 70, gx1 = 870, gy0 = 380, gy1 = 560;
+    const gx0 = 52, gx1 = 584, gy0 = 352, gy1 = 548;
     const vmax = Math.max(10, Math.ceil((mx + 2) / 5) * 5);
     const X = t => gx1 - (now - t) / WIN * (gx1 - gx0), Y = v => gy1 - v / vmax * (gy1 - gy0);
-    ctx.fillStyle = C.white; ctx.fillRect(0, 340, W, 260);
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 340); ctx.lineTo(W, 340); ctx.stroke();
+    ctx.fillStyle = C.white; ctx.fillRect(0, GROUND + 18, W, H - GROUND - 18);
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, GROUND + 18); ctx.lineTo(W, GROUND + 18); ctx.stroke();
     ctx.lineWidth = 1.5;
-    for (let v = 0; v <= vmax; v += 5) {
+    for (let v = 0; v <= vmax; v += vmax > 20 ? 10 : 5) {
       ctx.strokeStyle = v === 0 ? C.black : C.grey; ctx.beginPath(); ctx.moveTo(gx0, Y(v)); ctx.lineTo(gx1, Y(v)); ctx.stroke();
-      text(ctx, v + ' m/s', gx0 - 8, Y(v) + 5, 12, C.black, 500, 'right');
+      text(ctx, String(v), gx0 - 8, Y(v) + 7, FS.s, C.black, 500, 'right');
     }
-    text(ctx, '−10 MIN', gx0, 590, 12, C.black, 500, 'left');
-    text(ctx, 'JETZT', gx1, 590, 12, C.black, 500, 'right');
+    text(ctx, 'm/s', gx0 - 8, gy0 - 14, FS.s, C.black, 500, 'right');
+    text(ctx, '−10 MIN', gx0, 584, FS.s, C.black, 500, 'left');
+    text(ctx, 'JETZT', gx1, 584, FS.s, C.black, 500, 'right');
     ctx.strokeStyle = C.black; ctx.lineWidth = 2; ctx.beginPath();
     S.forEach((s, i) => { const px = X(s.t), py = Y(s.v); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
     ctx.stroke();
     // Mittelwert-Linie
     ctx.strokeStyle = C.orange; ctx.lineWidth = boeen ? 4 : 7;
     ctx.beginPath(); ctx.moveTo(X(now - MEAN_WIN), Y(avg)); ctx.lineTo(gx1, Y(avg)); ctx.stroke();
-    text(ctx, 'MITTEL 2 MIN', X(now - MEAN_WIN) - 8, Y(avg) + 5, 12, C.black, 500, 'right');
+    text(ctx, 'MITTEL 2 MIN', X(now - MEAN_WIN) - 8, Y(avg) + 7, FS.s, C.black, 500, 'right');
     if (mxS && mx > avg * 1.15) {
       circle(ctx, X(mxS.t), Y(mx), boeen ? 9 : 6, C.red, C.black, 2);
-      text(ctx, 'BÖE ' + fmt(mx, 1), X(mxS.t), Y(mx) - 14, 13, C.black, 500, 'center');
+      text(ctx, 'BÖE ' + fmt(mx, 1), clamp(X(mxS.t), gx0 + 50, gx1 - 50), Y(mx) - 14, FS.s, C.black, 500, 'center');
     }
     readT -= dt;
     if (readT <= 0) {
@@ -1156,15 +1178,16 @@ SIMS.wind = (host, variant) => {
    ========================================================= */
 SIMS.koerper = (host, variant) => {
   const ui = simShell(host, { label: 'Ein Mensch im Wind mit warmer Luftschicht um die Haut, daneben Thermometer und berechneter Wert' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   const cfg = {
     windkuehle: { T: 0, RH: 70, v: 5, tMin: -20, tMax: 10, rh: false, name: 'WIND–\nKÜHLE' },
-    at:         { T: 14, RH: 70, v: 3.4, tMin: -10, tMax: 40, rh: true, name: 'SCHEINBARE\nTEMPERATUR' },
-    gefuehlt:   { T: 14, RH: 50, v: 3, tMin: -15, tMax: 40, rh: true, name: 'GEFÜHLTE\nTEMPERATUR' }
+    at:         { T: 14, RH: 70, v: 3.4, tMin: -10, tMax: 40, rh: true, name: 'SCHEIN–\nBAR' },
+    gefuehlt:   { T: 14, RH: 50, v: 3, tMin: -15, tMax: 40, rh: true, name: 'GE–\nFÜHLT' }
   }[variant];
-  let T = cfg.T, RH = cfg.RH, v = cfg.v, layer = 20;
-  const puffs = [], streaks = Array.from({ length: 40 }, () => ({ x: rnd(0, 560), y: rnd(20, 560), l: rnd(20, 50) }));
-  const sweat = Array.from({ length: 14 }, (_, i) => ({ x: 300 + rnd(-40, 40), y: 260 + i * 18 + rnd(-6, 6) }));
+  const SX = 380;   // linke Szene 0..SX, rechts die Thermometer
+  let T = cfg.T, RH = cfg.RH, v = cfg.v, layer = 18;
+  const puffs = [], streaks = Array.from({ length: 30 }, () => ({ x: rnd(0, SX), y: rnd(20, 560), l: rnd(20, 50) }));
+  const sweat = Array.from({ length: 13 }, (_, i) => ({ x: 190 + rnd(-30, 30), y: 230 + i * 14 + rnd(-5, 5) }));
   const wisps = [];
   const r1 = ui.row();
   const sT = slider(r1, { label: 'Lufttemperatur', min: cfg.tMin, max: cfg.tMax, step: 0.5, value: T, format: x => fmt(x, 1) + ' °C', onInput: x => { T = x; } });
@@ -1192,31 +1215,31 @@ SIMS.koerper = (host, variant) => {
   }
   function body(c) {
     c.beginPath();
-    c.arc(300, 150, 42, 0, TAU);
-    c.moveTo(240, 520); c.lineTo(240, 270); c.arc(300, 270, 60, Math.PI, 0); c.lineTo(360, 520); c.closePath();
+    c.arc(190, 150, 34, 0, TAU);
+    c.moveTo(142, 470); c.lineTo(142, 250); c.arc(190, 250, 48, Math.PI, 0); c.lineTo(238, 470); c.closePath();
   }
   function frame(dt) {
     if (!view.fit()) return;
     time += dt;
     const res = calc();
-    const tgt = 26 / (1 + v * 0.45);
+    const tgt = 22 / (1 + v * 0.45);
     layer += (tgt - layer) * Math.min(1, dt * 2);
-    ctx.fillStyle = T < 5 ? C.ice : T > 26 ? C.pink : C.paleYellow; ctx.fillRect(0, 0, 580, H);
-    ctx.fillStyle = C.white; ctx.fillRect(580, 0, 320, H);
+    ctx.fillStyle = T < 5 ? C.ice : T > 26 ? C.pink : C.yellowPale; ctx.fillRect(0, 0, SX, H);
+    ctx.fillStyle = C.white; ctx.fillRect(SX, 0, W - SX, H);
     // Wind
     ctx.strokeStyle = C.cyan2; ctx.lineWidth = 3;
     const nS = Math.round(clamp(v / 12, 0, 1) * streaks.length);
     for (let i = 0; i < nS; i++) {
-      const s = streaks[i]; s.x += (60 + v * 40) * dt; if (s.x > 600) { s.x = -50; s.y = rnd(20, 560); }
+      const s = streaks[i]; s.x += (60 + v * 40) * dt; if (s.x > SX + 20) { s.x = -50; s.y = rnd(20, 560); }
       ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - s.l, s.y); ctx.stroke();
     }
     // warme Grenzschicht + abgeblasene Wärme
-    if (v > 0.5 && Math.random() < v * dt * 2.5) puffs.push({ x: rnd(250, 350), y: rnd(120, 500), r: rnd(6, 12) });
+    if (v > 0.5 && Math.random() < v * dt * 2.5) puffs.push({ x: rnd(150, 230), y: rnd(120, 460), r: rnd(6, 11) });
     ctx.lineJoin = 'round';
     body(ctx); ctx.strokeStyle = C.orange; ctx.lineWidth = layer * 2; ctx.stroke();
     for (let i = puffs.length - 1; i >= 0; i--) {
       const p = puffs[i]; p.x += (40 + v * 30) * dt; p.r -= dt * 3;
-      if (p.r <= 0 || p.x > 580) { puffs.splice(i, 1); continue; }
+      if (p.r <= 0 || p.x > SX) { puffs.splice(i, 1); continue; }
       circle(ctx, p.x, p.y, p.r, C.orange);
     }
     body(ctx); ctx.fillStyle = C.navy; ctx.fill();
@@ -1228,7 +1251,7 @@ SIMS.koerper = (host, variant) => {
         ctx.fillStyle = C.cyan3; ctx.beginPath(); ctx.moveTo(d.x, d.y - 9); ctx.quadraticCurveTo(d.x + 7, d.y + 2, d.x, d.y + 5); ctx.quadraticCurveTo(d.x - 7, d.y + 2, d.x, d.y - 9); ctx.fill();
         if (Math.random() < dt * 1.6 * (1 - RH / 100) * (1 + v / 4)) wisps.push({ x: d.x, y: d.y, a: 1 });
       }
-      if (RH > 70) text(ctx, 'SCHWEISS VERDUNSTET SCHLECHT', 300, 580, 14, C.black, 500, 'center');
+      if (RH > 70) { ctx.fillStyle = C.white; ctx.fillRect(10, 500, SX - 20, 76); text(ctx, 'SCHWEISS VERDUN–', SX / 2, 530, FS.s, C.black, 500, 'center'); text(ctx, 'STET SCHLECHT', SX / 2, 560, FS.s, C.black, 500, 'center'); }
     }
     ctx.strokeStyle = C.white; ctx.lineWidth = 3;
     for (let i = wisps.length - 1; i >= 0; i--) {
@@ -1236,16 +1259,17 @@ SIMS.koerper = (host, variant) => {
       if (w.a <= 0) { wisps.splice(i, 1); continue; }
       ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.quadraticCurveTo(w.x + 8, w.y - 10, w.x, w.y - 20); ctx.stroke();
     }
-    text(ctx, 'WARME LUFTSCHICHT', 24, 40, 14, C.black);
-    ctx.fillStyle = C.orange; ctx.fillRect(24, 50, 60, 10);
+    ctx.fillStyle = C.orange; ctx.fillRect(16, 22, 44, 12);
+    text(ctx, 'WARME LUFTSCHICHT', 70, 35, FS.s, C.black);
     if (variant === 'gefuehlt') {
-      ctx.fillStyle = C.black; ctx.fillRect(24, 76, 250, 34);
-      text(ctx, 'BEREICH: ' + res.mode.toUpperCase(), 36, 99, 14, C.white);
+      ctx.fillStyle = C.black; ctx.fillRect(10, 52, SX - 20, 64);
+      text(ctx, 'BEREICH:', 22, 78, FS.s, C.white);
+      text(ctx, res.mode.toUpperCase(), 22, 104, FS.s, C.white);
     }
-    // Thermometer
+    // Thermometer: links die Luft, rechts der berechnete Wert (gleiche Skala)
     const lo = -30, hi = 45;
-    thermo(ctx, 660, 110, 470, lo, hi, T, C.cyan2, 'THERMO–\nMETER', fmt(T, 1) + ' °C');
-    thermo(ctx, 810, 110, 470, lo, hi, res.t, C.orange, cfg.name, fmt(res.t, 1) + ' °C');
+    thermo(ctx, 432, 120, 430, lo, hi, T, C.cyan2, 'THERMO–\nMETER', fmt(T, 1) + ' °C');
+    thermo(ctx, 540, 120, 430, lo, hi, res.t, C.orange, cfg.name, fmt(res.t, 1) + ' °C', false);
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -1261,8 +1285,8 @@ SIMS.koerper = (host, variant) => {
    ========================================================= */
 SIMS.uv = (host) => {
   const ui = simShell(host, { label: 'Sonne, Ozonschicht, Wolken und UV-Strahlung, die am Boden ankommt' });
-  const { view, ctx } = ui, W = 900, H = 600;
-  const CX = 450, CY = 1620, RE = 1100, RCL = RE + 75, RATM = RE + 175;
+  const { view, ctx } = ui;
+  const CX = 300, CY = 1620, RE = 1100, RCL = RE + 75, RATM = RE + 175;
   let elev = 45, cloud = 0, ozone = 320;
   const ozR = () => [RE + 130, RE + 130 + (ozone - 200) / 200 * 40];
   const P = [];
@@ -1295,13 +1319,16 @@ SIMS.uv = (host) => {
     if (!view.fit()) return;
     const u = uvi();
     const e = elev * Math.PI / 180, dx = -Math.cos(e), dy = -Math.sin(e); // Richtung zur Sonne
-    const gx = 450, gy = CY - RE;
+    const gx = 300, gy = CY - RE;
     const [o0, o1] = ozR();
     const tSun = backT(gx, gy, dx, dy, RATM + 60) + 30;
     const sx = gx + dx * tSun, sy = gy + dy * tSun;
+    // Die Sonne liegt bei tiefem Stand außerhalb des Bildes; gezeichnet wird sie auf demselben Strahl am Bildrand.
+    const tVis = Math.min(tSun, (gx - 44) / Math.cos(e));
+    const vx = gx + dx * tVis, vy = gy + dy * tVis;
     // neue UV-Pakete
-    if (Math.random() < dt * 40) {
-      const off = rnd(-30, 30), tx = gx + rnd(-60, 60);
+    if (Math.random() < dt * 34) {
+      const off = rnd(-30, 30), tx = gx + rnd(-50, 50);
       const start = { x: sx - dy * off, y: sy + dx * off };
       const len = Math.hypot(tx - start.x, gy - start.y);
       let die = len + 1;
@@ -1316,21 +1343,21 @@ SIMS.uv = (host) => {
     circle(ctx, CX, CY, RATM, C.ice);
     ctx.beginPath(); ctx.arc(CX, CY, o1, 0, TAU); ctx.arc(CX, CY, o0, 0, TAU, true); ctx.fillStyle = C.lilac; ctx.fill();
     // Wolken auf einem Bogen
-    const nCl = Math.round(cloud / 100 * 16);
+    const nCl = Math.round(cloud / 100 * 11);
     for (let i = 0; i < nCl; i++) {
-      const a = -Math.PI / 2 + (i - 7.5) * 0.045;
+      const a = -Math.PI / 2 + (i - 5) * 0.045;
       const x = CX + Math.cos(a) * RCL, y = CY + Math.sin(a) * RCL;
-      circle(ctx, x, y, 26, C.white); circle(ctx, x + 18, y + 6, 20, C.white); circle(ctx, x - 18, y + 8, 18, C.white);
+      circle(ctx, x, y, 24, C.white); circle(ctx, x + 17, y + 6, 18, C.white); circle(ctx, x - 17, y + 8, 16, C.white);
     }
     circle(ctx, CX, CY, RE, C.green);
     // Sonne
-    circle(ctx, sx, sy, 30, C.yellow);
+    circle(ctx, vx, vy, 28, C.yellow);
     ctx.strokeStyle = C.yellow; ctx.lineWidth = 3;
-    for (let i = 0; i < 8; i++) { const a = i * TAU / 8; ctx.beginPath(); ctx.moveTo(sx + Math.cos(a) * 38, sy + Math.sin(a) * 38); ctx.lineTo(sx + Math.cos(a) * 52, sy + Math.sin(a) * 52); ctx.stroke(); }
+    for (let i = 0; i < 8; i++) { const a = i * TAU / 8; ctx.beginPath(); ctx.moveTo(vx + Math.cos(a) * 35, vy + Math.sin(a) * 35); ctx.lineTo(vx + Math.cos(a) * 47, vy + Math.sin(a) * 47); ctx.stroke(); }
     // UV-Pakete
     ctx.lineWidth = 3;
     for (let i = P.length - 1; i >= 0; i--) {
-      const p = P[i]; p.s += 420 * dt;
+      const p = P[i]; p.s += 380 * dt;
       if (p.s > p.die || p.s > p.len) { P.splice(i, 1); continue; }
       const x = p.x + p.ux * p.s, y = p.y + p.uy * p.s;
       const inAtm = (x - CX) ** 2 + (y - CY) ** 2 < RATM * RATM;
@@ -1338,27 +1365,27 @@ SIMS.uv = (host) => {
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - p.ux * 14, y - p.uy * 14); ctx.stroke();
     }
     // Mensch
-    ctx.fillStyle = C.black;
-    circle(ctx, gx, gy - 38, 8, C.black); ctx.fillRect(gx - 7, gy - 28, 14, 28);
-    text(ctx, 'OZONSCHICHT', 70, CY - Math.sqrt(o1 * o1 - 380 * 380) + 2, 13, C.black, 500, 'left', 'top');
-    text(ctx, 'ATMOSPHÄRE', 640, 500, 13, C.black, 500);
+    circle(ctx, gx, gy - 36, 8, C.black); ctx.fillStyle = C.black; ctx.fillRect(gx - 7, gy - 26, 14, 26);
+    const ozY = CY - Math.sqrt(o1 * o1 - (CX - 20) * (CX - 20));
+    text(ctx, 'OZONSCHICHT', 20, ozY + 4, FS.s, C.black, 500, 'left', 'top');
+    text(ctx, 'ATMOSPHÄRE', 20, 488, FS.s, C.black, 500);
     // UV-Skala
-    const bx = 760, by0 = 60, bh = 26;
-    const BANDS = [[0, 2, C.green2, 'NIEDRIG'], [3, 5, C.yellowK, 'MÄSSIG'], [6, 7, C.orange, 'HOCH'], [8, 10, C.red, 'SEHR HOCH'], [11, 11, C.purple2, 'EXTREM']];
-    ctx.fillStyle = C.white; ctx.fillRect(bx - 16, by0 - 44, 140, bh * 12 + 60);
-    text(ctx, 'UV-INDEX', bx, by0 - 18, 13, C.black);
+    const bx = 482, by0 = 52, bh = 22;
+    const BANDS = [[0, 2, C.greenStrong, 'NIEDRIG'], [3, 5, C.yellowStrong, 'MÄSSIG'], [6, 7, C.orange, 'HOCH'], [8, 10, C.red, 'SEHR HOCH'], [11, 11, C.purple2, 'EXTREM']];
+    ctx.fillStyle = C.white; ctx.fillRect(bx - 16, 10, 124, bh * 12 + 56);
+    text(ctx, 'UV-INDEX', bx - 6, by0 - 14, FS.s, C.black);
     const val = Math.round(u.v);
     for (let k = 11; k >= 0; k--) {
       const y = by0 + (11 - k) * bh;
       const band = BANDS.find(b => k >= b[0] && k <= b[1]);
-      ctx.fillStyle = band[2]; ctx.fillRect(bx, y, 34, bh - 2);
-      text(ctx, k === 11 ? '11+' : String(k), bx + 44, y + 18, 13, C.black);
-      if (k === Math.min(11, val)) { ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(bx - 4, y - 3, 42, bh + 4); }
+      ctx.fillStyle = band[2]; ctx.fillRect(bx, y, 32, bh - 2);
+      text(ctx, k === 11 ? '11+' : String(k), bx + 42, y + 18, FS.s, C.black);
+      if (k === Math.min(11, val)) { ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(bx - 4, y - 3, 40, bh + 4); }
     }
-    ctx.fillStyle = C.black; ctx.fillRect(16, 16, 230, 86);
-    text(ctx, 'UV-INDEX AM BODEN', 30, 40, 13, C.white);
-    text(ctx, fmt(u.v, 1), 30, 86, 40, C.white, 300);
-    if (u.v >= 2.5) { ctx.fillStyle = C.yellow; ctx.fillRect(16, 102, 230, 30); text(ctx, 'SONNENSCHUTZ!', 131, 123, 15, C.black, 500, 'center'); }
+    ctx.fillStyle = C.black; ctx.fillRect(10, 10, 190, 86);
+    text(ctx, 'UV AM BODEN', 22, 38, FS.s, C.white);
+    text(ctx, fmt(u.v, 1), 22, 84, 42, C.white, 300);
+    if (u.v >= 2.5) { ctx.fillStyle = C.yellow; ctx.fillRect(10, 100, 190, 36); text(ctx, 'SONNENSCHUTZ!', 105, 126, FS.s, C.black, 500, 'center'); }
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -1374,7 +1401,7 @@ SIMS.uv = (host) => {
    ========================================================= */
 SIMS.licht = (host) => {
   const ui = simShell(host, { label: 'Lichtquelle, Fläche von einem Quadratmeter, Lux-Skala und Spektrum mit Empfindlichkeit des Auges' });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   const L0 = 250, L1 = 1500;
   const V = l => 1.019 * Math.exp(-285.4 * Math.pow(l / 1000 - 0.559, 2));
   const planck = (l, T) => { const m = l * 1e-9; return 1 / (Math.pow(m, 5) * (Math.exp(1.4388e-2 / (m * T)) - 1)); };
@@ -1408,65 +1435,69 @@ SIMS.licht = (host) => {
 
   function wavelengthColor(l) {
     if (l < 380) return null;
-    if (l < 450) return C.purple2; if (l < 495) return C.blue2; if (l < 520) return C.cyan; if (l < 570) return C.green2;
-    if (l < 590) return C.yellowK; if (l < 625) return C.orange; if (l <= 780) return C.red; return null;
+    if (l < 450) return C.purple2; if (l < 495) return C.blue2; if (l < 520) return C.cyan; if (l < 570) return C.greenStrong;
+    if (l < 590) return C.yellowStrong; if (l < 625) return C.orange; if (l <= 780) return C.red; return null;
   }
   function sampleL() {
     const s = SRC[src];
     for (let k = 0; k < 40; k++) { const l = rnd(L0, L1); if (Math.random() * s.max < s.f(l)) return l; }
     return 1000;
   }
-  const SKY = [C.navy, C.purple2, C.blue2, C.cyan2, C.ice, C.paleYellow];
+  const SKY = [C.navy, C.purple2, C.blue2, C.cyan2, C.ice, C.yellowPale];
+  const TOP = 300;   // obere Hälfte: Szene, untere: Spektrum
   let readT = 0;
   function frame(dt) {
     if (!view.fit()) return;
     const w = Math.pow(10, logW), lux = w * SRC[src].eff;
     const ll = Math.log10(Math.max(0.01, lux));
-    ctx.fillStyle = SKY[clamp(Math.floor((ll + 1) / 1.1), 0, SKY.length - 1)]; ctx.fillRect(0, 0, W, 350);
+    ctx.fillStyle = SKY[clamp(Math.floor((ll + 1) / 1.1), 0, SKY.length - 1)]; ctx.fillRect(0, 0, 392, TOP);
     const dark = ll < 2.2;
     // Quelle
-    const qx = 90, qy = 80;
-    if (src === 'sonne') { circle(ctx, qx, qy, 40, C.yellow, C.black, 2); }
-    else if (src === 'led') { circle(ctx, qx, qy, 32, C.white, C.black, 3); ctx.fillStyle = C.black; ctx.fillRect(qx - 14, qy - 70, 28, 40); }
-    else { ctx.fillStyle = C.black; ctx.fillRect(qx - 60, qy - 30, 120, 60); ctx.fillStyle = C.red2; for (let i = 0; i < 3; i++) ctx.fillRect(qx - 50, qy - 22 + i * 18, 100, 9); }
-    text(ctx, SRC[src].name.toUpperCase(), qx, qy + 72, 14, dark ? C.white : C.black, 500, 'center');
+    const qx = 62, qy = 62;
+    if (src === 'sonne') { circle(ctx, qx, qy, 36, C.yellow, C.black, 2); }
+    else if (src === 'led') { circle(ctx, qx, qy, 28, C.white, C.black, 3); ctx.fillStyle = C.black; ctx.fillRect(qx - 12, 0, 24, qy - 26); }
+    else { ctx.fillStyle = C.black; ctx.fillRect(qx - 50, qy - 26, 100, 52); ctx.fillStyle = C.red2; for (let i = 0; i < 3; i++) ctx.fillRect(qx - 42, qy - 19 + i * 15, 84, 8); }
     // Photonen
-    const rate = Math.max(0, logW + 3) * 14;
+    const rate = Math.max(0, logW + 3) * 11;
     if (Math.random() < rate * dt) for (let k = 0; k < 1 + Math.floor(rate * dt); k++) {
-      const l = sampleL(), tx = rnd(250, 570), ty = rnd(270, 320);
+      const l = sampleL(), tx = rnd(200, 370), ty = rnd(232, 272);
       const len = Math.hypot(tx - qx, ty - qy);
       P.push({ l, x: qx, y: qy, ux: (tx - qx) / len, uy: (ty - qy) / len, s: 0, len });
     }
     // Fläche
-    ctx.fillStyle = C.white; ctx.beginPath(); ctx.moveTo(240, 330); ctx.lineTo(600, 330); ctx.lineTo(560, 260); ctx.lineTo(280, 260); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = C.white; ctx.beginPath(); ctx.moveTo(176, 286); ctx.lineTo(384, 286); ctx.lineTo(356, 226); ctx.lineTo(204, 226); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.stroke();
-    text(ctx, '1 m²', 420, 304, 18, C.black, 500, 'center');
+    text(ctx, '1 m²', 280, 266, FS.m, C.black, 500, 'center');
     for (let i = P.length - 1; i >= 0; i--) {
-      const p = P[i]; p.s += 380 * dt;
+      const p = P[i]; p.s += 340 * dt;
       if (p.s > p.len) { P.splice(i, 1); continue; }
       const x = p.x + p.ux * p.s, y = p.y + p.uy * p.s, c = wavelengthColor(p.l);
       if (c) circle(ctx, x, y, 5, c, C.black, 1);
       else circle(ctx, x, y, 5, null, p.l < 380 ? C.purple2 : (dark ? C.salmon : C.rust), 2);
     }
+    // Anzeige
+    ctx.fillStyle = C.black; ctx.fillRect(10, 150, 156, 74);
+    text(ctx, lux > 200000 ? 'ÜBER MAX.' : 'LUX', 22, 176, FS.s, C.white);
+    text(ctx, lux >= 1000 ? fmt(lux / 1000, 1) + ' klx' : fmt(lux, lux < 10 ? 2 : 0) + ' lx', 22, 212, 30, C.white, 300);
     // Lux-Skala
-    const sx = 836, sy0 = 330, sy1 = 24, lmin = -1, lmax = Math.log10(200000);
+    const sx = 552, sy0 = 284, sy1 = 50, lmin = -1, lmax = Math.log10(200000);
     const Y = v => sy0 - (v - lmin) / (lmax - lmin) * (sy0 - sy1);
-    ctx.fillStyle = C.white; ctx.fillRect(640, 10, 250, 330);
-    ctx.fillStyle = C.paleYellow; ctx.fillRect(sx, Y(clamp(ll, lmin, lmax)), 30, sy0 - Y(clamp(ll, lmin, lmax)));
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(sx, sy1, 30, sy0 - sy1);
-    for (const [v, l] of [[Math.log10(0.2), 'Vollmond 0,2 lx'], [Math.log10(300), 'Wohnzimmer 300 lx'], [4, 'bedeckt 10.000 lx'], [5, 'Sonne 100.000 lx'], [lmax, 'Messgrenze 200 kLux']]) {
+    ctx.fillStyle = C.white; ctx.fillRect(392, 0, 208, TOP);
+    ctx.fillStyle = C.yellowPale; ctx.fillRect(sx, Y(clamp(ll, lmin, lmax)), 26, sy0 - Y(clamp(ll, lmin, lmax)));
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(sx, sy1, 26, sy0 - sy1);
+    for (const [v, l] of [[Math.log10(0.2), 'Mond 0,2 lx'], [Math.log10(300), 'Zimmer 300 lx'], [4, 'bedeckt 10 klx'], [5, 'Sonne 100 klx'], [lmax, 'max. 200 klx']]) {
       ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx - 8, Y(v)); ctx.lineTo(sx, Y(v)); ctx.stroke();
-      text(ctx, l, sx - 12, Y(v) + (v === lmax ? 2 : v === 5 ? 12 : 5), 12.5, C.black, 500, 'right');
+      text(ctx, l, sx - 12, Y(v) + (v === lmax ? -12 : v === 5 ? 18 : 7), FS.s, C.black, 500, 'right');
     }
-    ctx.fillStyle = C.black; ctx.beginPath(); const my = Y(clamp(ll, lmin, lmax)); ctx.moveTo(sx + 32, my); ctx.lineTo(sx + 46, my - 8); ctx.lineTo(sx + 46, my + 8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = C.black; ctx.beginPath(); const my = Y(clamp(ll, lmin, lmax)); ctx.moveTo(sx + 28, my); ctx.lineTo(sx + 42, my - 8); ctx.lineTo(sx + 42, my + 8); ctx.closePath(); ctx.fill();
     // Spektrum
-    const gx0 = 60, gx1 = 870, gy1 = 560, gy0 = 400;
+    const gx0 = 30, gx1 = 580, gy1 = 520, gy0 = 360;
     const X = l => gx0 + (l - L0) / (L1 - L0) * (gx1 - gx0);
-    ctx.fillStyle = C.white; ctx.fillRect(0, 350, W, 250);
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 350); ctx.lineTo(W, 350); ctx.stroke();
+    ctx.fillStyle = C.white; ctx.fillRect(0, TOP, W, H - TOP);
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, TOP); ctx.lineTo(W, TOP); ctx.stroke();
     for (let l = 380; l < 780; l += 5) { ctx.fillStyle = wavelengthColor(l); ctx.fillRect(X(l), gy1 + 2, X(l + 5) - X(l) + 0.5, 10); }
     // Auge
-    ctx.fillStyle = C.yellowP; ctx.beginPath(); ctx.moveTo(X(380), gy1);
+    ctx.fillStyle = C.yellowPastel; ctx.beginPath(); ctx.moveTo(X(380), gy1);
     for (let l = 380; l <= 780; l += 4) ctx.lineTo(X(l), gy1 - V(l) * (gy1 - gy0)); ctx.lineTo(X(780), gy1); ctx.closePath(); ctx.fill();
     // Quelle
     const s = SRC[src];
@@ -1476,16 +1507,12 @@ SIMS.licht = (host) => {
     for (let l = L0; l <= L1; l += 4) { const y = gy1 - s.f(l) / s.max * (gy1 - gy0); if (l === L0) ctx.moveTo(X(l), y); else ctx.lineTo(X(l), y); }
     ctx.stroke();
     ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(gx0, gy1); ctx.lineTo(gx1, gy1); ctx.stroke();
-    text(ctx, 'UV', X(315), gy1 + 30, 13, C.black, 500, 'center');
-    text(ctx, 'SICHTBAR', X(580), gy1 + 32, 13, C.black, 500, 'center');
-    text(ctx, 'INFRAROT (WÄRMESTRAHLUNG)', X(1150), gy1 + 30, 13, C.black, 500, 'center');
-    text(ctx, 'SPEKTRUM: ' + s.name.toUpperCase(), gx0, 378, 13, C.black);
-    ctx.fillStyle = C.yellowP; ctx.fillRect(560, 366, 16, 14); text(ctx, 'AUGE', 582, 378, 13, C.black);
-    ctx.fillStyle = C.orange; ctx.fillRect(650, 366, 16, 14); text(ctx, 'ZÄHLT FÜR LUX', 672, 378, 13, C.black);
-    // Anzeige
-    ctx.fillStyle = C.black; ctx.fillRect(16, 180, 200, 76);
-    text(ctx, lux > 200000 ? 'ÜBER MESSBEREICH' : 'LUX', 30, 204, 13, C.white);
-    text(ctx, lux >= 1000 ? fmt(lux / 1000, 1) + ' kLux' : fmt(lux, lux < 10 ? 2 : 0) + ' lx', 30, 242, 28, C.white, 300);
+    text(ctx, 'UV', X(315), gy1 + 40, FS.s, C.black, 500, 'center');
+    text(ctx, 'SICHTBAR', X(580), gy1 + 40, FS.s, C.black, 500, 'center');
+    text(ctx, 'INFRAROT (WÄRME)', X(1150), gy1 + 40, FS.s, C.black, 500, 'center');
+    text(ctx, s.name.toUpperCase(), gx0, 334, FS.s, C.black);
+    ctx.fillStyle = C.yellowPastel; ctx.fillRect(300, 318, 18, 18); text(ctx, 'AUGE', 324, 334, FS.s, C.black);
+    ctx.fillStyle = C.orange; ctx.fillRect(400, 318, 18, 18); text(ctx, 'ZÄHLT (LUX)', 424, 334, FS.s, C.black);
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
@@ -1500,10 +1527,10 @@ SIMS.licht = (host) => {
    ========================================================= */
 SIMS.mond = (host) => {
   const ui = simShell(host, { label: 'Mondbahn von oben und der Mond, wie wir ihn von der Erde sehen', drag: true });
-  const { view, ctx } = ui, W = 900, H = 600;
+  const { view, ctx } = ui;
   const today = moonAge(new Date());
   let age = today, playing = false;
-  const ex = 230, ey = 300, OR = 160;
+  const ex = 156, ey = 210, OR = 112, SPLIT = 300, BOT = 420;
   const r1 = ui.row();
   const sA = slider(r1, { label: 'Tage seit Neumond', min: 0, max: 29.5, step: 0.1, value: +age.toFixed(1), format: v => fmt(v, 1), onInput: v => { age = v; } });
   const r2 = ui.row();
@@ -1512,7 +1539,7 @@ SIMS.mond = (host) => {
   ui.readout();
   ui.hint('Zieh den Mond auf seiner Bahn um die Erde. Die Sonne scheint von links – immer ist eine Hälfte des Mondes beleuchtet. Rechts siehst du, wie viel davon wir von der Erde aus sehen. Die Station rechnet die Phase einfach aus dem Datum aus.');
   dragOn(view, {
-    down: p => { if (p.x > 460) return false; set(p); },
+    down: p => { if (p.x > SPLIT || p.y > BOT) return false; set(p); },
     move: p => set(p)
   });
   function set(p) {
@@ -1528,37 +1555,41 @@ SIMS.mond = (host) => {
     if (playing) { age = (age + dt * 2) % SYN; sA.set(+age.toFixed(1)); }
     const e = age / SYN * TAU, th = Math.PI + e;
     const mx = ex + Math.cos(th) * OR, my = ey - Math.sin(th) * OR;
-    ctx.fillStyle = C.navy; ctx.fillRect(0, 0, 460, H);
-    ctx.fillStyle = C.paleGreen; ctx.fillRect(460, 0, 440, H);
+    ctx.fillStyle = C.navy; ctx.fillRect(0, 0, SPLIT, BOT);
+    ctx.fillStyle = C.paleGreen; ctx.fillRect(SPLIT, 0, W - SPLIT, BOT);
+    ctx.fillStyle = C.white; ctx.fillRect(0, BOT, W, H - BOT);
     // Sonnenlicht von links
-    ctx.fillStyle = C.yellow; ctx.fillRect(0, 0, 20, H);
-    for (let y = 60; y < H; y += 90) arrow(ctx, 26, y, 34, 0, C.yellow, 3, 10);
-    text(ctx, 'SONNENLICHT', 30, 30, 13, C.yellow);
+    ctx.fillStyle = C.yellow; ctx.fillRect(0, 0, 14, BOT);
+    for (let y = 80; y < BOT - 30; y += 80) arrow(ctx, 20, y, 28, 0, C.yellow, 3, 10);
+    text(ctx, 'SONNENLICHT', 24, 32, FS.s, C.yellow);
     // Bahn
     ctx.setLineDash([6, 8]); circle(ctx, ex, ey, OR, null, C.white, 2); ctx.setLineDash([]);
     // Erde: Tag- und Nachtseite
-    circle(ctx, ex, ey, 34, C.blue2);
-    ctx.fillStyle = C.black; ctx.beginPath(); ctx.arc(ex, ey, 34, -Math.PI / 2, Math.PI / 2); ctx.closePath(); ctx.fill();
-    circle(ctx, ex, ey, 34, null, C.white, 2);
-    text(ctx, 'ERDE', ex, ey + 56, 13, C.white, 500, 'center');
+    circle(ctx, ex, ey, 28, C.blue2);
+    ctx.fillStyle = C.black; ctx.beginPath(); ctx.arc(ex, ey, 28, -Math.PI / 2, Math.PI / 2); ctx.closePath(); ctx.fill();
+    circle(ctx, ex, ey, 28, null, C.white, 2);
+    text(ctx, 'ERDE', ex, ey + 54, FS.s, C.white, 500, 'center');
     // Mond (von oben): linke Hälfte beleuchtet
-    circle(ctx, mx, my, 20, C.black);
-    ctx.fillStyle = C.white; ctx.beginPath(); ctx.arc(mx, my, 20, Math.PI / 2, Math.PI * 1.5); ctx.closePath(); ctx.fill();
-    circle(ctx, mx, my, 20, null, C.white, 2);
-    ctx.strokeStyle = C.yellowP; ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
+    circle(ctx, mx, my, 18, C.black);
+    ctx.fillStyle = C.white; ctx.beginPath(); ctx.arc(mx, my, 18, Math.PI / 2, Math.PI * 1.5); ctx.closePath(); ctx.fill();
+    circle(ctx, mx, my, 18, null, C.white, 2);
+    ctx.strokeStyle = C.yellowPastel; ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
     ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(mx, my); ctx.stroke(); ctx.setLineDash([]);
-    text(ctx, 'MOND – ZIEH MICH', mx, my - 30, 12, C.white, 500, 'center');
-    text(ctx, 'BLICK VON OBEN AUF DEN NORDPOL', 30, 586, 12, C.white);
+    text(ctx, 'MOND', clamp(mx, 50, SPLIT - 40), my < ey ? my - 28 : my + 44, FS.s, C.white, 500, 'center');
+    text(ctx, 'BLICK VON OBEN', 24, BOT - 16, FS.s, C.white);
     // Ansicht von der Erde
-    drawMoonFace(ctx, 680, 250, 150, age, C.navy, C.yellowP);
+    drawMoonFace(ctx, 450, 196, 112, age, C.navy, C.yellowPastel);
     const illum = (1 - Math.cos(e)) / 2;
-    text(ctx, 'SO SEHEN WIR IHN', 680, 50, 14, C.black, 500, 'center');
-    text(ctx, moonName(age).toUpperCase(), 680, 448, 26, C.black, 500, 'center');
-    text(ctx, fmt(illum * 100) + ' % beleuchtet · ' + dateOf(age), 680, 476, 15, C.black, 500, 'center');
+    text(ctx, 'SO SEHEN WIR IHN', 450, 48, FS.s, C.black, 500, 'center');
+    text(ctx, moonName(age).toUpperCase(), 450, 352, FS.m, C.black, 500, 'center');
+    text(ctx, fmt(illum * 100) + ' % beleuchtet', 450, 386, FS.s, C.black, 500, 'center');
     // Phasenleiste
-    for (let i = 0; i < 8; i++) drawMoonFace(ctx, 506 + i * 50, 540, 18, i / 8 * SYN, C.navy, C.yellowP);
+    for (let i = 0; i < 8; i++) drawMoonFace(ctx, 60 + i * 69, 486, 24, i / 8 * SYN, C.navy, C.yellowPastel);
     const idx = Math.round(age / SYN * 8) % 8;
-    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(506 + idx * 50 - 25, 515, 50, 50);
+    ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.strokeRect(60 + idx * 69 - 32, 454, 64, 64);
+    text(ctx, 'NEUMOND', 30, 556, FS.s, C.black, 500, 'left');
+    text(ctx, 'VOLLMOND', 60 + 4 * 69, 556, FS.s, C.black, 500, 'center');
+    text(ctx, dateOf(age), 584, 590, FS.s, C.black, 500, 'right');
     readT -= dt;
     if (readT <= 0) {
       readT = 0.25;
