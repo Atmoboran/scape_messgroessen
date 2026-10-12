@@ -24,7 +24,7 @@ window.THEME = {
   palette: {
     black: '#000000', white: '#FFFFFF',
     olive: '#726B1E', sand: '#D4BFA3',
-    gold: '#E09F00', amber: '#F59E24', yellow: '#FFE547', yellowStrong: '#FFD500', yellowS: '#FDC618',
+    gold: '#E09F00', amber: '#F59E24', yellow: '#FFE547', yellowStrong: '#FFD500', yellowBright: '#FFED00', yellowS: '#FDC618',
     yellowPastel: '#FFF487', yellowPale: '#FDF6B7',
     rust: '#D55117', orange: '#EE7518', salmon: '#EF887F', pink: '#F8E1E6', cream: '#F2E4BA',
     red: '#E41513', red2: '#E8472E',
