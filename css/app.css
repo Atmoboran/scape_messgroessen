@@ -70,6 +70,9 @@
 :root[data-view="mobile"] #simFrame > .fs-btn { top: calc(100% + 8px); bottom: auto; right: -2px; left: auto; }
 :root[data-view="desktop"] #simFrame > .fs-btn { top: auto; bottom: -2px; right: auto; left: calc(100% + 8px); }
 :root #simFrame:fullscreen > .fs-btn, :root #simFrame.is-full > .fs-btn { top: auto; bottom: 8px; right: 8px; left: auto; }
+/* phone: the first hint also sits below the drawing (next to the fullscreen
+   button), so it does not hide the labels in the corners */
+:root[data-view="mobile"] #simFrame:not(:fullscreen):not(.is-full) > .hint-badge { top: calc(100% + 8px); left: -2px; transform: none; max-width: calc(100% - 52px); text-align: left; }
 /* long names on narrow tiles: smaller and hyphenated instead of broken anywhere */
 :root[data-view="mobile"] .tile .t-name { font-size: 11.5px; letter-spacing: .02em; padding-right: 16px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
 :root[data-view="mobile"] .tile .go { right: 8px; font-size: 15px; }
