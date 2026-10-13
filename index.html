@@ -1,268 +1,145 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Messgrößen der Wetterstation</title>
-<meta name="description" content="Vertiefung zur Wetterstation: Was misst die Station vor dem Museum? Alle Messgrößen mit kleinen interaktiven Simulationen.">
-<!-- Gestaltung (Schrift, Farben, Logo) kommt aus theme/ – siehe theme/README.md.
-     Diese Datei enthält nur Aufbau und Layout und nutzt ausschließlich Variablen aus theme/theme.css. -->
+<meta name="description" content="">
+<!-- Structure only. Design: theme/ · texts: content/texts.de.js · layout: css/ · behaviour: js/ -->
+<script src="js/view.js" data-app="messgroessen"></script>
 <link rel="stylesheet" href="theme/theme.css">
-<style>
-:root{
-  --gutter:clamp(16px,4vw,48px);
-  --head-h:88px;          /* Höhe des Kopfs, für die Größe der Simulation am Desktop */
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-weight:var(--fw-regular);font-size:17px;line-height:1.45;overflow-x:hidden}
-h1,h2,h3,p{margin:0}
-a{color:inherit}
-button{font:inherit;color:inherit}
-[hidden]{display:none !important}
-:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-
-/* ---------- Kopf ---------- */
-.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;padding:20px var(--gutter) 16px;border-bottom:var(--line-width) solid var(--line);background:var(--paper);position:sticky;top:0;z-index:20;--logo-size:42px}
-.nav{display:flex;flex-wrap:wrap;gap:6px}
-.nav a{display:inline-flex;align-items:center;min-height:40px;padding:6px 12px;border:var(--line-width) solid var(--line);border-radius:var(--radius);text-decoration:none;font-weight:var(--fw-medium);font-size:14px;letter-spacing:.04em;text-transform:var(--caps);background:var(--paper)}
-.nav a[aria-current="page"]{background:var(--active);color:var(--active-ink)}
-.nav a:hover{background:var(--accent-pale)}
-.nav a[aria-current="page"]:hover{background:var(--active)}
-
-/* ---------- Plakat-Kopf mit drei Gestaltungsebenen ---------- */
-.poster{position:relative;overflow:hidden;min-height:300px;padding:40px var(--gutter) 48px;isolation:isolate}
-.poster .f{position:absolute;z-index:-3}
-.poster .f1{inset:0;background:var(--f1)}
-.poster .f2{top:0;right:0;width:30%;height:58%;background:var(--f2)}
-.poster .f3{bottom:0;right:0;width:30%;height:42%;background:var(--f3)}
-.poster .l2{position:absolute;z-index:-2;right:calc(30% - 60px);top:calc(58% - 60px);width:120px;height:120px}
-.poster .l3{position:absolute;z-index:-1;right:-12%;top:-40%;width:min(66vw,700px);height:auto;pointer-events:none;fill:none;stroke-width:3}
-.poster .l3 *{vector-effect:non-scaling-stroke}
-.poster-text{position:relative;max-width:min(66%,900px)}
-.kicker{font-weight:var(--fw-medium);font-size:14px;letter-spacing:.06em;text-transform:var(--caps);margin-bottom:14px}
-.headline{font-weight:var(--fw-light);text-transform:var(--caps);font-size:clamp(44px,8.2vw,120px);line-height:.86;letter-spacing:-.005em;margin-bottom:22px;overflow-wrap:anywhere;hyphens:manual}
-.lead{font-size:clamp(17px,1.8vw,21px);max-width:40em}
-.poster.small{min-height:0;padding:30px var(--gutter) 34px}
-.poster.small .headline{font-size:clamp(38px,6.4vw,92px);margin-bottom:16px}
-.poster.small .l2{width:96px;height:96px;right:calc(30% - 48px);top:calc(58% - 48px)}
-
-/* ---------- Display (Startseite) ---------- */
-.display-wrap{padding:28px var(--gutter) 40px}
-.display-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 24px;margin-bottom:14px}
-.display-head h2{font-weight:var(--fw-medium);font-size:14px;letter-spacing:.06em;text-transform:var(--caps)}
-.display-head p{font-size:15px}
-.display{border:10px solid var(--active);background:var(--active);display:flex;flex-wrap:wrap;gap:2px}
-.group{display:flex;flex-direction:column;flex:var(--n) 1 calc(var(--n) * 190px);min-width:0}
-.gtitle{background:var(--active);color:var(--active-ink);font-weight:var(--fw-medium);font-size:12px;letter-spacing:.08em;text-transform:var(--caps);padding:8px 10px 6px}
-.gtiles{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:2px;flex:1}
-.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:150px;padding:14px 14px 12px;text-decoration:none;color:var(--ink);background:var(--tile);isolation:isolate;border:0;text-align:left;cursor:pointer}
-.tile .t-name{font-weight:var(--fw-medium);font-size:13px;letter-spacing:.05em;text-transform:var(--caps);line-height:1.2;padding-right:22px;overflow-wrap:anywhere}
-.tile .t-val{font-weight:var(--fw-light);font-size:clamp(36px,3.6vw,52px);line-height:.9;white-space:nowrap}
-.tile .t-unit{font-weight:var(--fw-medium);font-size:15px;letter-spacing:.04em;margin-left:4px}
-.tile .t-note{font-weight:var(--fw-medium);font-size:13px;letter-spacing:.05em;margin-left:6px}
-.tile svg.ic{position:absolute;z-index:-1;right:-22px;bottom:-22px;width:96px;height:96px;fill:none;stroke:var(--ink);stroke-width:1.2;opacity:.85;pointer-events:none}
-.tile .go{position:absolute;right:12px;top:10px;font-weight:var(--fw-medium);font-size:18px;line-height:1}
-.tile:hover,.tile:focus-visible{background:var(--active);color:var(--active-ink);outline:none}
-.tile:hover svg.ic,.tile:focus-visible svg.ic{stroke:var(--active-ink)}
-.tile canvas.moon{width:52px;height:52px;display:block}
-
-.why{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:0;border-top:var(--line-width) solid var(--line)}
-.why > div{padding:24px var(--gutter) 30px;border-right:var(--line-width) solid var(--line)}
-.why > div:last-child{border-right:0}
-.why p{font-size:16px}
-.why .n{font-weight:var(--fw-medium);font-size:13px;letter-spacing:.06em;text-transform:var(--caps);margin-bottom:8px}
-
-/* ---------- Detailseite ---------- */
-.strip{display:flex;gap:0;overflow-x:auto;border-top:var(--line-width) solid var(--line);border-bottom:var(--line-width) solid var(--line);scrollbar-width:thin;background:var(--paper)}
-.strip a{flex:0 0 auto;display:flex;align-items:center;min-height:44px;padding:6px 12px;border-right:var(--line-width) solid var(--line);text-decoration:none;font-weight:var(--fw-medium);font-size:12.5px;letter-spacing:.05em;text-transform:var(--caps);white-space:nowrap}
-.strip a:hover{background:var(--accent-pale)}
-.strip a[aria-current="true"]{background:var(--active);color:var(--active-ink)}
-/* Handy: Simulation, darunter Bedienung, darunter Erklärkarten */
-.stage-body{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"view" "ctrl" "side";gap:14px 32px;padding:20px var(--gutter) 30px;align-items:start}
-.sim-view{grid-area:view;min-width:0}
-.sim-ctrl{grid-area:ctrl;min-width:0}
-.side{grid-area:side}
-/* Die Simulation ist quadratisch: der beste Kompromiss aus Querformat (Desktop) und Hochformat (Handy). */
-.sim-frame{border:var(--line-width) solid var(--line);background:var(--paper);width:100%}
-.sim-frame canvas{display:block;width:100%;height:auto;aspect-ratio:1/1;touch-action:manipulation;background:var(--paper)}
-.sim-frame canvas.drag{touch-action:none;cursor:grab}
-.controls{display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:10px;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:8px 14px;border:var(--line-width) solid var(--line);border-radius:var(--radius);background:var(--paper);font-weight:var(--fw-medium);font-size:14px;letter-spacing:.04em;text-transform:var(--caps);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;text-decoration:none}
-.btn:hover{background:var(--accent-pale)}
-.btn.primary{background:var(--accent);color:var(--accent-ink)}
-.btn[aria-pressed="true"]{background:var(--active);color:var(--active-ink)}
-.seg{display:flex;flex-wrap:wrap;gap:0}
-.seg .btn{margin-right:calc(-1 * var(--line-width))}
-.range{display:flex;align-items:center;gap:12px;flex:1 1 300px;min-height:46px}
-.range label{font-weight:var(--fw-medium);font-size:13.5px;letter-spacing:.04em;text-transform:var(--caps);white-space:nowrap;min-width:7.5em}
-.range input{flex:1;min-width:0;accent-color:var(--active);height:32px}
-.range output{font-weight:var(--fw-medium);font-size:14px;letter-spacing:.02em;min-width:5.6em;text-align:right;white-space:nowrap}
-.readout{margin-top:4px;font-weight:var(--fw-medium);font-size:14px;letter-spacing:.04em;text-transform:var(--caps);min-height:1.5em}
-.hint{margin-top:8px;font-size:16px;max-width:48em}
-.side{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-.card{border:var(--line-width) solid var(--line);border-radius:var(--radius);padding:14px 16px;background:var(--paper)}
-.card h3{font-weight:var(--fw-medium);font-size:12.5px;letter-spacing:.06em;text-transform:var(--caps);margin-bottom:6px}
-.card p{font-size:15.5px;line-height:1.42}
-.card.tip{background:var(--accent-pale)}
-.pager{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;padding:0 var(--gutter) 40px}
-.pager .btn{min-height:56px;min-width:0}
-.pager .prev{justify-content:flex-start}
-.pager .next{justify-content:flex-end}
-.pager .btn span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ---------- Fuß ---------- */
-.foot{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:24px;padding:36px var(--gutter);background:var(--foot-bg);color:var(--foot-ink)}
-.foot .claim{font-weight:var(--fw-light);font-size:clamp(28px,4vw,54px);line-height:.92;text-transform:var(--caps)}
-.foot .info{font-weight:var(--fw-medium);font-size:13px;letter-spacing:.05em;text-transform:var(--caps);line-height:1.6}
-
-/* ---------- Desktop: Simulation links, so groß wie der Bildschirm erlaubt,
-   Bedienung rechts daneben, Erklärkarten darunter. Kein Scrollen nötig,
-   um die ganze Simulation zu sehen. ---------- */
-@media (min-width:1000px){
-  .poster.small{padding:22px var(--gutter) 24px}
-  .poster.small .headline{font-size:clamp(40px,4.2vw,64px);margin-bottom:12px}
-  .poster.small .kicker{margin-bottom:10px}
-  .poster.small .lead{font-size:18px}
-  .poster.small .l3{top:-60%;width:min(44vw,560px)}
-  .stage-body{
-    --sim:clamp(360px,calc(100svh - var(--head-h) - 350px),min(760px,56vw));
-    grid-template-columns:var(--sim) minmax(300px,1fr);
-    grid-template-areas:"view ctrl" "side side";
-    padding-top:24px;gap:24px 32px;
-  }
-  .side{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .sim-ctrl .controls{margin-bottom:12px}
-  .sim-ctrl .range{flex-basis:100%}
-}
-@media (min-width:1500px){
-  /* sehr breit: die Karten passen neben die Bedienung */
-  .stage-body{grid-template-columns:var(--sim) minmax(300px,1fr) minmax(280px,360px);grid-template-areas:"view ctrl side"}
-  .side{grid-template-columns:minmax(0,1fr)}
-}
-@media (max-width:900px){
-  .why{grid-template-columns:minmax(0,1fr)}
-  .why > div{border-right:0;border-bottom:var(--line-width) solid var(--line)}
-}
-@media (max-width:640px){
-  body{font-size:16px}
-  .top{position:static;padding-top:16px;--logo-size:34px}
-  .nav{width:100%}
-  .nav a{flex:1 1 auto;justify-content:center;font-size:13px;padding:6px 8px}
-  .poster,.poster.small{min-height:0;padding:28px var(--gutter) 100px}
-  .poster-text{max-width:100%}
-  .poster .f2{top:auto;bottom:0;left:0;right:auto;width:58%;height:72px}
-  .poster .f3{bottom:0;right:0;width:42%;height:72px}
-  .poster .l2,.poster.small .l2{right:auto;left:calc(58% - 42px);top:auto;bottom:30px;width:84px;height:84px}
-  .poster .l3{width:150vw;right:-70%;top:-20%}
-  .poster.small{padding-bottom:84px}
-  .stage-body{padding-top:16px}
-  .display{border-width:6px}
-  .group{flex-basis:100%}
-  .gtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tile{min-height:120px}
-  .btn{flex:1 1 auto}
-  .seg{width:100%}
-  .seg .btn{flex:1 1 0;padding:8px 6px;font-size:13px}
-  .range{flex-wrap:wrap;gap:4px 12px}
-  .range label{min-width:0}
-  .pager{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .pager .btn{min-width:0;font-size:12.5px;padding:8px 10px}
-  .pager .home{grid-column:1/-1;order:-1}
-  .foot{grid-template-columns:minmax(0,1fr)}
-}
-</style>
+<link rel="stylesheet" href="css/kit.css">
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
 <header class="top">
   <a class="logo" href="#start" data-brand="logo"></a>
-  <nav class="nav" aria-label="Hauptnavigation">
-    <a href="#start" data-route="start">Display</a>
-    <a href="#warum" data-route="warum">Warum messen?</a>
-  </nav>
+  <div class="top-right">
+    <nav class="nav" data-t-aria="nav.aria">
+      <a href="#start" data-route="start" data-t="nav.display"></a>
+      <a href="#warum" data-route="warum" data-t="nav.why"></a>
+    </nav>
+    <button type="button" class="view-toggle"></button>
+  </div>
 </header>
 
 <main>
-  <!-- ================= START: das Display ================= -->
-  <section class="stage" id="page-start" hidden>
+  <!-- ================= Start: the display of the station ================= -->
+  <section class="view-page" id="page-start" hidden>
     <div class="poster" data-poster="start">
       <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
       <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"></svg>
       <svg class="l3" viewBox="0 0 400 400" aria-hidden="true"></svg>
       <div class="poster-text">
-        <p class="kicker">Vertiefung – Die Wetterstation vor dem Museum</p>
-        <h1 class="headline">Was misst die Wetter–<br>station?</h1>
-        <p class="lead">Draußen vor dem Museum steht eine Wetterstation. Sie misst rund um die Uhr – und zeigt hier auf dem Display, was sie herausfindet. Tippe auf einen Wert und finde heraus, was dahintersteckt.</p>
+        <p class="kicker" data-t="start.kicker"></p>
+        <h1 class="headline" data-t-html="start.headline"></h1>
+        <p class="lead" data-t="start.lead"></p>
       </div>
     </div>
-    <div class="display-wrap">
+    <div class="page">
       <div class="display-head">
-        <h2>Das Display der Wetterstation</h2>
-        <p>Die Zahlen sind Beispielwerte. Tippe auf ein Feld.</p>
+        <h2 class="section-label" data-t="start.displayTitle"></h2>
+        <p data-t="start.displayNote"></p>
       </div>
-      <div class="display" id="display"></div>
+      <div class="display" id="display" role="group" data-t-aria="start.displayAria"></div>
     </div>
   </section>
 
-  <!-- ================= WARUM MESSEN? ================= -->
-  <section class="stage" id="page-warum" hidden>
+  <!-- ================= Warum messen? ================= -->
+  <section class="view-page" id="page-warum" hidden>
     <div class="poster" data-poster="warum">
       <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
       <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"></svg>
       <svg class="l3" viewBox="0 0 400 400" aria-hidden="true"></svg>
       <div class="poster-text">
-        <p class="kicker">Vertiefung – Die Wetterstation</p>
-        <h1 class="headline">Warum messen wir Wetter?</h1>
-        <p class="lead" id="whyLead"></p>
+        <p class="kicker" data-t="why.kicker"></p>
+        <h1 class="headline" data-t="why.headline"></h1>
+        <p class="lead" data-t="why.lead"></p>
       </div>
     </div>
     <div class="why">
-      <div><p class="n">1 · Momentaufnahme</p><p id="why2"></p></div>
-      <div><p class="n">2 · Der Ort zählt</p><p>Ein Sensor misst immer nur die Luft direkt um sich herum. Darum steht er im Schatten, gut belüftet und mit Abstand zu Wänden, Boden und Dächern – sonst misst er eher die Hauswand als das Wetter.</p></div>
-      <div><p class="n">3 · Gemessen oder berechnet?</p><p>Manche Werte misst die Station direkt (Temperatur, Feuchte, Druck, Wind, Regen, UV, Licht). Andere rechnet sie aus: Taupunkt, Windkühle, gefühlte und scheinbare Temperatur – und die Mondphase aus dem Datum.</p><p style="margin-top:16px"><a class="btn primary" href="#start">Zum Display →</a></p></div>
+      <div><h2 class="n" data-t="why.t1"></h2><p data-t="why.p1"></p></div>
+      <div><h2 class="n" data-t="why.t2"></h2><p data-t="why.p2"></p></div>
+      <div><h2 class="n" data-t="why.t3"></h2><p data-t="why.p3"></p></div>
+    </div>
+    <div class="page">
+      <p class="next-part"><a class="btn" href="#start" data-t="why.toDisplay"></a></p>
     </div>
   </section>
 
-  <!-- ================= DETAIL: eine Messgröße ================= -->
-  <section class="stage" id="page-detail" hidden>
+  <!-- ================= One quantity ================= -->
+  <section class="view-page" id="page-detail" hidden>
     <div class="poster small" id="dPoster">
       <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
-      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true" id="dL2"></svg>
-      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true" id="dL3"></svg>
+      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"></svg>
+      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true"></svg>
       <div class="poster-text">
         <p class="kicker" id="dKicker"></p>
-        <h2 class="headline" id="dHead"></h2>
+        <h1 class="headline" id="dHead"></h1>
         <p class="lead" id="dLead"></p>
       </div>
     </div>
-    <nav class="strip" id="strip" aria-label="Alle Messgrößen"></nav>
-    <div class="stage-body">
-      <div class="sim-view" id="simView"></div>
-      <div class="sim-ctrl" id="simCtrl"></div>
-      <aside class="side">
-        <div class="card"><h3>So misst die Station</h3><p id="dMessung"></p></div>
-        <div class="card"><h3>Zum Einordnen</h3><p id="dEinordnung"></p></div>
-        <div class="card tip"><h3>Gut zu wissen</h3><p id="dHinweis"></p></div>
-      </aside>
-    </div>
-    <div class="pager">
-      <a class="btn prev" id="dPrev" href="#"><span>←</span><span class="t"></span></a>
-      <a class="btn home" href="#start">Display</a>
-      <a class="btn next" id="dNext" href="#"><span class="t"></span><span>→</span></a>
+    <nav class="strip" id="strip" data-t-aria="detail.stripAria"></nav>
+    <div class="page">
+      <div class="lab">
+        <div class="lab-stage">
+          <!-- the simulation puts its canvas in here -->
+          <div class="stage-frame square fit" id="simFrame"></div>
+        </div>
+        <div class="lab-post">
+          <div id="simCtrl"></div>
+          <div class="tasks" id="mg-tasks" hidden>
+            <h3 data-t="kit.tasks"></h3>
+            <ul></ul>
+          </div>
+          <div class="merke" data-for="mg-tasks">
+            <h3 data-t="kit.merke"></h3>
+            <p id="dMerke"></p>
+            <span class="locked-note"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="topics">
+        <details class="topic" id="topic-messung"><summary data-t="detail.topics.messung"></summary><div class="topic-body"><p></p></div></details>
+        <details class="topic" id="topic-einordnung"><summary data-t="detail.topics.einordnung"></summary><div class="topic-body"><p></p></div></details>
+        <details class="topic" id="topic-hinweis"><summary data-t="detail.topics.hinweis"></summary><div class="topic-body"><p></p></div></details>
+        <details class="topic" id="topic-model"><summary data-t="detail.topics.model"></summary><div class="topic-body"><p></p></div></details>
+      </div>
+
+      <div class="pager">
+        <a class="btn prev" id="dPrev" href="#"><span aria-hidden="true">←</span><span class="t"></span></a>
+        <a class="btn home" href="#start" data-t="detail.home"></a>
+        <a class="btn next" id="dNext" href="#"><span class="t"></span><span aria-hidden="true">→</span></a>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="foot">
-  <p class="claim" data-brand="claim"></p>
-  <p class="info" data-brand="contact"></p>
+  <p class="sources" data-t="foot.sources"></p>
+  <p class="brand-line" data-brand="line"></p>
 </footer>
 
 <script src="theme/theme.js"></script>
+<script src="content/texts.de.js"></script>
+<script src="js/texts.js"></script>
 <script src="js/brand.js"></script>
+<script src="js/kit.js"></script>
 <script src="js/data.js"></script>
-<script src="js/sims.js"></script>
+<script src="js/sim-kit.js"></script>
+<script src="js/sims/temperatur.js"></script>
+<script src="js/sims/feuchte.js"></script>
+<script src="js/sims/taupunkt.js"></script>
+<script src="js/sims/druck.js"></script>
+<script src="js/sims/regen.js"></script>
+<script src="js/sims/windrichtung.js"></script>
+<script src="js/sims/wind.js"></script>
+<script src="js/sims/koerper.js"></script>
+<script src="js/sims/uv.js"></script>
+<script src="js/sims/licht.js"></script>
+<script src="js/sims/mond.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

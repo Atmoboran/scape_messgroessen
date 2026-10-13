@@ -1,0 +1,75 @@
+/* Messgrößen – layout only (theme variables from theme/theme.css, shared
+   components from css/kit.css). Phone layout is the base;
+   :root[data-view="desktop"] switches to the desktop arrangement. */
+
+/* ---- poster shapes: colours come from --shape / --outline (set per group) ---- */
+.poster .l2 { fill: currentColor; }
+
+/* headline: on the desktop the slim band shows the name on one line */
+:root[data-view="desktop"] .poster.small .hy { display: none; }
+
+/* ---- start page: the display of the station ---- */
+.display-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 24px; margin-bottom: 12px; }
+.display-head .section-label { margin: 0; }
+.display-head p { font-size: 15px; }
+.display { border: 10px solid var(--display-bg); background: var(--display-bg); display: flex; flex-wrap: wrap; gap: 2px; }
+.group { display: flex; flex-direction: column; flex: var(--n) 1 calc(var(--n) * 190px); min-width: 0; }
+.gtitle { background: var(--display-bg); color: var(--display-ink); font-weight: var(--fw-medium); font-size: 12px; letter-spacing: .08em; text-transform: var(--caps); padding: 8px 10px 6px; }
+.gtiles { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 2px; flex: 1; }
+.tile {
+  position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+  min-height: 150px; padding: 14px 14px 12px; text-decoration: none; color: var(--ink); background: var(--tile);
+}
+.tile .t-name { font-weight: var(--fw-medium); font-size: 13px; letter-spacing: .05em; text-transform: var(--caps); line-height: 1.2; padding-right: 22px; overflow-wrap: anywhere; }
+.tile .t-val { font-weight: var(--fw-light); font-size: clamp(36px, 3.6vw, 52px); line-height: .9; white-space: nowrap; }
+.tile .t-unit { font-weight: var(--fw-medium); font-size: 15px; letter-spacing: .04em; margin-left: 4px; }
+.tile .t-note { font-weight: var(--fw-medium); font-size: 13px; letter-spacing: .05em; margin-left: 6px; }
+.tile .moon-val { display: flex; align-items: center; gap: 10px; }
+.tile .moon-val .t-note { margin: 0; white-space: normal; line-height: 1.15; }
+.tile svg.ic { position: absolute; z-index: -1; right: -22px; bottom: -22px; width: 96px; height: 96px; fill: none; stroke: currentColor; stroke-width: 1.2; opacity: .85; pointer-events: none; }
+.tile .go { position: absolute; right: 12px; top: 10px; font-weight: var(--fw-medium); font-size: 18px; line-height: 1; }
+.tile:focus-visible { background: var(--active); color: var(--active-ink); outline: none; }
+:root[data-view="desktop"] .tile:hover { background: var(--active); color: var(--active-ink); }
+.tile canvas.moon { width: 52px; height: 52px; display: block; }
+:root[data-view="mobile"] .display { border-width: 6px; }
+:root[data-view="mobile"] .group { flex-basis: 100%; }
+:root[data-view="mobile"] .gtiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+:root[data-view="mobile"] .tile { min-height: 120px; }
+
+/* ---- "Warum messen?" ---- */
+.why { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: var(--line-width) solid var(--line); border-bottom: var(--line-width) solid var(--line); }
+.why > div { padding: 24px var(--gutter) 30px; border-right: var(--line-width) solid var(--line); }
+.why > div:last-child { border-right: 0; }
+.why p { font-size: 16px; line-height: 1.5; }
+.why .n { font-weight: var(--fw-medium); font-size: 13px; letter-spacing: .06em; text-transform: var(--caps); margin: 0 0 8px; }
+:root[data-view="mobile"] .why { grid-template-columns: minmax(0, 1fr); }
+:root[data-view="mobile"] .why > div { border-right: 0; border-bottom: var(--line-width) solid var(--line); }
+:root[data-view="mobile"] .why > div:last-child { border-bottom: 0; }
+.next-part { margin-top: 0; }
+
+/* ---- page of one quantity ---- */
+.strip a:hover { background: var(--accent-pale); }
+.strip a[aria-current="true"]:hover { background: var(--active); }
+:root[data-view="desktop"] #page-detail .page { padding-top: 16px; }
+#simFrame > canvas { touch-action: manipulation; }
+#simFrame > canvas.drag { touch-action: none; cursor: grab; }
+/* fullscreen: the square drawing stays square, centred */
+#simFrame:fullscreen > canvas, #simFrame.is-full > canvas { position: absolute; inset: 0; margin: auto; width: min(100vw, 100vh); height: min(100vw, 100vh); }
+.lab-post .readout { line-height: 1.45; }
+:root[data-view="mobile"] .seg { width: 100%; }
+:root[data-view="mobile"] .seg .btn { flex: 1 1 0; padding: 8px 6px; font-size: 13px; }
+.lab-post .seg .btn { min-width: 0; }
+.topics { margin-top: 30px; }
+:root[data-view="mobile"] .pager .btn { font-size: 12.5px; padding: 8px 10px; }
+/* desktop: poster band and strip sit above the stage – keep it fully on screen */
+#page-detail { --fit-offset: 290px; }
+/* the drawings use every corner, so the fullscreen button sits just outside
+   the frame: below it on the phone, beside it on the desktop (inside it only
+   in fullscreen) */
+:root[data-view="mobile"] #simFrame { margin-bottom: 52px; }
+:root[data-view="mobile"] #simFrame > .fs-btn { top: calc(100% + 8px); bottom: auto; right: -2px; left: auto; }
+:root[data-view="desktop"] #simFrame > .fs-btn { top: auto; bottom: -2px; right: auto; left: calc(100% + 8px); }
+:root #simFrame:fullscreen > .fs-btn, :root #simFrame.is-full > .fs-btn { top: auto; bottom: 8px; right: 8px; left: auto; }
+/* long names on narrow tiles: smaller and hyphenated instead of broken anywhere */
+:root[data-view="mobile"] .tile .t-name { font-size: 11.5px; letter-spacing: .02em; padding-right: 16px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
+:root[data-view="mobile"] .tile .go { right: 8px; font-size: 15px; }
