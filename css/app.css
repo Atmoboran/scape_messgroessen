@@ -49,6 +49,8 @@
 .next-part { margin-top: 0; }
 
 /* ---- page of one topic ---- */
+.controls > .info-note { flex-basis: 100%; margin: 0 0 6px; }
+.range .info { margin-left: -6px; }
 .strip a:hover { background: var(--accent-pale); }
 .strip a[aria-current="true"]:hover { background: var(--active); }
 :root[data-view="desktop"] #page-detail .page { padding-top: 16px; }

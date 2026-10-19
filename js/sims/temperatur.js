@@ -1,7 +1,7 @@
 // TEMPERATURE – particle motion and a thermometer
 (() => {
   'use strict';
-  const { C, W, H, TAU, rnd, fmt, simShell, slider, button, tempColor, thermo, collide, particle, speedLegend } = MG;
+  const { C, W, H, TAU, rnd, fmt, simShell, slider, tempColor, thermo, collide, particle, speedLegend } = MG;
   const tx = MG.texts('temperatur');
 
   MG.sims.temperatur = host => {
@@ -18,11 +18,7 @@
       P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R });
     }
     const r = ui.row();
-    const s = slider(r, { label: tx('slider'), min: -20, max: 40, step: 1, value: T, format: v => fmt(v) + ' °C', onInput: v => { T = v; } });
-    const r2 = ui.row();
-    button(r2, tx('presetFrost'), () => { T = -15; s.set(T); });
-    button(r2, tx('presetMild'), () => { T = 14; s.set(T); });
-    button(r2, tx('presetHot'), () => { T = 35; s.set(T); });
+    slider(r, { label: tx('slider'), min: -20, max: 40, step: 1, value: T, info: tx('info'), format: v => fmt(v) + ' °C', onInput: v => { T = v; } });
     ui.readout();
     ui.hint(tx('hint'));
 

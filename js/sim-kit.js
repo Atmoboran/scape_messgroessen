@@ -118,6 +118,18 @@
     w.innerHTML = `<label for="${id}"></label><input type="range" id="${id}" min="${o.min}" max="${o.max}" step="${o.step}" value="${o.value}"><output for="${id}"></output>`;
     $('label', w).textContent = o.label;
     row.appendChild(w);
+    // optional (i) behind the label: a note that explains what the slider changes
+    if (o.info) {
+      const b = el('button', 'info');
+      b.type = 'button';
+      b.setAttribute('aria-controls', id + '-note');
+      $('label', w).after(b);
+      const note = el('div', 'info-note');
+      note.id = id + '-note';
+      note.textContent = o.info;
+      row.appendChild(note);
+      SCAPE.wireInfo(row);
+    }
     const input = $('input', w), out = $('output', w);
     const upd = () => { out.textContent = o.format ? o.format(+input.value) : input.value; };
     input.addEventListener('input', () => { upd(); if (o.onInput) o.onInput(+input.value); });

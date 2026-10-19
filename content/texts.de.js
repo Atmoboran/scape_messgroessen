@@ -108,7 +108,7 @@ window.TEXTS = {
       badge: 'Ändere die Temperatur',
       merke: 'Warme Luft kann mehr Wasserdampf halten als kalte. Darum ändert sich die relative Feuchte schon, wenn sich nur die Temperatur ändert – die absolute bleibt gleich. Am Taupunkt ist die Luft gesättigt, darunter entstehen Tröpfchen.',
       tasks: {
-        warm: 'Tippe auf das DWD-Beispiel und erwärme die Luft dann auf 20 °C. Wie viel Prozent sind es jetzt?',
+        warm: 'Mach die Luft bei 10 °C gesättigt (100 %) und erwärme sie dann auf 20 °C. Wie viel Prozent sind es jetzt?',
         drops: 'Kühle die Luft unter den Taupunkt, so dass Tröpfchen (Nebel) entstehen.'
       },
       messung: 'Außensensor und Basisstation messen die relative Feuchte zusammen mit der Temperatur: 10 bis 99 %, ±5 % (garantiert zwischen 20 und 90 %). Der Taupunkt hat keinen eigenen Sensor – die Station berechnet ihn aus Temperatur und relativer Feuchte.',
@@ -276,48 +276,60 @@ window.TEXTS = {
     temperatur: {
       aria: 'Luftteilchen in einem Kasten, daneben ein Thermometer',
       slider: 'Temperatur',
-      presetFrost: 'Frostig: −15 °C', presetMild: 'Mild: 14 °C', presetHot: 'Hitze: 35 °C',
+      info: 'Temperatur ist ein Maß dafür, wie schnell sich die Teilchen im Mittel bewegen. Wird die Luft wärmer, bewegen sie sich schneller und stoßen heftiger zusammen; wird sie kälter, werden sie langsamer. Am absoluten Nullpunkt (−273,15 °C) stünden sie still. Ein Thermometer nimmt diese Bewegung auf: Die Teilchen stoßen an den Fühler und übertragen ihre Energie.',
       read: (tt, ms, kmh) => tt + ' °C · Echte Luftteilchen sind dabei im Mittel rund ' + ms + ' m/s schnell – etwa ' + kmh + ' km/h',
       hint: 'Schieb den Regler: Bei Wärme flitzen die Teilchen, bei Kälte werden sie träge. Ein Thermometer misst diese mittlere Bewegung.'
     },
     feuchte: {
-      aria: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge zeigt; dazu relative und absolute Feuchte und der Taupunkt',
+      aria: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge zeigt; dazu relative und absolute Luftfeuchtigkeit und der Taupunkt',
       sliderT: 'Temperatur', sliderW: 'Wasserdampf',
-      btnDwd: 'DWD-Beispiel: 10 °C, 100 %', btnWarm: 'Auf 20 °C erwärmen', btnDew: 'Bis zum Taupunkt abkühlen', btnCook: 'Kochen / Duschen',
+      info: {
+        t: 'Warme Luft kann mehr Wasserdampf aufnehmen als kalte: Wird die Luft wärmer, wächst das Gefäß (die Höchstmenge) – die relative Luftfeuchtigkeit sinkt, obwohl genauso viel Wasserdampf da ist wie vorher. Kühlt die Luft ab, schrumpft das Gefäß. Am Taupunkt ist es genau voll (100 %); wird es noch kälter, kondensiert der Überschuss zu Tröpfchen.',
+        w: 'Hier änderst du, wie viel Wasserdampf in einem Kubikmeter Luft steckt – etwa durch Verdunstung, Kochen oder Duschen. Mehr Wasserdampf heißt: Die absolute und die relative Luftfeuchtigkeit steigen, und der Taupunkt liegt höher. Passt mehr hinein, als bei dieser Temperatur höchstens möglich ist, kondensiert der Überschuss zu Tröpfchen.'
+      },
       air: '1 m³ LUFT',
       at: tt => 'BEI ' + tt + ' °C',
       vapour: 'WASSERDAMPF',
-      rh: 'RELATIV',
-      abs: 'ABSOLUT',
+      rh: ['RELATIVE', 'LUFTFEUCHTIGKEIT'],
+      abs: ['ABSOLUTE', 'LUFTFEUCHTIGKEIT'],
       dew: 'TAUPUNKT',
       droplets: 'TRÖPFCHEN (NEBEL)',
+      condensing: ['JETZT KONDENSIERT', 'WASSERDAMPF!'],
       atMost: g => 'HÖCHSTENS ' + g + ' g',
+      surplus: g => 'ÜBERSCHUSS + ' + g + ' g',
       fullAt: tt => 'VOLL BEI ' + tt + ' °C',
-      plus: g => '+ ' + g + ' g',
-      read: (rh, abs, td, liq) => 'Relative Feuchte ' + rh + ' % · absolute Feuchte ' + abs + ' g/m³ · Taupunkt ' + td + ' °C' + (liq ? ' · ' + liq + ' g/m³ kondensiert' : ''),
-      hint: 'Ändere nur die Temperatur: Die relative Feuchte springt, die absolute bleibt gleich. Am Taupunkt ist das Gefäß genau voll – noch kälter, und es bilden sich Tröpfchen.'
+      read: (rh, abs, td, liq) => 'Relative Luftfeuchtigkeit ' + rh + ' % · absolute Luftfeuchtigkeit ' + abs + ' g/m³ · Taupunkt ' + td + ' °C' + (liq ? ' · ' + liq + ' g/m³ kondensiert' : ''),
+      hint: 'Ändere nur die Temperatur: Die relative Luftfeuchtigkeit springt, die absolute bleibt gleich. Am Taupunkt ist das Gefäß genau voll – noch kälter, und es bilden sich Tröpfchen.'
     },
     druck: {
-      aria: 'Luftdruck: Teilchen stoßen gegen eine Messfläche, oder: Luftsäule über der Erde',
+      aria: 'Luftdruck: Teilchen stoßen gegen eine Messfläche, oder: eine Landschaft mit Bergen, in der ein Ballon aufsteigt',
       modeParticles: 'Teilchen-Stöße', modeHeight: 'Druck und Höhe', modeAria: 'Ansicht',
-      sliderN: 'Teilchen', unitN: v => v + ' Stück', sliderT: 'Temperatur', sliderH: 'Höhe',
-      btnLow: 'Tief: weniger Luft', btnNormal: 'Normal', btnHigh: 'Hoch: mehr Luft',
-      wxLow: 'Tief 995 hPa', wxNormal: 'Normal 1013 hPa', wxHigh: 'Hoch 1030 hPa', wxAria: 'Wetterlage',
+      sliderN: 'Teilchenanzahl', unitN: v => v + ' Stück', sliderT: 'Temperatur', sliderH: 'Höhe',
+      info: {
+        n: 'Mehr Teilchen im gleichen Kasten heißt: höhere Dichte. Jedes Teilchen prallt immer wieder gegen die Wände. Doppelt so viele Teilchen ergeben doppelt so viele Stöße auf die Messfläche – und damit doppelten Druck.',
+        t: 'Wärmere Teilchen sind schneller. Sie treffen öfter auf die Messfläche und prallen heftiger auf. Darum steigt der Druck, wenn die Luft im gleichen Kasten wärmer wird – obwohl kein Teilchen dazukommt.',
+        h: 'Der Luftdruck am Boden entsteht durch das Gewicht der ganzen Luft darüber. Je höher der Ballon steigt, desto weniger Luft liegt über ihm – der Druck sinkt. Weil die Luft unten zusammengedrückt wird, ist sie dort am dichtesten: Schon in gut 5 km Höhe liegt nur noch die Hälfte der Luft über dir.'
+      },
       mem1: 'MESS–', mem2: 'FLÄCHE',
       low: 'TIEF', high: 'HOCH',
       hits: ['STÖSSE PRO', 'SEKUNDE AUF', 'DIE FLÄCHE'],
       approx: p => '≈ ' + p + ' hPa',
       km: k => k + ' km',
-      // LOCAL: Offenbach (100 m) and Großer Feldberg (880 m) are the local reference heights
-      marks: ['Offenbach, 100 m', 'Gr. Feldberg, 880 m', 'Zugspitze, 2962 m', 'Mont Blanc, 4806 m', 'Everest, 8849 m', 'Flugzeug, ca. 11 km'],
-      absIn: 'ABSOLUT IN',
-      height: h => h + ' m HÖHE',
+      // LOCAL: Offenbach and the Großer Feldberg are the local reference heights
+      peaks: {
+        town: 'OFFENBACH, 100 m',
+        feldberg: ['GR. FELDBERG', '880 m'],
+        zugspitze: ['ZUGSPITZE', '2962 m'],
+        everest: ['EVEREST', '8849 m'],
+        plane: ['FLUGZEUG', 'ca. 11 km']
+      },
+      baro: 'AM BALLON',
       hpa: p => p + ' hPa',
       above: ['LUFT ÜBER', 'DEM BALLON'],
-      seaLevel: ['AUF MEERES–', 'HÖHE UMGE–', 'RECHNET'],
-      highP: 'HOCHDRUCK', lowP: 'TIEFDRUCK', std: 'STANDARD',
+      ofAir: 'DER LUFT',
+      seaLevel: ['AUF MEERES–', 'HÖHE UMGE–', 'RECHNET:', '1013 hPa'],
       readParticles: (n, tt, p) => n + ' Teilchen bei ' + tt + ' °C · Druck im Modell ≈ ' + p + ' hPa',
-      readHeight: (h, p, pct) => 'In ' + h + ' m Höhe: ' + p + ' hPa absolut · ' + pct + ' % der Luft liegt noch darüber',
+      readHeight: (h, p, pct) => 'In ' + h + ' m Höhe: ' + p + ' hPa · ' + pct + ' % der Luft liegt noch darüber',
       hintParticles: 'Mehr Teilchen oder schnellere (wärmere) Teilchen bedeuten mehr und heftigere Stöße auf die Messfläche – der Druck steigt.',
       hintHeight: 'Zieh den Ballon nach oben: Je höher er steigt, desto weniger Luft liegt über ihm – der Druck sinkt.'
     },
