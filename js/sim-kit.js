@@ -312,12 +312,46 @@
     circle(ctx, x, y, r, null, C.black, Math.max(1.5, r / 30));
   }
 
+  // sun: declination and equation of time (Spencer / NOAA), times for the
+  // station's place (MG.data.geo) in local time with CET / CEST
+  function solarAt(doy, hUTC) {
+    const g = TAU / 365 * (doy - 1 + (hUTC - 12) / 24);
+    const eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    const decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    return { eq, decl };
+  }
+  const dayOfYear = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 1)) / 86400000) + 1;
+  function utcOffsetMin(doy, year = new Date().getFullYear()) {   // summer time from the last Sunday in March to the last in October
+    const lastSun = m => { const d = new Date(Date.UTC(year, m + 1, 0)); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d; };
+    const day = d => Math.round((d - Date.UTC(year, 0, 1)) / 86400000) + 1;
+    return doy >= day(lastSun(2)) && doy < day(lastSun(9)) ? 120 : 60;
+  }
+  // sunrise/sunset in minutes local time: upper rim of the sun, with refraction (−0.833°)
+  function sunTimes(doy) {
+    const { lat, lon } = MG.data.geo, { eq, decl } = solarAt(doy, 12), phi = lat * Math.PI / 180;
+    const cosH = Math.cos(90.833 * Math.PI / 180) / (Math.cos(phi) * Math.cos(decl)) - Math.tan(phi) * Math.tan(decl);
+    const Hd = Math.acos(clamp(cosH, -1, 1)) * 180 / Math.PI, off = utcOffsetMin(doy);
+    return { rise: 720 - 4 * (lon + Hd) - eq + off, set: 720 - 4 * (lon - Hd) - eq + off, noonAlt: 90 - lat + decl * 180 / Math.PI, summer: off === 120 };
+  }
+  // height above the horizon and compass direction (0° = north) at a local time in minutes
+  function sunPos(doy, localMin) {
+    const { lat, lon } = MG.data.geo;
+    const utc = localMin - utcOffsetMin(doy);
+    const { eq, decl } = solarAt(doy, utc / 60), phi = lat * Math.PI / 180;
+    const ha = ((utc + eq + 4 * lon) / 4 - 180) * Math.PI / 180;
+    const alt = Math.asin(Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(ha));
+    const az = (Math.atan2(Math.sin(ha), Math.cos(ha) * Math.sin(phi) - Math.tan(decl) * Math.cos(phi)) * 180 / Math.PI + 540) % 360;
+    return { alt: alt * 180 / Math.PI, az };
+  }
+  const hhmm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+
   Object.assign(MG, {
     C, W, H, FS, TAU, clamp, rnd, lerp, fmt, texts,
     makeView, text, arrow, circle, el, simShell, slider, button, toggle, seg, dragOn,
     tempColor, thermo, collide, speedColor, particle, speedLegend,
     satVap, satDens, dewPoint, beaufort, windChill, heatIndex, apparentT, feltT,
     SYN, moonAge, moonName, drawMoonFace,
+    dayOfYear, sunTimes, sunPos, hhmm,
     sims: MG.sims || {}
   });
 })();

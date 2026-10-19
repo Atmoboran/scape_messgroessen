@@ -1,15 +1,16 @@
-// Messgrößen – display (start page), "Warum messen?", the page of each
-// quantity (poster, strip, simulation, Merke box, tasks, topics, pager),
+// Messgrößen – display (start page), "Warum messen?", the page of each of
+// the 10 topics (poster, strip, simulation, Merke box, tasks, topics, pager),
 // hash routing and the animation loop.
 (() => {
   'use strict';
-  const { data, sims, moonAge, moonName, drawMoonFace, C } = MG;
+  const { data, sims, moonAge, moonName, drawMoonFace, sunTimes, dayOfYear, hhmm, C } = MG;
   const TH = THEME.messgroessen;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-  const VARS = data.vars.map((v, index) => ({ ...v, index, tx: k => t('quantities.' + v.id + '.' + k) }));
+  const VARS = data.topics.map((v, index) => ({ ...v, index }));
   const BY_ID = Object.fromEntries(VARS.map(v => [v.id, v]));
-  const Q = id => window.TEXTS.quantities[id] || {};
+  const Q = id => window.TEXTS.topics[id] || {};
+  const TL = id => window.TEXTS.tiles[id] || {};
   const SUFFIX = THEME.brand.titleSuffix || '';
 
   // ---- poster headers: colour fields, solid shape, outline -----------------
@@ -19,52 +20,57 @@
     $('.l3', el).innerHTML = TH.outlines[l3] || '';
   }
 
-  // ---- start page: the display of the station ---------------------------------
+  // ---- start page: the display of the station, its fields grouped by topic ---
   function buildDisplay() {
     const host = $('#display');
-    for (const g of data.groups) {
-      const list = VARS.filter(x => x.group === g);
+    const now = new Date(), sun = sunTimes(dayOfYear(now));
+    for (const v of VARS) {
+      const list = data.tiles.filter(x => x.topic === v.id);
       const wrap = document.createElement('div');
       wrap.className = 'group';
       wrap.style.setProperty('--n', list.length);
-      const title = document.createElement('div');
+      const title = document.createElement('a');
       title.className = 'gtitle';
-      title.textContent = t('groups.' + g);
+      title.href = '#' + v.id;
+      title.textContent = Q(v.id).name;
       const tiles = document.createElement('div');
       tiles.className = 'gtiles';
       wrap.append(title, tiles);
-      for (const v of list) {
-        const q = Q(v.id);
+      for (const d of list) {
+        const q = TL(d.id);
         const a = document.createElement('a');
         a.className = 'tile';
         a.href = '#' + v.id;
         a.style.setProperty('--tile', TH.groups[v.theme].tile);
-        a.innerHTML = `<svg class="ic" viewBox="0 0 100 100" aria-hidden="true">${TH.icons[v.icon] || ''}</svg><span class="go" aria-hidden="true">→</span><span class="t-name"></span>`;
+        a.innerHTML = `<svg class="ic" viewBox="0 0 100 100" aria-hidden="true">${TH.icons[d.icon] || ''}</svg><span class="go" aria-hidden="true">→</span><span class="t-name"></span>`;
         $('.t-name', a).textContent = q.tileName || q.name;
         const val = document.createElement('span');
         val.className = 't-val';
-        if (v.sim === 'mond') {
+        let shown;
+        if (d.live === 'moon') {
+          shown = moonName(moonAge(now));
           val.classList.add('moon-val');
           val.innerHTML = '<canvas class="moon" width="104" height="104" aria-hidden="true"></canvas><span class="t-note"></span>';
-          $('.t-note', val).textContent = moonName(moonAge(new Date()));
-          a.setAttribute('aria-label', t('start.tileAria', q.name, moonName(moonAge(new Date()))));
+          $('.t-note', val).textContent = shown;
         } else {
+          const sample = d.live === 'rise' ? hhmm(sun.rise) : d.live === 'set' ? hhmm(sun.set) : q.sample;
           val.innerHTML = '<span class="v"></span><span class="t-unit"></span>' + (q.sampleNote ? '<span class="t-note"></span>' : '');
-          $('.v', val).textContent = q.sample;
+          $('.v', val).textContent = sample;
           $('.t-unit', val).textContent = q.unit;
           if (q.sampleNote) $('.t-note', val).textContent = q.sampleNote;
-          a.setAttribute('aria-label', t('start.tileAria', q.name, q.sample ? q.sample + ' ' + q.unit : ''));
+          shown = sample ? sample + ' ' + q.unit : '';
         }
+        a.setAttribute('aria-label', t('start.tileAria', q.name, shown, Q(v.id).name));
         a.appendChild(val);
         tiles.appendChild(a);
       }
       host.appendChild(wrap);
     }
     const mc = $('#display canvas.moon');
-    if (mc) drawMoonFace(mc.getContext('2d'), 52, 52, 46, moonAge(new Date()), C.black, C.white);
+    if (mc) drawMoonFace(mc.getContext('2d'), 52, 52, 46, moonAge(now), C.black, C.white);
   }
 
-  // ---- page of one quantity ---------------------------------------------------
+  // ---- page of one topic ---------------------------------------------------
   const strip = $('#strip');
   function buildStrip() {
     for (const v of VARS) {
@@ -137,7 +143,7 @@
     // new simulation: canvas into the stage frame, controls into the right column
     $$('canvas', frame).forEach(cv => cv.remove());
     ctrl.innerHTML = '';
-    sim = sims[v.sim]({ view: frame, ctrl, done: id => { if (tasks) tasks.done(id); } }, v.variant);
+    sim = sims[v.sim]({ view: frame, ctrl, done: id => { if (tasks) tasks.done(id); } });
     badge.show(q.badge);
   }
 
@@ -145,6 +151,7 @@
   let current = '';
   function route() {
     let id = location.hash.replace('#', '') || 'start';
+    if (data.alias[id]) { location.replace('#' + data.alias[id]); return; }
     if (id !== 'start' && id !== 'warum' && !(id in BY_ID)) id = 'start';
     if (id === current) { window.scrollTo(0, 0); return; }
     current = id;

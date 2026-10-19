@@ -63,7 +63,10 @@ THEME.messgroessen = {
     druck:   { f1: '#E0E5F5', f2: '#FFE547', f3: '#D0E8DC', shape: '#0097BE', outline: '#0097BE', pale: '#FFF487', tile: '#E0E5F5' },
     wind:    { f1: '#FDF6B7', f2: '#C5B8DB', f3: '#EE7518', shape: '#D4EDF8', outline: '#EE7518', pale: '#FDF6B7', tile: '#FDF6B7' },
     koerper: { f1: '#F8E1E6', f2: '#EF887F', f3: '#D55117', shape: '#FFE547', outline: '#FFFFFF', pale: '#F8E1E6', tile: '#F8E1E6' },
-    himmel:  { f1: '#D0E8DC', f2: '#0097BE', f3: '#FFF487', shape: '#EE7518', outline: '#FFFFFF', pale: '#FFF487', tile: '#D0E8DC' }
+    himmel:  { f1: '#D0E8DC', f2: '#0097BE', f3: '#FFF487', shape: '#EE7518', outline: '#FFFFFF', pale: '#FFF487', tile: '#D0E8DC' },
+    licht:   { f1: '#FDF6B7', f2: '#E09F00', f3: '#44ABCC', shape: '#C5B8DB', outline: '#FFFFFF', pale: '#FDF6B7', tile: '#FDF6B7' },
+    nacht:   { f1: '#E0E5F5', f2: '#523E91', f3: '#C5B8DB', shape: '#FFE547', outline: '#FFE547', pale: '#E0E5F5', tile: '#E0E5F5' },
+    sonne:   { f1: '#F2E4BA', f2: '#EE7518', f3: '#FFE547', shape: '#28348B', outline: '#FFFFFF', pale: '#F2E4BA', tile: '#F2E4BA' }
   },
 
   // Poster headers of the start page and of "Warum messen?".
@@ -114,6 +117,8 @@ THEME.messgroessen = {
     boee:    '<path d="M6 70L22 60L34 66L48 30L60 62L74 54L94 58"/>',
     person:  '<circle cx="50" cy="22" r="12"/><path d="M28 92V58a22 22 0 0 1 44 0V92"/>',
     licht:   '<circle cx="50" cy="44" r="22"/><path d="M40 72H60M42 82H58"/>',
-    mond:    '<path d="M62 12a40 40 0 1 0 0 76a32 32 0 1 1 0 -76Z"/>'
+    mond:    '<path d="M62 12a40 40 0 1 0 0 76a32 32 0 1 1 0 -76Z"/>',
+    aufgang: '<path d="M6 70H94"/><path d="M26 70a24 24 0 0 1 48 0"/><path d="M50 16V34M40 26L50 16L60 26"/>',
+    untergang: '<path d="M6 70H94"/><path d="M26 70a24 24 0 0 1 48 0"/><path d="M50 16V34M40 24L50 34L60 24"/>'
   }
 };

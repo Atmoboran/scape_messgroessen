@@ -14,7 +14,7 @@
 .display-head p { font-size: 15px; }
 .display { border: 10px solid var(--display-bg); background: var(--display-bg); display: flex; flex-wrap: wrap; gap: 2px; }
 .group { display: flex; flex-direction: column; flex: var(--n) 1 calc(var(--n) * 190px); min-width: 0; }
-.gtitle { background: var(--display-bg); color: var(--display-ink); font-weight: var(--fw-medium); font-size: 12px; letter-spacing: .08em; text-transform: var(--caps); padding: 8px 10px 6px; }
+.gtitle { display: block; text-decoration: none; background: var(--display-bg); color: var(--display-ink); font-weight: var(--fw-medium); font-size: 12px; letter-spacing: .08em; text-transform: var(--caps); padding: 8px 10px 6px; }
 .gtiles { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 2px; flex: 1; }
 .tile {
   position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
@@ -34,6 +34,7 @@
 :root[data-view="mobile"] .display { border-width: 6px; }
 :root[data-view="mobile"] .group { flex-basis: 100%; }
 :root[data-view="mobile"] .gtiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+:root[data-view="mobile"] .gtiles > .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 :root[data-view="mobile"] .tile { min-height: 120px; }
 
 /* ---- "Warum messen?" ---- */
@@ -47,7 +48,7 @@
 :root[data-view="mobile"] .why > div:last-child { border-bottom: 0; }
 .next-part { margin-top: 0; }
 
-/* ---- page of one quantity ---- */
+/* ---- page of one topic ---- */
 .strip a:hover { background: var(--accent-pale); }
 .strip a[aria-current="true"]:hover { background: var(--active); }
 :root[data-view="desktop"] #page-detail .page { padding-top: 16px; }
