@@ -166,10 +166,11 @@ window.TEXTS = {
       head: 'Wie fühlt es <br class="hy">sich an?',
       lead: 'Wie warm oder kalt uns das Wetter vorkommt, hängt nicht nur vom Thermometer ab: Wind trägt Wärme von der Haut weg, feuchte Luft bremst das Verdunsten von Schweiß.',
       badge: 'Schieb den Regler „Wind“',
-      merke: 'Wind und feuchte Luft verändern, wie warm sich die Luft anfühlt. Windkühle, scheinbare und gefühlte Temperatur sind Rechenmodelle dafür – das Thermometer zeigt weiter dieselbe Temperatur.',
+      merke: 'Wind und feuchte Luft verändern, wie warm sich die Luft anfühlt. Windkühle, scheinbare und gefühlte Temperatur sind Rechenmodelle dafür – das Thermometer zeigt weiter dieselbe Temperatur. Bei feuchter Hitze kann der Körper sich irgendwann nicht mehr kühlen: Dann wird Hitze tödlich.',
       tasks: {
         cold: 'Bring die gefühlte Temperatur in den Bereich „Windkühle“.',
-        heat: 'Bring sie in den Bereich „Hitzeindex“.'
+        heat: 'Bring sie in den Bereich „Hitzeindex“.',
+        deadly: 'Finde Wetter, bei dem die Hitze tödlich wird. Reicht dafür die Temperatur allein?'
       },
       messung: 'Alle drei Werte sind berechnet: die Windkühle aus Temperatur und Wind, die scheinbare Temperatur (AT) aus Temperatur, Feuchte und Wind – in der Variante für Orte im Schatten, die dem Wind ausgesetzt sind. Die gefühlte Temperatur nutzt unter 4,4 °C die Windkühle, über 26,7 °C den Hitzeindex, dazwischen die Lufttemperatur.',
       einordnung: 'Auch der DWD verwendet eine gefühlte Temperatur; sie berücksichtigt zusätzlich die Strahlung. Windkühle, AT und gefühlte Temperatur sind verschiedene Modelle – darum können sie sich unterscheiden.',
@@ -190,7 +191,7 @@ window.TEXTS = {
       einordnung: 'Ab UV-Index 3 empfiehlt die WHO Sonnenschutz. In Süddeutschland liegen die sommerlichen Tageshöchstwerte laut DWD im Mittel um 7 bis 8 – tropische Werte sind deutlich höher.',
       hinweis: 'Die UV-Strahlung hängt von Sonnenstand, Ozon, Wolken und Staub in der Luft ab. An einem kühlen, klaren Tag kann der UV-Index höher sein als an einem heißen, bewölkten.',
       // LOCAL: sun heights in Offenbach
-      model: 'Die Sonne steht im Sommer mittags in Offenbach etwa 63° hoch, im Winter nur etwa 17°. Die Atmosphäre ist im Bild viel dicker gezeichnet, als sie ist. Der UV-Index wird mit einer einfachen Näherung aus Sonnenhöhe, Ozon und Wolken berechnet.'
+      model: 'Die Sonne steht im Sommer mittags in Offenbach etwa 63° hoch, im Winter nur etwa 17°. Die Atmosphäre ist im Bild viel dicker gezeichnet, als sie ist. Der UV-Index wird mit einer einfachen Näherung berechnet: Sonnenhöhe, Ozon und Wolken, dazu etwa +10 % pro 1000 m Höhe, eine Abschwächung durch Smog und ein Zuschlag für die Reflexion des Bodens (bei Neuschnee bis zu etwa +45 %).'
     },
     lichtintensitaet: {
       name: 'Lichtintensität', unit: 'kLux',
@@ -221,19 +222,18 @@ window.TEXTS = {
     sonnenaufgang: {
       name: 'Sonnenaufgang & -untergang', unit: 'Uhr',
       head: 'Sonnen<span class="hy">–</span><br class="hy">aufgang',
-      lead: 'Die Erde dreht sich einmal am Tag um sich selbst – darum geht die Sonne auf und unter. Weil die Erdachse um 23,4° geneigt ist, steht die Sonne im Sommer höher und länger am Himmel als im Winter.',
+      lead: 'Die Erde dreht sich einmal am Tag um sich selbst – darum geht die Sonne auf und unter. Weil die Erdachse um 23,4° geneigt ist, steht die Sonne im Sommer höher und länger am Himmel als im Winter – und je weiter man nach Norden kommt, desto stärker ist der Unterschied.',
       badge: 'Schieb das Datum durchs Jahr',
-      merke: 'Im Sommer geht die Sonne früh im Nordosten auf, steht mittags hoch und geht spät im Nordwesten unter. Im Winter bleibt sie tief im Süden – der Tag ist kurz. Der Grund ist die schräge Erdachse.',
+      merke: 'Im Sommer geht die Sonne früh im Nordosten auf, steht mittags hoch und geht spät im Nordwesten unter. Im Winter bleibt sie tief im Süden – der Tag ist kurz. Der Grund ist die schräge Erdachse; weit im Norden gibt es darum Mitternachtssonne und Polarnacht.',
       tasks: {
-        longest: 'Stell den längsten Tag des Jahres ein. Wie lang ist er?',
-        early: 'Finde einen Tag, an dem die Sonne schon vor 17 Uhr untergeht.'
+        longest: 'Stell den längsten Tag des Jahres ein. Wie lang ist er in Offenbach?',
+        polar: 'Finde einen Ort und einen Tag, an dem die Sonne gar nicht untergeht.'
       },
-      messung: 'Nicht gemessen, sondern berechnet: Aus Datum, Uhrzeit und dem Standort (geografische Breite und Länge) lässt sich genau ausrechnen, wann die Sonne über den Horizont steigt und wann sie wieder verschwindet.',
+      messung: 'Nicht gemessen, sondern berechnet: Aus Datum, Uhrzeit und dem Standort (geografische Breite und Länge) lässt sich genau ausrechnen, wann die Sonne über den Horizont steigt und wann sie wieder verschwindet. Auf dem Display steht die Uhrzeit MEZ bzw. MESZ für den Standort der Station.',
       // LOCAL: day lengths in Offenbach
-      einordnung: 'In Offenbach (rund 50° Nord) dauert der längste Tag um den 21. Juni gut 16 Stunden, der kürzeste um den 21. Dezember nur rund 8 Stunden. Um den 21. März und den 23. September sind Tag und Nacht etwa gleich lang.',
+      einordnung: 'In Offenbach (rund 50° Nord) dauert der längste Tag um den 21. Juni gut 16 Stunden, der kürzeste um den 21. Dezember nur rund 8 Stunden. Um den 21. März und den 23. September sind Tag und Nacht überall etwa gleich lang. In Tromsø (70° Nord) geht die Sonne im Sommer wochenlang nicht unter, im Winter nicht auf.',
       hinweis: 'Als Sonnenaufgang gilt der Moment, in dem der obere Rand der Sonne am Horizont auftaucht. Weil die Luft das Licht etwas bricht, sehen wir die Sonne schon, wenn sie eigentlich noch knapp unter dem Horizont steht. Berge und Häuser verschieben den Moment, in dem man sie wirklich sieht.',
-      // LOCAL: computed for Offenbach
-      model: 'Die Simulation rechnet für Offenbach (50,1° N, 8,8° O) mit Mitteleuropäischer Zeit und Sommerzeit. Die Himmelsrichtungen sind auseinandergezogen, damit die ganze Sonnenbahn ins Bild passt.'
+      model: 'Die Grafik zeigt die wahre Ortszeit: 12 Uhr heißt, die Sonne steht am höchsten. Darunter steht die Uhrzeit, die die Uhren am Ort zeigen (MEZ/MESZ, in Kapstadt SAST). Die Himmelsrichtungen sind auseinandergezogen, damit die ganze Sonnenbahn ins Bild passt.'
     }
   },
 
@@ -374,22 +374,32 @@ window.TEXTS = {
       hint: 'Zieh am Kompass: Dort, wo du hinziehst, kommt der Wind her – die Windfahne dreht ihre Spitze in den Wind. Mit der Turbulenz stellst du ein, wie stark der Wind schwankt; unten siehst du Mittelwert (orange) und stärkste Böe (rot).'
     },
     koerper: {
-      aria: 'Ein Mensch im Wind mit warmer Luftschicht um die Haut, daneben das Thermometer und drei berechnete Werte',
+      aria: 'Eine Person im Wind mit warmer Luftschicht um die Haut, daneben das Thermometer und drei berechnete Werte',
       sliderT: 'Lufttemperatur', sliderV: 'Wind', sliderRh: 'Luftfeuchte',
       presets: ['Eisiger Wind', 'Windiger Herbsttag', 'Milder Tag', 'Schwüle Hitze'],
       names: { air: 'LUFT', windChill: 'WIND–\nKÜHLE', apparent: 'AT', felt: 'GE–\nFÜHLT' },
       computed: 'BERECHNET',
       modes: { windChill: 'Windkühle', heatIndex: 'Hitzeindex', air: 'Lufttemperatur' },
-      sweat: ['SCHWEISS VERDUN–', 'STET SCHLECHT'],
+      infoT: 'Bei Hitze kühlt sich der Körper, indem Schweiß verdunstet. Das klappt nur, solange die Luft trocken genug ist. Ein Maß dafür ist die Kühlgrenztemperatur: die tiefste Temperatur, auf die Verdunsten kühlen kann. Liegt sie bei 35 °C oder mehr, kann der Körper seine Wärme nicht mehr loswerden – auch im Schatten und mit Wind ist das nach wenigen Stunden tödlich. Neuere Messungen zeigen: Schon ab etwa 31 °C wird es lebensgefährlich.',
+      wetBulb: v => 'KÜHLGRENZE ' + v + ' °C',
+      danger: ['KÖRPER KÜHLT NOCH', 'LEBENSGEFAHR', 'TÖDLICH IN STUNDEN'],
       layer: ['WARME', 'LUFTSCHICHT'],
       range: 'GEFÜHLT RECHNET MIT:',
       read: (tt, wc, at, fe, mode) => 'Luft ' + tt + ' °C · Windkühle ' + wc + ' °C · scheinbar (AT) ' + at + ' °C · gefühlt ' + fe + ' °C (' + mode + ')',
       hint: 'Wind bläst die warme Luftschicht (orange) von der Haut, feuchte Luft lässt Schweiß schlechter verdunsten. Das Thermometer ganz links bleibt dabei stehen.'
     },
     uv: {
-      aria: 'Sonne, Ozonschicht, Wolken und UV-Strahlung, die am Boden ankommt',
+      aria: 'Sonne, Ozonschicht, Wolken, Smog, ein Berg und der Boden – und die UV-Strahlung, die bei der Person ankommt',
       sliderSun: 'Sonnenhöhe', sliderCloud: 'Bewölkung',
-      ozThin: 'Ozon dünn', ozNormal: 'normal', ozThick: 'dick', ozAria: 'Ozonschicht',
+      sliderOzone: 'Ozonschicht', sliderAlt: 'Höhe über NN', sliderSmog: 'Smog / Staub', sliderAlbedo: 'Bodenreflexion',
+      info: {
+        ozone: 'Die Ozonschicht in 15 bis 35 km Höhe schluckt einen großen Teil der UV-Strahlung. Ihre Dicke wird in Dobson-Einheiten (DU) gemessen; über Mitteleuropa sind etwa 300 bis 350 DU üblich. Ist sie dünner, kommt mehr UV am Boden an – beim „Ozonloch“ über der Antarktis sinkt sie unter 220 DU.',
+        alt: 'Je höher du bist, desto weniger Luft liegt zwischen dir und der Sonne – und desto weniger UV wird unterwegs geschluckt. Als Faustregel steigt der UV-Index pro 1000 Höhenmeter um etwa 10 %. Darum bekommt man in den Bergen schneller einen Sonnenbrand.',
+        smog: 'Staub, Ruß und andere Schwebteilchen in der Luft (Aerosole) streuen und schlucken einen Teil der UV-Strahlung. Bei starkem Smog kommt darum etwas weniger UV am Boden an – gesund ist die Luft deshalb aber nicht.',
+        albedo: 'Der Boden wirft einen Teil der UV-Strahlung zurück (Albedo). Wiese und Wald reflektieren nur wenige Prozent, Sand etwa 15 bis 25 %, frischer Schnee bis zu 90 %. Die zurückgeworfene Strahlung trifft dich ein zweites Mal – darum ist UV im Schnee besonders gefährlich.'
+      },
+      ground: ['Wiese', 'Wasser', 'Sand', 'Altschnee', 'Neuschnee'],
+      smogLabel: 'SMOG / STAUB',
       presetSpring: 'Kühler, klarer Frühlingstag (15 °C)',
       presetSummer: 'Heißer, bewölkter Sommertag (31 °C)',
       ozone: 'OZONSCHICHT', atmosphere: 'ATMOSPHÄRE',
@@ -397,7 +407,7 @@ window.TEXTS = {
       bands: ['NIEDRIG', 'MÄSSIG', 'HOCH', 'SEHR HOCH', 'EXTREM'],
       bandsLower: ['niedrig', 'mäßig', 'hoch', 'sehr hoch', 'extrem'],
       read: (v, band, protect) => 'UV-Index ' + v + ' – ' + band + (protect ? ' · ab 3 empfiehlt die WHO Sonnenschutz' : ''),
-      hint: 'Je tiefer die Sonne steht, desto länger ist der Weg der Strahlung durch die Atmosphäre – mehr UV wird unterwegs geschluckt. Die Temperatur spielt dabei keine Rolle.'
+      hint: 'Je tiefer die Sonne steht, desto länger ist der Weg der Strahlung durch die Atmosphäre – mehr UV wird unterwegs geschluckt. Probier auch Ozon, Höhe, Smog und Schnee aus. Die Temperatur spielt keine Rolle.'
     },
     licht: {
       aria: 'Lichtquelle, Fläche von einem Quadratmeter, Lux-Skala und Spektrum mit Empfindlichkeit des Auges',
@@ -428,18 +438,27 @@ window.TEXTS = {
       hint: 'Zieh den Mond auf seiner Bahn um die Erde. Die Sonne scheint von links – rechts siehst du, wie viel von der beleuchteten Hälfte wir von der Erde aus sehen.'
     },
     sonne: {
-      aria: 'Sonnenbahn über dem Horizont von Offenbach für ein wählbares Datum, darunter Sonnenaufgang, Sonnenuntergang und Tageslänge',
-      sliderDate: 'Datum', sliderTime: 'Uhrzeit',
+      aria: 'Sonnenbahn über dem Horizont eines wählbaren Ortes für ein wählbares Datum, darunter Sonnenaufgang, Sonnenuntergang und Tageslänge',
+      places: { offenbach: 'Offenbach', hamburg: 'Hamburg', muenchen: 'München', tromsoe: 'Tromsø', kapstadt: 'Kapstadt' },
+      placeAria: 'Ort',
+      sliderDate: 'Datum', sliderTime: 'Ortszeit',
+      infoTime: 'Die Uhrzeiten in der Grafik sind die wahre Ortszeit (Sonnenzeit): Um 12:00 Uhr steht die Sonne genau im Süden – südlich des Äquators im Norden – und am höchsten. Unsere Uhren zeigen dagegen eine Zonenzeit, die für ein ganzes Land gleich ist: in Deutschland MEZ, im Sommer MESZ (eine Stunde später). In Offenbach steht die Sonne darum erst gegen 12:25 Uhr MEZ bzw. 13:25 Uhr MESZ am höchsten; je nach Jahreszeit verschiebt sich das um bis zu 16 Minuten (Zeitgleichung). Die Uhrzeit des Ortes steht klein unter Aufgang und Untergang.',
       btnPlay: ['Pause', 'Tag abspielen'],
       btnToday: 'Heute', btnMarch: '21. März', btnJune: '21. Juni', btnDec: '21. Dezember',
-      clock: (hhmm, date) => hhmm + ' UHR · ' + date,
+      clock: (hhmm, date) => hhmm + ' ORTSZEIT · ' + date,
       time: hhmm => hhmm + ' Uhr',
       june: '21. JUNI', dec: '21. DEZ.',
-      dirs: { 45: 'NO', 90: 'OST', 135: 'SO', 180: 'SÜD', 225: 'SW', 270: 'WEST', 315: 'NW' },
+      dirs: { 0: 'NORD', 45: 'NO', 90: 'OST', 135: 'SO', 180: 'SÜD', 225: 'SW', 270: 'WEST', 315: 'NW' },
       rise: 'AUFGANG', set: 'UNTERGANG', length: 'TAGESLÄNGE',
+      zoneStd: { offenbach: 'MEZ', hamburg: 'MEZ', muenchen: 'MEZ', tromsoe: 'MEZ', kapstadt: 'SAST' },
+      zoneSummer: { offenbach: 'MESZ', hamburg: 'MESZ', muenchen: 'MESZ', tromsoe: 'MESZ', kapstadt: 'SAST' },
+      zoneTime: (hhmm, zone) => '= ' + hhmm + ' ' + zone,
+      polarDay: 'MITTERNACHTSSONNE', polarNight: 'POLARNACHT',
+      polarDayNote: 'Die Sonne geht nicht unter.', polarNightNote: 'Die Sonne geht nicht auf.',
       hm: (h, m) => h + ' h ' + m,
-      read: (date, rise, set, summer, noon, now) => date + ': Aufgang ' + rise + ' Uhr, Untergang ' + set + ' Uhr (' + (summer ? 'Sommerzeit' : 'Winterzeit') + ') · mittags ' + noon + '° hoch · jetzt ' + now + '°',
-      hint: 'Schieb das Datum durchs Jahr: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief im Süden. Gestrichelt: die Bahn am längsten und am kürzesten Tag.'
+      read: (date, place, rise, set, riseZ, setZ, zone, noon) => date + ', ' + place + ': Aufgang ' + rise + ' Uhr, Untergang ' + set + ' Uhr Ortszeit (' + riseZ + ' und ' + setZ + ' Uhr ' + zone + ') · mittags ' + noon + '° hoch',
+      readPolar: (date, place, what) => date + ', ' + place + ': ' + what + ' – die Sonne ' + (what === 'POLARNACHT' ? 'geht den ganzen Tag nicht auf.' : 'geht den ganzen Tag nicht unter.'),
+      hint: 'Wähle einen Ort und schieb das Datum durchs Jahr: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief. Gestrichelt: die Bahn am 21. Juni und am 21. Dezember.'
     }
   },
 

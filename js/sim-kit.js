@@ -355,6 +355,27 @@
     const az = (Math.atan2(Math.sin(ha), Math.cos(ha) * Math.sin(phi) - Math.tan(decl) * Math.cos(phi)) * 180 / Math.PI + 540) % 360;
     return { alt: alt * 180 / Math.PI, az };
   }
+  // the same in true local solar time (12:00 = sun highest) for any place {lat, lon, zone, dst}
+  function sunSolar(doy, place) {
+    const { eq, decl } = solarAt(doy, 12), phi = place.lat * Math.PI / 180;
+    const cosH = Math.cos(90.833 * Math.PI / 180) / (Math.cos(phi) * Math.cos(decl)) - Math.tan(phi) * Math.tan(decl);
+    const Hd = Math.acos(clamp(cosH, -1, 1)) * 180 / Math.PI;
+    const off = place.zone + (place.dst && utcOffsetMin(doy) === 120 ? 60 : 0);
+    return {
+      rise: 720 - 4 * Hd, set: 720 + 4 * Hd, length: 8 * Hd,
+      polar: cosH > 1 ? 'night' : cosH < -1 ? 'day' : null,
+      noonAlt: 90 - Math.abs(place.lat - decl * 180 / Math.PI),
+      toZone: m => m - eq - 4 * place.lon + off,         // solar time → legal clock time of the place
+      summer: off > place.zone
+    };
+  }
+  function sunPosSolar(doy, solarMin, place) {
+    const { decl } = solarAt(doy, solarMin / 60), phi = place.lat * Math.PI / 180;
+    const ha = (solarMin / 4 - 180) * Math.PI / 180;
+    const alt = Math.asin(Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(ha));
+    const az = (Math.atan2(Math.sin(ha), Math.cos(ha) * Math.sin(phi) - Math.tan(decl) * Math.cos(phi)) * 180 / Math.PI + 540) % 360;
+    return { alt: alt * 180 / Math.PI, az };
+  }
   const hhmm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 
   Object.assign(MG, {
@@ -363,7 +384,7 @@
     tempColor, thermo, collide, speedColor, particle, speedLegend,
     satVap, satDens, dewPoint, beaufort, windChill, heatIndex, apparentT, feltT,
     SYN, moonAge, moonName, drawMoonFace,
-    dayOfYear, sunTimes, sunPos, hhmm,
+    dayOfYear, sunTimes, sunPos, sunSolar, sunPosSolar, hhmm,
     sims: MG.sims || {}
   });
 })();

@@ -44,6 +44,15 @@ window.MG.data = {
   ],
   // LOCAL: where the station stands (sunrise and sunset are computed for it)
   geo: { lat: 50.1, lon: 8.77 },
+  // places for the sunrise/sunset simulation (names: sims.sonne.places.<id>);
+  // zone = legal time minus UTC in minutes, dst = EU summer time
+  places: [
+    { id: 'offenbach', lat: 50.1, lon: 8.77, zone: 60, dst: true },
+    { id: 'hamburg', lat: 53.55, lon: 10.0, zone: 60, dst: true },
+    { id: 'muenchen', lat: 48.14, lon: 11.58, zone: 60, dst: true },
+    { id: 'tromsoe', lat: 69.65, lon: 18.96, zone: 60, dst: true },
+    { id: 'kapstadt', lat: -33.92, lon: 18.42, zone: 120, dst: false }
+  ],
   // old direct links to single quantities open their topic
   alias: {
     aussentemperatur: 'temperatur', innentemperatur: 'temperatur',
