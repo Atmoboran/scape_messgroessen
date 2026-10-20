@@ -350,13 +350,14 @@ window.TEXTS = {
       clockLabel: 'ES REGNET SEIT',
       fastNote: 'ZEITRAFFER 60×',
       mm: 'mm',
+      mmLog: 'mm (log.)',
       afterHour: ['NACH', '1 STUNDE'],
       floor: '1 m² BODEN',
       total: v => v + ' mm',
       perM2: v => '= ' + v + ' Liter auf 1 m²',
       read: (r, roof, tubs) => 'In einer Stunde: ' + r + ' Liter auf jedem Quadratmeter – auf ein Dach von 100 m² fallen ' + roof + ' Liter, so viel wie ' + tubs + ' volle Badewannen',
       readDry: 'Es regnet nicht.',
-      hint: 'Schieb die Regenstärke und schau rechts zu: Das Wasser steigt so schnell wie in echt – bei 30 mm/h stehen nach einer Stunde 3 cm Wasser auf dem Boden.'
+      hint: 'Schieb die Regenstärke und schau rechts zu: Das Wasser steigt so schnell wie in echt – bei 30 mm/h stehen nach einer Stunde 3 cm Wasser auf dem Boden. Die Skala ist logarithmisch: Jeder Strich bedeutet zehnmal so viel Wasser.'
     },
     wind: {
       aria: 'Windfahne im Kompass und Schalenkreuz von oben, darunter der Verlauf der Windgeschwindigkeit – zieh am Kompass, um die Windrichtung zu ändern',

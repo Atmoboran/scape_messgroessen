@@ -133,22 +133,27 @@
       const hh = Math.floor(seconds / 3600), mi = Math.floor(seconds / 60) % 60, se = Math.floor(seconds) % 60;
       text(ctx, hh + ':' + String(mi).padStart(2, '0') + ':' + String(se).padStart(2, '0'), X0, 66, 32, C.black, 300);
       if (fast) text(ctx, tx('fastNote'), X0, 92, FS.s, C.red);
-      // scale: the line "after one hour" at the rate, the water grows towards it
-      const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 5, 10]) if (m * p >= v) return m * p; return 10 * p; };
-      const hmax = nice(Math.max(1, rate, total) * 1.05), top = 150, by = 492, px = (by - top) / hmax;
-      const tx0 = X0 + 58, tx1 = W - 52;
-      ctx.fillStyle = C.blue2; ctx.fillRect(tx0, by - Math.min(total, hmax) * px, tx1 - tx0, Math.min(total, hmax) * px);
+      // logarithmic scale 0,01 … 300 mm: every step is ten times as much water
+      const LMIN = -2, LMAX = Math.log10(300), top = 150, by = 492;
+      const yOf = v => by - (clamp(Math.log10(Math.max(v, 1e-9)), LMIN, LMAX) - LMIN) / (LMAX - LMIN) * (by - top);
+      const tx0 = X0 + 66, tx1 = W - 52;
+      if (total > 0) { const y = yOf(total); ctx.fillStyle = C.blue2; ctx.fillRect(tx0, y, tx1 - tx0, by - y); }
       ctx.strokeStyle = C.black; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(tx0, top - 10); ctx.lineTo(tx0, by); ctx.lineTo(tx1, by); ctx.lineTo(tx1, top - 10); ctx.stroke();
       ctx.lineWidth = 2;
-      for (let i = 0; i <= 5; i++) {
-        const v = hmax * i / 5, y = by - v * px;
+      for (const v of [0.01, 0.1, 1, 10, 100]) {
+        const y = yOf(v);
         ctx.beginPath(); ctx.moveTo(tx0 - 8, y); ctx.lineTo(tx0, y); ctx.stroke();
-        text(ctx, fmt(v, hmax < 5 ? 1 : 0), tx0 - 12, y + 7, FS.s, C.black, 500, 'right');
+        text(ctx, fmt(v, v < 1 ? (v < 0.1 ? 2 : 1) : 0), tx0 - 12, y + 7, FS.s, C.black, 500, 'right');
       }
-      text(ctx, tx('mm'), tx0 - 12, top - 22, FS.s, C.black, 500, 'right');
+      ctx.lineWidth = 1;
+      for (let e = -2; e < 3; e++) for (let m = 2; m <= 9; m++) {   // small ticks in between
+        const v = m * Math.pow(10, e); if (v > 300) break;
+        const y = yOf(v); ctx.beginPath(); ctx.moveTo(tx0 - 4, y); ctx.lineTo(tx0, y); ctx.stroke();
+      }
+      text(ctx, tx('mmLog'), X0, top - 22, FS.s, C.black, 500, 'left');
       if (rate > 0) {
-        const y = by - rate * px;
+        const y = yOf(rate);
         ctx.setLineDash([7, 6]); ctx.strokeStyle = C.red; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(tx0, y); ctx.lineTo(tx1 + 6, y); ctx.stroke(); ctx.setLineDash([]);
         text(ctx, tx('afterHour')[0], tx1 + 2, y - 26, FS.s, C.red, 500, 'right');
