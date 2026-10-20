@@ -2,7 +2,7 @@
 // temperature; a person with a warm boundary layer, wind and sweat
 (() => {
   'use strict';
-  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, button, tempColor, thermo, windChill, apparentT, feltT } = MG;
+  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, tempColor, thermo, windChill, apparentT, feltT } = MG;
   // wet-bulb temperature (Stull 2011): the lowest temperature sweating can cool the skin to
   const wetBulb = (T, RH) => T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659)) + Math.atan(T + RH) - Math.atan(RH - 1.676331)
     + 0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH) - 4.686035;
@@ -12,23 +12,23 @@
     const ui = simShell(host, { label: tx('aria') });
     const { view, ctx } = ui;
     const SX = 300, BX = 150;   // scene on the left (0..SX, person centred on BX), thermometers on the right
+    const S = 0.75, FY = 506;   // the person is drawn at 75 %, feet stay at FY
+    const sy = y => FY + (y - FY) * S;
     let T = 14, RH = 60, v = 3, layer = 18;
     const puffs = [], wisps = [], streaks = Array.from({ length: 18 }, () => ({ x: rnd(0, SX), y: rnd(60, 520), l: rnd(0.8, 1.2) }));
-    const sweat = Array.from({ length: 13 }, (_, i) => ({ x: BX + rnd(-28, 28), y: 176 + i * 12 + rnd(-4, 4) }));
+    const sweat = Array.from({ length: 13 }, (_, i) => ({ x: BX + rnd(-21, 21), y: sy(176 + i * 12 + rnd(-4, 4)) }));
     const r1 = ui.row();
-    const sT = slider(r1, { label: tx('sliderT'), min: -20, max: 50, step: 0.5, value: T, info: tx('infoT'), format: x => fmt(x, 1) + ' °C', onInput: x => { T = x; } });
+    const sT = slider(r1, { label: tx('sliderT'), min: -40, max: 50, step: 0.5, value: T, info: tx('infoT'), format: x => fmt(x, 1) + ' °C', onInput: x => { T = x; } });
     const r2 = ui.row();
-    const sV = slider(r2, { label: tx('sliderV'), min: 0, max: 20, step: 0.5, value: v, format: x => fmt(x, 1) + ' m/s', onInput: x => { v = x; } });
+    const sV = slider(r2, { label: tx('sliderV'), min: 0, max: 20, step: 0.5, value: v, info: tx('infoV'), format: x => fmt(x, 1) + ' m/s', onInput: x => { v = x; } });
     const r3 = ui.row();
-    const sR = slider(r3, { label: tx('sliderRh'), min: 10, max: 100, step: 1, value: RH, format: x => fmt(x) + ' %', onInput: x => { RH = x; } });
-    const r4 = ui.row();
-    [[-5, 10, 70], [10, 9, 70], [15, 2, 50], [32, 1, 75]].forEach(([tt, vv, rh], i) =>
-      button(r4, tx('presets')[i], () => { T = tt; v = vv; RH = rh; sT.set(T); sV.set(v); sR.set(RH); }));
+    const sR = slider(r3, { label: tx('sliderRh'), min: 10, max: 100, step: 1, value: RH, info: tx('infoRh'), format: x => fmt(x) + ' %', onInput: x => { RH = x; } });
     ui.readout();
     ui.hint(tx('hint'));
 
     // pictogram of a person: head, torso, arms, legs
     function body(c) {
+      c.save(); c.translate(BX, FY); c.scale(S, S); c.translate(-BX, -FY);
       c.beginPath();
       c.arc(BX, 112, 32, 0, TAU);
       c.roundRect(BX - 42, 154, 84, 176, 12);        // torso
@@ -36,12 +36,13 @@
       c.roundRect(BX + 46, 156, 20, 166, 9);
       c.roundRect(BX - 38, 324, 34, 182, 9);         // legs
       c.roundRect(BX + 4, 324, 34, 182, 9);
+      c.restore();   // the path keeps its size, line widths stay unscaled
     }
     let readT = 0;
     function frame(dt) {
       if (!view.fit()) return;
       const wc = windChill(T, v), at = apparentT(T, RH, v), fe = feltT(T, RH, v);
-      layer += (22 / (1 + v * 0.45) - layer) * Math.min(1, dt * 2);
+      layer += (18 / (1 + v * 0.45) - layer) * Math.min(1, dt * 2);
       ctx.fillStyle = T < 5 ? C.ice : T > 26 ? C.pink : C.yellowPale; ctx.fillRect(0, 0, SX, H);
       ctx.fillStyle = C.white; ctx.fillRect(SX, 0, W - SX, H);
       // wind
@@ -55,7 +56,7 @@
       }
       ctx.restore();
       // warm boundary layer + blown-off heat
-      if (v > 0.5 && Math.random() < v * dt * 2.5) puffs.push({ x: rnd(BX - 40, BX + 40), y: rnd(120, 460), r: rnd(6, 11) });
+      if (v > 0.5 && Math.random() < v * dt * 2.5) puffs.push({ x: rnd(BX - 32, BX + 32), y: rnd(sy(120), sy(460)), r: rnd(5, 9) });
       ctx.lineJoin = 'round';
       body(ctx); ctx.strokeStyle = C.orange; ctx.lineWidth = layer * 2; ctx.stroke();
       for (let i = puffs.length - 1; i >= 0; i--) {
@@ -80,6 +81,16 @@
         if (w.a <= 0) { wisps.splice(i, 1); continue; }
         ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.quadraticCurveTo(w.x + 8, w.y - 10, w.x, w.y - 20); ctx.stroke();
       }
+      // cold: how fast unprotected skin freezes at this wind chill (Environment Canada)
+      if (T < 10 && wc < 5) {
+        const lvl = wc <= -40 ? 3 : wc <= -28 ? 2 : wc <= -10 ? 1 : 0;
+        const blink = lvl === 3 && Math.sin(performance.now() / 120) > 0;
+        ctx.fillStyle = lvl === 3 ? (blink ? C.red : C.black) : lvl === 2 ? C.red : C.white;
+        ctx.fillRect(10, 516, SX - 20, 72);
+        const ink = lvl >= 2 ? C.white : C.black;
+        text(ctx, tx('chillBox', fmt(wc, 1)), 22, 544, FS.s, ink);
+        text(ctx, tx('cold')[lvl], 22, 572, FS.s, ink);
+      }
       // heat the body can no longer get rid of: wet-bulb temperature
       if (T > 24) {
         const tw = wetBulb(T, RH), lvl = tw >= 35 ? 2 : tw >= 31 ? 1 : 0;
@@ -93,7 +104,7 @@
       ctx.fillStyle = C.orange; ctx.fillRect(16, 22, 36, 12);
       tx('layer').forEach((l, i) => text(ctx, l, 60, 35 + i * 24, FS.s, C.black));
       // four thermometers on the same scale: measured air, then the three computed values
-      const lo = -30, hi = 60, names = tx('names');
+      const lo = -50, hi = 60, names = tx('names');
       thermo(ctx, 332, 120, 420, lo, hi, T, tempColor(T), names.air, fmt(T) + '°');
       [[408, wc, names.windChill], [474, at, names.apparent], [540, fe.t, names.felt]].forEach(([x, val, nm]) =>
         thermo(ctx, x, 120, 420, lo, hi, val, tempColor(val), nm, fmt(val) + '°', false));

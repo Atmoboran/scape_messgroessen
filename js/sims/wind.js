@@ -15,6 +15,7 @@
     const KX = 150, KY = 158, KR = 100;      // compass
     const AX = 462, AY = 214;                // cup anemometer
     let from = 248, vane = 200, omega = 0;
+    let meanS = 4, curS = 4;   // smoothed wind: number and length of the arrows (no flicker)
     let mean = 4, gusty = 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0, cur = mean;
     const S = [];
     const streaks = Array.from({ length: 34 }, () => ({ x: rnd(0, W), y: rnd(0, TOP), l: rnd(0.8, 1.2) }));
@@ -51,13 +52,15 @@
       // scene: air streaming in the wind direction, faster with stronger wind
       ctx.fillStyle = C.yellowPale; ctx.fillRect(0, 0, W, TOP);
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, TOP); ctx.clip();
-      const sp = 30 + cur * 30, nS = Math.round(clamp(0.4 + cur / 12, 0, 1) * streaks.length);
+      meanS += (mean - meanS) * Math.min(1, dt * 2);
+      curS += (cur - curS) * Math.min(1, dt * 4);
+      const sp = 30 + cur * 30, nS = Math.round(clamp(0.4 + meanS / 12, 0, 1) * streaks.length);
       streaks.forEach((p, i) => {
         p.x += fx * sp * dt; p.y += fy * sp * dt;
         if (p.x < -40) p.x += W + 80; if (p.x > W + 40) p.x -= W + 80;
         if (p.y < -40) p.y += TOP + 80; if (p.y > TOP + 40) p.y -= TOP + 80;
         if (i >= nS) return;
-        const len = p.l * (24 + cur * 3);   // wind arrows: longer with stronger wind
+        const len = p.l * (24 + curS * 3);   // wind arrows: longer with stronger wind
         arrow(ctx, p.x - fx * len, p.y - fy * len, fx * len, fy * len, C.purple2, 4, 13);
       });
       ctx.restore();
