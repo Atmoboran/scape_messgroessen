@@ -90,6 +90,11 @@
   ['input', 'click', 'pointerdown'].forEach(ev => ctrl.addEventListener(ev, () => badge.hide()));
 
   let sim = null, tasks = null;
+  // progress in the header of the closed task dropdown, e.g. "1/2"
+  function countTasks() {
+    const all = $$('li[data-task]', tasksBox), done = all.filter(li => li.classList.contains('done'));
+    $('#tasksDrop .count').textContent = done.length + '/' + all.length;
+  }
   function showDetail(v) {
     const q = Q(v.id);
     const c = TH.groups[v.theme];
@@ -119,8 +124,10 @@
         ul.appendChild(li);
       }
       tasksBox.hidden = false;
+      $('#tasksDrop').open = false;
       merke.classList.add('locked');
       tasks = SCAPE.tasks(tasksBox);
+      countTasks();
     } else {
       tasksBox.hidden = true;
       merke.classList.remove('locked');
@@ -143,7 +150,7 @@
     // new simulation: canvas into the stage frame, controls into the right column
     $$('canvas', frame).forEach(cv => cv.remove());
     ctrl.innerHTML = '';
-    sim = sims[v.sim]({ view: frame, ctrl, done: id => { if (tasks) tasks.done(id); } });
+    sim = sims[v.sim]({ view: frame, ctrl, done: id => { if (tasks && tasks.done(id)) countTasks(); } });
     badge.show(q.badge);
   }
 
