@@ -2,7 +2,7 @@
 // above, the course over 10 minutes below
 (() => {
   'use strict';
-  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, circle, simShell, slider, button, seg, dragOn, beaufort } = MG;
+  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, button, dragOn, beaufort } = MG;
   const tx = MG.texts('wind');
   const dirIdx = deg => Math.round((((deg % 360) + 360) % 360) / 22.5) % 16;
 
@@ -17,14 +17,13 @@
     let from = 248, vane = 200, omega = 0;
     let mean = 4, gusty = 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0, cur = mean;
     const S = [];
-    const streaks = Array.from({ length: 50 }, () => ({ x: rnd(0, W), y: rnd(0, TOP), l: rnd(14, 34) }));
+    const streaks = Array.from({ length: 34 }, () => ({ x: rnd(0, W), y: rnd(0, TOP), l: rnd(0.8, 1.2) }));
     const r1 = ui.row();
     slider(r1, { label: tx('slider'), min: 0, max: 25, step: 0.5, value: mean, format: v => fmt(v, 1) + ' m/s', onInput: v => { mean = v; } });
     const r2 = ui.row();
-    seg(r2, [{ label: tx('steady'), value: 0.1 }, { label: tx('restless'), value: 0.25 }, { label: tx('gusty'), value: 0.45 }], gusty, v => { gusty = v; }, tx('gustAria'));
-    button(r2, tx('btnGust'), () => { gust = 1; }, 'primary');
+    slider(r2, { label: tx('sliderTurb'), min: 0, max: 50, step: 1, value: Math.round(gusty * 100), info: tx('infoTurb'), format: v => v + ' %', onInput: v => { gusty = v / 100; } });
     const r3 = ui.row();
-    tx('presets').forEach((lbl, i) => button(r3, lbl, () => { from = i * 90; }));
+    button(r3, tx('btnGust'), () => { gust = 1; }, 'primary');
     ui.readout();
     ui.hint(tx('hint'));
     const setFrom = p => { from = (Math.atan2(p.x - KX, -(p.y - KY)) * 180 / Math.PI + 360) % 360; };
@@ -54,15 +53,14 @@
       // scene: air streaming in the wind direction, faster with stronger wind
       ctx.fillStyle = C.yellowPale; ctx.fillRect(0, 0, W, TOP);
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, TOP); ctx.clip();
-      ctx.strokeStyle = C.cyan2; ctx.lineWidth = 3;
-      const sp = 30 + cur * 30, nS = Math.round(clamp(0.15 + cur / 12, 0, 1) * streaks.length);
+      const sp = 30 + cur * 30, nS = Math.round(clamp(0.4 + cur / 12, 0, 1) * streaks.length);
       streaks.forEach((p, i) => {
         p.x += fx * sp * dt; p.y += fy * sp * dt;
         if (p.x < -40) p.x += W + 80; if (p.x > W + 40) p.x -= W + 80;
         if (p.y < -40) p.y += TOP + 80; if (p.y > TOP + 40) p.y -= TOP + 80;
         if (i >= nS) return;
-        const len = p.l * (0.4 + cur / 10);
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - fx * len, p.y - fy * len); ctx.stroke();
+        const len = p.l * (24 + cur * 3);   // wind arrows: longer with stronger wind
+        arrow(ctx, p.x - fx * len, p.y - fy * len, fx * len, fy * len, C.purple2, 4, 13);
       });
       ctx.restore();
       // compass with vane

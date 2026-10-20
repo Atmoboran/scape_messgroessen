@@ -134,16 +134,17 @@ window.TEXTS = {
     niederschlag: {
       name: 'Niederschlag', unit: 'mm',
       head: 'Nieder<span class="hy">–</span><br class="hy">schlag',
-      lead: 'Niederschlag ist Wasser, das aus der Luft auf den Boden fällt. 1 Millimeter heißt: Auf jedem Quadratmeter liegt 1 Liter Wasser.',
+      lead: 'Niederschlag ist Wasser, das aus der Luft auf den Boden fällt. 1 Millimeter heißt: Auf jedem Quadratmeter liegt 1 Liter Wasser. Die Regenstärke in mm/h sagt, wie viel davon in einer Stunde zusammenkommt.',
       badge: 'Schieb den Regler „Regenstärke“',
-      merke: '1 mm Niederschlag heißt: 1 Liter Wasser auf jedem Quadratmeter. Die Station zählt, wie oft ihre kleine Wippe kippt.',
+      merke: '1 mm Niederschlag ist 1 Liter Wasser auf jedem Quadratmeter. Schon 25 mm in einer Stunde sind ein Unwetter: Auf ein Hausdach von 100 m² fallen dann 2500 Liter.',
       tasks: {
-        mm: 'Sammle mindestens 1 mm Regen. Wie oft hat die Wippe gekippt?'
+        mm: 'Sammle mindestens 1 mm Regen. Wie lange dauert das bei deiner Regenstärke?',
+        heavy: 'Stell einen Regen ein, bei dem der DWD vor Unwetter warnt.'
       },
-      messung: 'Ein Trichter sammelt den Niederschlag und leitet ihn in eine kleine Wippe. Bei jeweils 0,254 mm kippt sie, die Elektronik zählt das Kippen. Regen, Schnee oder Hagel erkennt das Gerät nicht automatisch.',
-      einordnung: 'Einmal Kippen = 0,254 mm = 254 Milliliter pro Quadratmeter. Die Station zeigt Mengen für eine Stunde, 24 Stunden, eine Woche, einen Monat und insgesamt.',
-      hinweis: 'Ein Kipp-Regenmesser zählt Kippvorgänge, keine einzelnen Tropfen. Was bei Schnee und Eis im Trichter passiert, beschreibt die Anleitung nicht – eine automatische Schneemessung gibt es also nicht.',
-      model: 'Rechts siehst du, was die Menge bedeutet: Jeder Millimeter ist ein Liter Wasser auf einem Quadratmeter. Die Zeit läuft im Zeitraffer – eine Sekunde entspricht zwei Minuten.'
+      messung: 'Ein Trichter sammelt den Niederschlag und leitet ihn in eine kleine Wippe. Bei jeweils 0,254 mm kippt sie, die Elektronik zählt das Kippen. Regen, Schnee oder Hagel erkennt das Gerät nicht automatisch. Mit „Messgerät der Station zeigen“ siehst du das in der Simulation.',
+      einordnung: 'Bis 2,5 mm/h gilt Regen als leicht, bis 10 mm/h als mäßig, darüber als stark. Der DWD warnt ab 15 mm in einer Stunde vor Starkregen, ab 25 mm vor Unwetter und ab 40 mm vor extremem Unwetter. Weltrekord: rund 305 mm in einer Stunde (Holt, Missouri, USA, 1947).',
+      hinweis: 'Ein Kipp-Regenmesser zählt Kippvorgänge, keine einzelnen Tropfen: Einmal Kippen = 0,254 mm = 254 Milliliter pro Quadratmeter. Was bei Schnee und Eis im Trichter passiert, beschreibt die Anleitung nicht – eine automatische Schneemessung gibt es also nicht.',
+      model: 'Das Wasser steigt in Echtzeit: Bei 30 mm/h dauert es wirklich eine Stunde, bis 30 mm erreicht sind (mit Zeitraffer eine Minute). Echter Regen ist nie eine Stunde lang gleich stark. Tropfen sind hier größer gezeichnet; echte Regentropfen sind höchstens etwa 5 mm groß und eher rund als spitz.'
     },
     wind: {
       name: 'Wind', unit: '° · m/s',
@@ -334,22 +335,33 @@ window.TEXTS = {
       hintHeight: 'Zieh den Ballon nach oben: Je höher er steigt, desto weniger Luft liegt über ihm – der Druck sinkt.'
     },
     regen: {
-      aria: 'Kipp-Regenmesser mit Trichter und Wippe, daneben eine Fläche von einem Quadratmeter',
+      aria: 'Regen fällt auf eine Fläche von einem Quadratmeter; rechts steigt das Wasser in Echtzeit – auf Wunsch mit dem Kipp-Regenmesser der Station',
       slider: 'Regenstärke',
-      btnDrizzle: 'Niesel 0,5', btnRain: 'Regen 4', btnHeavy: 'Starkregen 25', btnReset: 'Zähler auf null',
+      rate: v => v + ' mm/h',
+      info: 'mm/h heißt: So viele Millimeter hoch stünde das Wasser nach einer Stunde auf dem Boden, wenn nichts abfließt oder versickert – 1 mm ist 1 Liter auf jedem Quadratmeter. Nach DWD gilt Regen bis 2,5 mm/h als leicht, bis 10 mm/h als mäßig, darüber als stark. Ab 15 mm in einer Stunde warnt der DWD vor Starkregen, ab 25 mm vor Unwetter, ab 40 mm vor extremem Unwetter. Der Weltrekord für eine Stunde liegt bei rund 305 mm (Holt, Missouri, USA, 1947).',
+      btnGauge: ['Messgerät ausblenden', 'Messgerät der Station zeigen'],
+      btnFast: ['Echtzeit', 'Zeitraffer (1 s = 1 min)'],
+      btnReset: 'Neu starten',
+      classes: ['Kein Regen', 'Nieselregen', 'Leichter Regen', 'Mäßiger Regen', 'Starker Regen', 'Starkregen', 'Unwetter', 'Extremes Unwetter', 'Wolkenbruch – fast Weltrekord'],
       funnel: 'TRICHTER', seesaw: 'WIPPE', tipped: 'GEKIPPT',
       times: n => n + ' ×',
-      mm: 'mm', litre: 'Liter', floor: 'BODEN 1 m × 1 m',
-      total: v => v + ' mm', perM2: v => '= ' + v + ' l / m²',
-      read: (h, m, n, v) => 'Zeitraffer ' + h + ' h ' + m + ' min · ' + n + ' × gekippt × 0,254 mm = ' + v + ' mm = ' + v + ' Liter pro m²',
-      hint: 'Der Trichter sammelt den Regen. Ist eine Seite der Wippe voll (0,254 mm), kippt sie und leert sich – die Station zählt mit.'
+      clockLabel: 'ES REGNET SEIT',
+      fastNote: 'ZEITRAFFER 60×',
+      mm: 'mm',
+      afterHour: ['NACH', '1 STUNDE'],
+      floor: '1 m² BODEN',
+      total: v => v + ' mm',
+      perM2: v => '= ' + v + ' Liter auf 1 m²',
+      read: (r, roof, tubs) => 'In einer Stunde: ' + r + ' Liter auf jedem Quadratmeter – auf ein Dach von 100 m² fallen ' + roof + ' Liter, so viel wie ' + tubs + ' volle Badewannen',
+      readDry: 'Es regnet nicht.',
+      hint: 'Schieb die Regenstärke und schau rechts zu: Das Wasser steigt so schnell wie in echt – bei 30 mm/h stehen nach einer Stunde 3 cm Wasser auf dem Boden.'
     },
     wind: {
       aria: 'Windfahne im Kompass und Schalenkreuz von oben, darunter der Verlauf der Windgeschwindigkeit – zieh am Kompass, um die Windrichtung zu ändern',
       slider: 'Mittlerer Wind',
-      steady: 'Gleichmäßig', restless: 'Unruhig', gusty: 'Böig', gustAria: 'Böigkeit',
+      sliderTurb: 'Turbulenz',
+      infoTurb: 'Die Turbulenz (genauer: Turbulenzintensität) sagt, wie stark der Wind um seinen Mittelwert schwankt – in Prozent des Mittelwerts. Bei 0 % weht er völlig gleichmäßig, bei 30 % schwankt er typischerweise um fast ein Drittel nach oben und unten. Über offenem Gelände sind etwa 10 bis 15 % üblich, zwischen Häusern und Bäumen oft 30 % und mehr. Je höher die Turbulenz, desto stärker die Böen.',
       btnGust: 'Böe!',
-      presets: ['Nordwind', 'Ostwind', 'Südwind', 'Westwind'],
       dir16: ['N', 'NNO', 'NO', 'ONO', 'O', 'OSO', 'SO', 'SSO', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'],
       dir16Long: ['Nord', 'Nordnordost', 'Nordost', 'Ostnordost', 'Ost', 'Ostsüdost', 'Südost', 'Südsüdost', 'Süd', 'Südsüdwest', 'Südwest', 'Westsüdwest', 'West', 'Westnordwest', 'Nordwest', 'Nordnordwest'],
       vane: 'WINDFAHNE', cups: 'WINDSCHALEN',
@@ -359,7 +371,7 @@ window.TEXTS = {
       mean: 'MITTEL 2 MIN',
       gust: v => 'BÖE ' + v,
       read: (dirName, deg, avg, avgKmh, bft, mx, mxKmh) => dirName + 'wind aus ' + deg + '° · Mittel ' + avg + ' m/s = ' + avgKmh + ' km/h (' + bft + ' Bft) · stärkste Böe ' + mx + ' m/s = ' + mxKmh + ' km/h',
-      hint: 'Zieh am Kompass: Dort, wo du hinziehst, kommt der Wind her – die Windfahne dreht ihre Spitze in den Wind. Unten siehst du, wie der Wind schwankt: Mittelwert (orange) und stärkste Böe (rot).'
+      hint: 'Zieh am Kompass: Dort, wo du hinziehst, kommt der Wind her – die Windfahne dreht ihre Spitze in den Wind. Mit der Turbulenz stellst du ein, wie stark der Wind schwankt; unten siehst du Mittelwert (orange) und stärkste Böe (rot).'
     },
     koerper: {
       aria: 'Ein Mensch im Wind mit warmer Luftschicht um die Haut, daneben das Thermometer und drei berechnete Werte',
