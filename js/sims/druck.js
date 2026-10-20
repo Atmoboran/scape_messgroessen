@@ -112,7 +112,6 @@
       tx('hits').forEach((l, i) => text(ctx, l, 498, 340 + i * 24, FS.s, C.black, 500, 'center'));
       text(ctx, fmt(rate), 498, 440, 44, C.black, 300, 'center');
       speedLegend(ctx, W / 2, 570);
-      if (p > 1100) ui.done('high');
       return p;
     }
 
@@ -193,7 +192,6 @@
       // the station converts to sea level
       ctx.fillStyle = C.yellow; ctx.fillRect(X0 - 4, 484, W - X0 - 6, 110);
       tx('seaLevel').forEach((l, i) => text(ctx, l, X0 + 4, 508 + i * 24, FS.s, C.black));
-      if (frac <= 0.5) ui.done('half');
       return pa;
     }
 

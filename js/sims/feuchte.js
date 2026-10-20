@@ -23,7 +23,7 @@
     ui.readout();
     ui.hint(tx('hint'));
 
-    let readT = 0, wasSaturated = false, condensing = false, alert = 0, time = 0;
+    let readT = 0, condensing = false, alert = 0, time = 0;
     function frame(dt) {
       if (!view.fit()) return;
       const k = Math.min(1, dt * 1.6);
@@ -36,10 +36,6 @@
       condensing = liq > 0.05;
       alert = Math.max(0, alert - dt);
       const blink = alert > 0 && Math.sin(time * 10) > 0;
-      // tasks: saturate, then warm to 20 °C → about half; cool below the dew point
-      if (rh >= 99) wasSaturated = true;
-      if (wasSaturated && T >= 19.5 && rh <= 60) ui.done('warm');
-      if (liq > 0.3) ui.done('drops');
       const nV = Math.min(P.length, Math.round(vap * 2.6)), nL = Math.min(P.length - nV, Math.round(liq * 2.6));
       for (let i = 0; i < P.length; i++) {
         const p = P[i];

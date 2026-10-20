@@ -43,8 +43,6 @@
       const recent = S.filter(s => s.t >= now - MEAN_WIN);
       const avg = recent.reduce((a, s) => a + s.v, 0) / Math.max(1, recent.length);
       let mx = 0, mxS = null; for (const s of S) if (s.v > mx) { mx = s.v; mxS = s; }
-      if (dirIdx(from) === 12) ui.done('west');
-      if (mx > 15) ui.done('gust');
       // vane: damped turn into the wind (stands still without wind)
       const diff = ((from - vane + 540) % 360) - 180;
       omega += (diff * 9 * clamp(cur / 2, 0, 1) - omega * 3.2) * dt;

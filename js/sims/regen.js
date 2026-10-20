@@ -63,8 +63,6 @@
       seconds += sim;
       const mm = rate / 3600 * sim;
       total += mm;
-      if (total >= 1) ui.done('mm');
-      if (rate >= 25) ui.done('heavy');
       // tipping bucket of the station
       if (anim > 0) anim = Math.max(0, anim - dt / 0.25);
       fill += mm / STEP;

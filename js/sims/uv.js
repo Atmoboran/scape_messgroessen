@@ -29,14 +29,13 @@
     add('smog', { label: tx('sliderSmog'), min: 0, max: 100, step: 1, value: smog, info: tx('info.smog'), format: v => v + ' %', onInput: v => { smog = v; } });
     add('albedo', { label: tx('sliderAlbedo'), min: 0, max: 90, step: 1, value: albedo, info: tx('info.albedo'), format: v => v + ' % · ' + tx('ground')[v < 6 ? 0 : v < 13 ? 1 : v < 30 ? 2 : v < 60 ? 3 : 4], onInput: v => { albedo = v; } });
     const r4 = ui.row();
-    const preset = (l, e, c, task) => button(r4, l, () => {
+    const preset = (l, e, c) => button(r4, l, () => {
       Object.assign(D, { elev: e, cloud: c });
       ({ elev, cloud, ozone, alt, smog, albedo } = D);
       for (const k in sl) sl[k].set(D[k]);
-      ui.done(task);
     });
-    preset(tx('presetSpring'), 45, 0, 'spring');
-    preset(tx('presetSummer'), 62, 95, 'summer');
+    preset(tx('presetSpring'), 45, 0);
+    preset(tx('presetSummer'), 62, 95);
     ui.readout();
     ui.hint(tx('hint'));
 

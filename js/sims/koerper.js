@@ -41,8 +41,6 @@
     function frame(dt) {
       if (!view.fit()) return;
       const wc = windChill(T, v), at = apparentT(T, RH, v), fe = feltT(T, RH, v);
-      if (fe.mode === 'windChill') ui.done('cold');
-      if (fe.mode === 'heatIndex') ui.done('heat');
       layer += (22 / (1 + v * 0.45) - layer) * Math.min(1, dt * 2);
       ctx.fillStyle = T < 5 ? C.ice : T > 26 ? C.pink : C.yellowPale; ctx.fillRect(0, 0, SX, H);
       ctx.fillStyle = C.white; ctx.fillRect(SX, 0, W - SX, H);
@@ -91,7 +89,6 @@
         const ink = lvl ? C.white : C.black;
         text(ctx, tx('wetBulb', fmt(tw, 1)), 22, 544, FS.s, ink);
         text(ctx, tx('danger')[lvl], 22, 572, FS.s, ink);
-        if (lvl === 2) ui.done('deadly');
       }
       ctx.fillStyle = C.orange; ctx.fillRect(16, 22, 36, 12);
       tx('layer').forEach((l, i) => text(ctx, l, 60, 35 + i * 24, FS.s, C.black));

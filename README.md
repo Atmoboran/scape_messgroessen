@@ -9,8 +9,10 @@ the page of its topic. 10 topics, one interactive simulation each, plus a
 Every topic page has: a first-hint badge on the simulation, a 1–2 sentence
 hint, one Merke box with the key insight, and four collapsible topics ("So
 misst die Station", "Zum Einordnen", "Gut zu wissen", "Modell und
-Wirklichkeit"). Topics with tasks (clear success conditions) unlock the Merke
-box; on the others it is always open.
+Wirklichkeit"). Topics with tasks ask 2 questions in a closed dropdown (type a number or
+pick an answer, then right/wrong); all answered right unlock the Merke box;
+on the others it is always open. Questions and answers live in
+`content/texts.de.js` (`topics.<id>.tasks`).
 
 | Topic | Display fields | Simulation | Tasks |
 |---|---|---|---|
@@ -23,7 +25,7 @@ box; on the others it is always open.
 | UV-Index | UV-Index | sun height, ozone, clouds; WHO scale | tap both day presets |
 | Lichtintensität | Lichtintensität | lux vs W/m²: spectra of sun, LED and heater, eye sensitivity | – |
 | Mondphase | Mondphase (today) | sun–earth–moon from above and the view from earth | set full moon; set new moon |
-| Sonnenaufgang & -untergang | sunrise, sunset (today, Offenbach) | the sun's path over the horizon for any date and time | longest day; sunset before 17:00 |
+| Sonnenaufgang & -untergang | sunrise, sunset (today, Offenbach) | the sun's path for any latitude, date and local solar time (MEZ/MESZ shown at 50° N) | length of the longest day; latitude of the polar circle |
 
 The values on the display are examples, not live station data – except moon
 phase, sunrise and sunset, which are computed for today.

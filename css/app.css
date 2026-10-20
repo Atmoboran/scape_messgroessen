@@ -87,3 +87,14 @@
 #tasksDrop > summary::after { content: "+"; flex: none; width: 26px; height: 26px; border: var(--line-width) solid var(--line); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
 #tasksDrop[open] > summary::after { content: "−"; background: var(--active); color: var(--active-ink); }
 #tasksDrop[open] > ul { margin-top: 10px; }
+
+/* tasks as questions */
+.tasks li .quiz p { margin: 0; }
+.quiz-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 8px; }
+.quiz-row .btn { min-height: 38px; padding: 6px 12px; font-size: 13px; }
+.quiz-row input { width: 6.5em; min-height: 38px; padding: 4px 8px; font: inherit; font-size: 16px; border: var(--line-width) solid var(--line); background: var(--paper); color: var(--ink); }
+.quiz-unit { font-size: 15px; }
+.quiz-fb { margin-top: 6px !important; font-size: 14px; font-weight: var(--fw-medium); min-height: 1.2em; }
+.quiz-fb.ok { color: var(--ink); }
+.quiz-fb.ok::before { content: "✓ "; }
+.quiz-fb.no { color: var(--c-red); }

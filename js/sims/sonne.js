@@ -1,28 +1,31 @@
-// SUNRISE & SUNSET – the path of the sun over the horizon of a chosen place
+// SUNRISE & SUNSET – the path of the sun over the horizon at a chosen latitude
 // for a chosen day, in true local solar time (12:00 = sun highest), with the
-// legal clock time of the place for comparison
+// clock time of Offenbach (MEZ/MESZ) for comparison at 50° N
 (() => {
   'use strict';
-  const { C, W, H, FS, fmt, text, circle, simShell, slider, button, toggle, seg, dayOfYear, sunSolar, sunPosSolar, hhmm } = MG;
+  const { C, W, H, FS, fmt, text, circle, simShell, slider, button, toggle, dayOfYear, sunSolar, sunPosSolar, hhmm } = MG;
   const tx = MG.texts('sonne');
 
   MG.sims.sonne = host => {
     const ui = simShell(host, { label: tx('aria') });
     const { view, ctx } = ui;
-    const PLACES = MG.data.places;
     const year = new Date().getFullYear();
     const today = dayOfYear(new Date());
     const JUNE = dayOfYear(new Date(year, 5, 21)), DEC = dayOfYear(new Date(year, 11, 21));
     const HY = 380;                                              // horizon
     const dateLabel = (d, opt = { day: 'numeric', month: 'long' }) => new Date(year, 0, d).toLocaleDateString(window.TEXTS.locale, opt);
-    let place = PLACES[0], doy = today, tm = 12 * 60, playing = false;
+    const HOME = MG.data.geo;                                    // the station: Offenbach
+    const place = { lat: Math.round(HOME.lat * 2) / 2, lon: HOME.lon, zone: 60, dst: true };
+    let doy = today, tm = 12 * 60, playing = false;
+    const isHome = () => place.lat === Math.round(HOME.lat * 2) / 2;
+    const latLabel = v => fmt(Math.abs(v), v % 1 ? 1 : 0) + '° ' + (v >= 0 ? tx('north') : tx('south')) + (tx('latNames')[v] ? ' · ' + tx('latNames')[v] : '');
     // a 360° panorama: north of the equator south is in the middle, south of it north
     const centre = () => place.lat >= 0 ? 180 : 0;
     const rel = az => ((az - centre() + 540) % 360) - 180;
     const X = az => 300 + rel(az) / 180 * 280, Y = alt => HY - alt / 90 * 320;
 
     const r0 = ui.row();
-    seg(r0, PLACES.map(p => ({ label: tx('places.' + p.id), value: p.id })), place.id, v => { place = PLACES.find(p => p.id === v); }, tx('placeAria'));
+    slider(r0, { label: tx('sliderLat'), min: -80, max: 80, step: 0.5, value: place.lat, info: tx('infoLat'), format: latLabel, onInput: v => { place.lat = v; } });
     const r1 = ui.row();
     const sD = slider(r1, { label: tx('sliderDate'), min: 1, max: 365, step: 1, value: doy, format: v => dateLabel(v), onInput: v => { doy = v; } });
     const r2 = ui.row();
@@ -55,8 +58,6 @@
       if (!view.fit()) return;
       if (playing) { tm = (tm + dt * 90) % 1440; sH.set(Math.round(tm / 5) * 5); }
       const st = sunSolar(doy, place), sp = sunPosSolar(doy, tm, place);
-      if (Math.abs(doy - JUNE) <= 2) ui.done('longest');
-      if (st.polar === 'day') ui.done('polar');
       // sky: day, twilight, night
       const dusk = sp.alt < 0, night = sp.alt < -6;
       ctx.fillStyle = night ? C.navy : dusk ? C.blue2 : C.ice; ctx.fillRect(0, 0, W, HY);
@@ -88,8 +89,8 @@
         ctx.fillStyle = C.orange; ctx.beginPath(); ctx.moveTo(x, HY - 2); ctx.lineTo(x - 9, HY - 18); ctx.lineTo(x + 9, HY - 18); ctx.closePath(); ctx.fill();
         ctx.strokeStyle = C.black; ctx.lineWidth = 1.5; ctx.stroke();
       }
-      // boxes: local solar time large, the clock time of the place small below
-      const zone = tx(st.summer ? 'zoneSummer' : 'zoneStd')[place.id];
+      // boxes: local solar time large, at Offenbach the clock time (MEZ/MESZ) small below
+      const zone = st.summer ? 'MESZ' : 'MEZ', home = isHome();
       const box = (x, label, val, sub) => {
         ctx.fillStyle = C.black; ctx.fillRect(x, 432, 186, 158);
         text(ctx, label, x + 12, 460, FS.s, C.white);
@@ -102,16 +103,16 @@
         text(ctx, tx(st.polar === 'day' ? 'polarDay' : 'polarNight'), 22, 500, 28, C.white, 300);
         text(ctx, tx(st.polar === 'day' ? 'polarDayNote' : 'polarNightNote'), 22, 548, FS.m, C.white);
       } else {
-        box(10, tx('rise'), hhmm(st.rise), tx('zoneTime', hhmm(st.toZone(st.rise)), zone));
-        box(207, tx('set'), hhmm(st.set), tx('zoneTime', hhmm(st.toZone(st.set)), zone));
+        box(10, tx('rise'), hhmm(st.rise), home ? tx('zoneTime', hhmm(st.toZone(st.rise)), zone) : '');
+        box(207, tx('set'), hhmm(st.set), home ? tx('zoneTime', hhmm(st.toZone(st.set)), zone) : '');
       }
       box(404, tx('length'), tx('hm', Math.floor(len / 60), String(Math.round(len % 60)).padStart(2, '0')), '');
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;
         ui.setRead(st.polar
-          ? tx('readPolar', dateLabel(doy), tx('places.' + place.id), tx(st.polar === 'day' ? 'polarDay' : 'polarNight'))
-          : tx('read', dateLabel(doy), tx('places.' + place.id), hhmm(st.rise), hhmm(st.set), hhmm(st.toZone(st.rise)), hhmm(st.toZone(st.set)), zone, fmt(st.noonAlt)));
+          ? tx('readPolar', dateLabel(doy), latLabel(place.lat), tx(st.polar === 'day' ? 'polarDay' : 'polarNight'))
+          : tx('read', dateLabel(doy), latLabel(place.lat), hhmm(st.rise), hhmm(st.set), home ? hhmm(st.toZone(st.rise)) : null, home ? hhmm(st.toZone(st.set)) : null, zone, fmt(st.noonAlt)));
       }
     }
     return { frame };

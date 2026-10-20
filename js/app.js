@@ -95,6 +95,46 @@
     const all = $$('li[data-task]', tasksBox), done = all.filter(li => li.classList.contains('done'));
     $('#tasksDrop .count').textContent = done.length + '/' + all.length;
   }
+  // one question: { q, answer, tol, unit } (number) or { q, options, answer } (pick one)
+  let quizId = 0;
+  function buildTask(id, task) {
+    const li = document.createElement('li');
+    li.dataset.task = id;
+    li.innerHTML = '<span class="box"></span><div class="quiz"><p></p><div class="quiz-row"></div><p class="quiz-fb" aria-live="polite"></p></div>';
+    $('p', li).textContent = task.q;
+    const row = $('.quiz-row', li), fb = $('.quiz-fb', li);
+    const answer = ok => {
+      fb.textContent = ok ? t('kit.right') : t('kit.wrong');
+      fb.classList.toggle('ok', ok); fb.classList.toggle('no', !ok);
+      if (ok && tasks && tasks.done(id)) countTasks();
+    };
+    if (task.options) {
+      task.options.forEach((o, i) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn'; b.textContent = o;
+        b.addEventListener('click', () => {
+          $$('.btn', row).forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+          answer(i === task.answer);
+        });
+        row.appendChild(b);
+      });
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.inputMode = 'decimal'; inp.id = 'quiz' + (++quizId);
+      inp.setAttribute('aria-label', task.q);
+      const unit = document.createElement('span'); unit.className = 'quiz-unit'; unit.textContent = task.unit || '';
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn'; b.textContent = t('kit.check');
+      const check = () => {
+        const v = parseFloat(inp.value.replace(/\s/g, '').replace('−', '-').replace(',', '.'));
+        answer(!isNaN(v) && Math.abs(v - task.answer) <= (task.tol || 0));
+      };
+      b.addEventListener('click', check);
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+      row.append(inp, unit, b);
+    }
+    return li;
+  }
   function showDetail(v) {
     const q = Q(v.id);
     const c = TH.groups[v.theme];
@@ -112,17 +152,11 @@
       d.hidden = !q[k];
     });
 
-    // tasks (only where a clear success condition exists) unlock the Merke box
+    // tasks: questions answered with a number or by picking an answer; all right → Merke box opens
     const ul = $('ul', tasksBox);
     ul.innerHTML = '';
     if (q.tasks) {
-      for (const [id, txt] of Object.entries(q.tasks)) {
-        const li = document.createElement('li');
-        li.dataset.task = id;
-        li.innerHTML = '<span class="box"></span><span></span>';
-        li.lastChild.textContent = txt;
-        ul.appendChild(li);
-      }
+      for (const [id, task] of Object.entries(q.tasks)) ul.appendChild(buildTask(id, task));
       tasksBox.hidden = false;
       $('#tasksDrop').open = false;
       merke.classList.add('locked');
@@ -150,7 +184,7 @@
     // new simulation: canvas into the stage frame, controls into the right column
     $$('canvas', frame).forEach(cv => cv.remove());
     ctrl.innerHTML = '';
-    sim = sims[v.sim]({ view: frame, ctrl, done: id => { if (tasks && tasks.done(id)) countTasks(); } });
+    sim = sims[v.sim]({ view: frame, ctrl });
     badge.show(q.badge);
   }
 

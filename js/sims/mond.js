@@ -8,19 +8,19 @@
     const ui = simShell(host, { label: tx('aria'), drag: true });
     const { view, ctx } = ui;
     const today = moonAge(new Date());
-    let age = today, playing = false, touched = false;   // tasks count only after the visitor moved the moon
+    let age = today, playing = false;
     const ex = 156, ey = 210, OR = 112, SPLIT = 300, BOT = 420;
     const r1 = ui.row();
-    const sA = slider(r1, { label: tx('slider'), min: 0, max: 29.5, step: 0.1, value: +age.toFixed(1), format: v => fmt(v, 1), onInput: v => { age = v; touched = true; } });
+    const sA = slider(r1, { label: tx('slider'), min: 0, max: 29.5, step: 0.1, value: +age.toFixed(1), format: v => fmt(v, 1), onInput: v => { age = v; } });
     const r2 = ui.row();
     button(r2, tx('btnToday'), () => { age = today; sA.set(+age.toFixed(1)); });
-    const play = toggle(r2, tx('btnPlay'), playing, v => { playing = v; touched = true; });
+    const play = toggle(r2, tx('btnPlay'), playing, v => { playing = v; });
     ui.readout();
     ui.hint(tx('hint'));
     function set(p) {
       const th = Math.atan2(-(p.y - ey), p.x - ex);         // mathematical angle
       let e = th - Math.PI; e = ((e % TAU) + TAU) % TAU;     // elongation: 0 = new moon (towards the sun)
-      age = e / TAU * SYN; sA.set(+age.toFixed(1)); touched = true;
+      age = e / TAU * SYN; sA.set(+age.toFixed(1));
       if (playing) { playing = false; play.set(false); }
     }
     dragOn(view, {
@@ -36,8 +36,6 @@
       if (!view.fit()) return;
       if (playing) { age = (age + dt * 2) % SYN; sA.set(+age.toFixed(1)); }
       const f = age / SYN;
-      if (touched && f > 0.47 && f < 0.53) ui.done('full');
-      if (touched && (f < 0.03 || f > 0.97)) ui.done('new');
       const e = f * TAU, th = Math.PI + e;
       const mx = ex + Math.cos(th) * OR, my = ey - Math.sin(th) * OR;
       ctx.fillStyle = C.navy; ctx.fillRect(0, 0, SPLIT, BOT);

@@ -25,7 +25,10 @@ window.TEXTS = {
     infoAria: 'Erklärung anzeigen',
     merke: 'Merke',
     tasks: 'Aufgaben',
-    merkeLocked: 'Löse die Aufgaben – dann erscheint hier, was du herausgefunden hast.',
+    merkeLocked: 'Beantworte die Fragen unter „Aufgaben“ – dann erscheint hier, was du herausgefunden hast.',
+    check: 'Prüfen',
+    right: 'Richtig!',
+    wrong: 'Leider falsch – probier es in der Simulation aus und versuch es noch einmal.',
     devLink: '(dev)'
   },
 
@@ -108,8 +111,8 @@ window.TEXTS = {
       badge: 'Ändere die Temperatur',
       merke: 'Warme Luft kann mehr Wasserdampf halten als kalte. Darum ändert sich die relative Feuchte schon, wenn sich nur die Temperatur ändert – die absolute bleibt gleich. Am Taupunkt ist die Luft gesättigt, darunter entstehen Tröpfchen.',
       tasks: {
-        warm: 'Mach die Luft bei 10 °C gesättigt (100 %) und erwärme sie dann auf 20 °C. Wie viel Prozent sind es jetzt?',
-        drops: 'Kühle die Luft unter den Taupunkt, so dass Tröpfchen (Nebel) entstehen.'
+        warm: { q: 'Luft mit 10 °C ist gesättigt (100 %). Wie viel Prozent relative Luftfeuchtigkeit hat sie, wenn du sie auf 20 °C erwärmst?', answer: 54, tol: 3, unit: '%' },
+        abs: { q: 'Was passiert dabei mit der absoluten Luftfeuchtigkeit?', options: ['Sie steigt', 'Sie bleibt gleich', 'Sie sinkt'], answer: 1 }
       },
       messung: 'Außensensor und Basisstation messen die relative Feuchte zusammen mit der Temperatur: 10 bis 99 %, ±5 % (garantiert zwischen 20 und 90 %). Der Taupunkt hat keinen eigenen Sensor – die Station berechnet ihn aus Temperatur und relativer Feuchte.',
       einordnung: 'DWD-Beispiel: Luft mit 10 °C und 100 % wird auf 20 °C erwärmt – die relative Feuchte sinkt auf etwa die Hälfte. Drinnen gelten 40 bis 60 % als behaglich. Bei 20 °C und 50 % liegt der Taupunkt bei etwa 9 °C; ab etwa 16 °C Taupunkt wirkt Luft deutlich feucht, bei 18 bis 21 °C schwül.',
@@ -123,8 +126,8 @@ window.TEXTS = {
       badge: 'Schieb den Regler „Teilchen“',
       merke: 'Luftdruck entsteht durch Stöße von Luftteilchen. Je höher du steigst, desto weniger Luft liegt über dir – der Druck sinkt.',
       tasks: {
-        high: 'Mach den Druck in der Teilchen-Ansicht höher als 1100 hPa.',
-        half: 'Lass den Ballon so hoch steigen, dass nur noch die Hälfte der Luft über ihm liegt.'
+        double: { q: 'Du verdoppelst die Teilchenanzahl im Kasten. Was passiert mit dem Druck?', options: ['Er halbiert sich', 'Er bleibt gleich', 'Er verdoppelt sich'], answer: 2 },
+        half: { q: 'In welcher Höhe liegt nur noch die Hälfte der Luft über dem Ballon? (in Metern)', answer: 5500, tol: 300, unit: 'm' }
       },
       messung: 'Die Station misst den absoluten Luftdruck am Standort und rechnet daraus den relativen Luftdruck auf Meereshöhe. Messbereich 300 bis 1100 hPa, Genauigkeit ±3 hPa.',
       einordnung: '1013,2 hPa gelten als Standard-Luftdruck auf Meereshöhe. Beispiel aus der Anleitung: In 305 m Höhe zeigt die Station absolut 969 hPa, auf Meereshöhe umgerechnet 1016 hPa.',
@@ -138,8 +141,8 @@ window.TEXTS = {
       badge: 'Schieb den Regler „Regenstärke“',
       merke: '1 mm Niederschlag ist 1 Liter Wasser auf jedem Quadratmeter. Schon 25 mm in einer Stunde sind ein Unwetter: Auf ein Hausdach von 100 m² fallen dann 2500 Liter.',
       tasks: {
-        mm: 'Sammle mindestens 1 mm Regen. Wie lange dauert das bei deiner Regenstärke?',
-        heavy: 'Stell einen Regen ein, bei dem der DWD vor Unwetter warnt.'
+        litre: { q: 'Es regnet eine Stunde lang mit 25 mm/h. Wie viele Liter Wasser fallen auf einen Quadratmeter?', answer: 25, tol: 0.5, unit: 'Liter' },
+        storm: { q: 'Ab wie viel Millimetern Regen in einer Stunde warnt der DWD vor Unwetter?', answer: 25, tol: 0, unit: 'mm' }
       },
       messung: 'Ein Trichter sammelt den Niederschlag und leitet ihn in eine kleine Wippe. Bei jeweils 0,254 mm kippt sie, die Elektronik zählt das Kippen. Regen, Schnee oder Hagel erkennt das Gerät nicht automatisch. Mit „Messgerät der Station zeigen“ siehst du das in der Simulation.',
       einordnung: 'Bis 2,5 mm/h gilt Regen als leicht, bis 10 mm/h als mäßig, darüber als stark. Der DWD warnt ab 15 mm in einer Stunde vor Starkregen, ab 25 mm vor Unwetter und ab 40 mm vor extremem Unwetter. Weltrekord: rund 305 mm in einer Stunde (Holt, Missouri, USA, 1947).',
@@ -153,8 +156,8 @@ window.TEXTS = {
       badge: 'Zieh am Kompass',
       merke: 'Die Windrichtung sagt, woher der Wind kommt: Ein Westwind kommt aus Westen. Wind schwankt ständig – der Mittelwert sagt, wie stark er im Schnitt weht, die Böen zeigen die kurzen Spitzen.',
       tasks: {
-        west: 'Mach einen Westwind.',
-        gust: 'Erzeuge eine Böe von mehr als 15 m/s (54 km/h).'
+        west: { q: 'Wohin weht ein Westwind?', options: ['Nach Westen', 'Nach Osten', 'Nach Norden'], answer: 1 },
+        kmh: { q: 'Eine Böe hat 15 m/s. Wie viele km/h sind das?', answer: 54, tol: 1, unit: 'km/h' }
       },
       messung: 'Eine Windfahne dreht sich in die Strömung; der Sensor muss beim Aufbau genau nach Norden zeigen, sonst ist jede Richtung um denselben Winkel falsch. Drei Windschalen drehen sich umso schneller, je stärker der Wind ist. Die Station zeigt Mittelwerte über 2 oder 10 Minuten und die Böen als kurze Spitzen.',
       einordnung: '5 m/s = 18 km/h, 10 m/s = 36 km/h, 20 m/s = 72 km/h. Messbereich 0 bis 50 m/s. Die Richtung ist auf ±10° genau; auf dem 16-teiligen Kompass liegen die Himmelsrichtungen 22,5° auseinander.',
@@ -168,9 +171,8 @@ window.TEXTS = {
       badge: 'Schieb den Regler „Wind“',
       merke: 'Wind und feuchte Luft verändern, wie warm sich die Luft anfühlt. Windkühle, scheinbare und gefühlte Temperatur sind Rechenmodelle dafür – das Thermometer zeigt weiter dieselbe Temperatur. Bei feuchter Hitze kann der Körper sich irgendwann nicht mehr kühlen: Dann wird Hitze tödlich.',
       tasks: {
-        cold: 'Bring die gefühlte Temperatur in den Bereich „Windkühle“.',
-        heat: 'Bring sie in den Bereich „Hitzeindex“.',
-        deadly: 'Finde Wetter, bei dem die Hitze tödlich wird. Reicht dafür die Temperatur allein?'
+        chill: { q: 'Es ist 0 °C, der Wind weht mit 10 m/s. Wie kalt fühlt es sich an (Windkühle, ganze Grad)?', answer: -7, tol: 1, unit: '°C' },
+        deadly: { q: 'Ab welcher Kühlgrenztemperatur ist Hitze nach wenigen Stunden tödlich?', options: ['25 °C', '35 °C', '45 °C'], answer: 1 }
       },
       messung: 'Alle drei Werte sind berechnet: die Windkühle aus Temperatur und Wind, die scheinbare Temperatur (AT) aus Temperatur, Feuchte und Wind – in der Variante für Orte im Schatten, die dem Wind ausgesetzt sind. Die gefühlte Temperatur nutzt unter 4,4 °C die Windkühle, über 26,7 °C den Hitzeindex, dazwischen die Lufttemperatur.',
       einordnung: 'Auch der DWD verwendet eine gefühlte Temperatur; sie berücksichtigt zusätzlich die Strahlung. Windkühle, AT und gefühlte Temperatur sind verschiedene Modelle – darum können sie sich unterscheiden.',
@@ -184,8 +186,8 @@ window.TEXTS = {
       badge: 'Schieb den Regler „Sonnenhöhe“',
       merke: 'Der UV-Index hängt vom Sonnenstand ab, nicht von der Temperatur. Ab UV-Index 3 brauchst du Sonnenschutz.',
       tasks: {
-        spring: 'Tippe auf den kühlen, klaren Frühlingstag.',
-        summer: 'Tippe auf den heißen, bewölkten Sommertag. Wo ist der UV-Index höher?'
+        days: { q: 'Kühler, klarer Frühlingstag oder heißer, bewölkter Sommertag: Wo ist der UV-Index höher?', options: ['Frühlingstag', 'Sommertag', 'Gleich hoch'], answer: 0 },
+        alt: { q: 'Um wie viel Prozent steigt der UV-Index ungefähr, wenn du 1000 m höher steigst?', answer: 10, tol: 2, unit: '%' }
       },
       messung: 'Der Außensensor hat einen eigenen UV-Sensor. Angezeigt wird ein Wert ohne Einheit von 1 bis 15+, Genauigkeit ±1.',
       einordnung: 'Ab UV-Index 3 empfiehlt die WHO Sonnenschutz. In Süddeutschland liegen die sommerlichen Tageshöchstwerte laut DWD im Mittel um 7 bis 8 – tropische Werte sind deutlich höher.',
@@ -211,8 +213,8 @@ window.TEXTS = {
       badge: 'Zieh den Mond auf seiner Bahn',
       merke: 'Der Mond leuchtet nicht selbst. Je nachdem, wo er auf seiner Bahn steht, sehen wir mehr oder weniger von seiner beleuchteten Hälfte.',
       tasks: {
-        full: 'Stell den Vollmond ein.',
-        new: 'Stell den Neumond ein. Wo steht der Mond jetzt?'
+        days: { q: 'Wie viele Tage dauert es von einem Neumond bis zum nächsten?', answer: 29.5, tol: 0.6, unit: 'Tage' },
+        new: { q: 'Wo steht der Mond bei Neumond?', options: ['Zwischen Sonne und Erde', 'Hinter der Erde, von der Sonne aus gesehen', 'Genau neben der Erde'], answer: 0 }
       },
       messung: 'Gar nicht gemessen: Die Station berechnet die Mondphase aus dem Kalenderdatum – von Neumond über die Viertel bis zum Vollmond.',
       einordnung: 'Von einem Neumond zum nächsten vergehen im Mittel etwa 29,5 Tage – der synodische Monat. Die Mondphase ist ein regelmäßiger, vorhersagbarer Zyklus.',
@@ -226,14 +228,14 @@ window.TEXTS = {
       badge: 'Schieb das Datum durchs Jahr',
       merke: 'Im Sommer geht die Sonne früh im Nordosten auf, steht mittags hoch und geht spät im Nordwesten unter. Im Winter bleibt sie tief im Süden – der Tag ist kurz. Der Grund ist die schräge Erdachse; weit im Norden gibt es darum Mitternachtssonne und Polarnacht.',
       tasks: {
-        longest: 'Stell den längsten Tag des Jahres ein. Wie lang ist er in Offenbach?',
-        polar: 'Finde einen Ort und einen Tag, an dem die Sonne gar nicht untergeht.'
+        longest: { q: 'Wie viele Stunden dauert der längste Tag des Jahres in Offenbach (50° Nord)? Runde auf ganze Stunden.', answer: 16, tol: 0.6, unit: 'Stunden' },
+        polar: { q: 'Ab welchem Breitengrad geht die Sonne am 21. Juni nicht mehr unter? (in Grad Nord)', answer: 66, tol: 1.5, unit: '° N' }
       },
       messung: 'Nicht gemessen, sondern berechnet: Aus Datum, Uhrzeit und dem Standort (geografische Breite und Länge) lässt sich genau ausrechnen, wann die Sonne über den Horizont steigt und wann sie wieder verschwindet. Auf dem Display steht die Uhrzeit MEZ bzw. MESZ für den Standort der Station.',
       // LOCAL: day lengths in Offenbach
-      einordnung: 'In Offenbach (rund 50° Nord) dauert der längste Tag um den 21. Juni gut 16 Stunden, der kürzeste um den 21. Dezember nur rund 8 Stunden. Um den 21. März und den 23. September sind Tag und Nacht überall etwa gleich lang. In Tromsø (70° Nord) geht die Sonne im Sommer wochenlang nicht unter, im Winter nicht auf.',
+      einordnung: 'In Offenbach (rund 50° Nord) dauert der längste Tag um den 21. Juni gut 16 Stunden, der kürzeste um den 21. Dezember nur rund 8 Stunden. Um den 21. März und den 23. September sind Tag und Nacht überall etwa gleich lang. Jenseits des Polarkreises (66,5°) geht die Sonne im Sommer wochenlang nicht unter, im Winter nicht auf – in Tromsø (70° Nord) etwa zwei Monate lang.',
       hinweis: 'Als Sonnenaufgang gilt der Moment, in dem der obere Rand der Sonne am Horizont auftaucht. Weil die Luft das Licht etwas bricht, sehen wir die Sonne schon, wenn sie eigentlich noch knapp unter dem Horizont steht. Berge und Häuser verschieben den Moment, in dem man sie wirklich sieht.',
-      model: 'Die Grafik zeigt die wahre Ortszeit: 12 Uhr heißt, die Sonne steht am höchsten. Darunter steht die Uhrzeit, die die Uhren am Ort zeigen (MEZ/MESZ, in Kapstadt SAST). Die Himmelsrichtungen sind auseinandergezogen, damit die ganze Sonnenbahn ins Bild passt.'
+      model: 'Die Grafik zeigt die wahre Ortszeit: 12 Uhr heißt, die Sonne steht am höchsten. Bei 50° Nord steht darunter die Uhrzeit, die die Uhren in Offenbach zeigen (MEZ/MESZ). Die Himmelsrichtungen sind auseinandergezogen, damit die ganze Sonnenbahn ins Bild passt.'
     }
   },
 
@@ -438,11 +440,14 @@ window.TEXTS = {
       hint: 'Zieh den Mond auf seiner Bahn um die Erde. Die Sonne scheint von links – rechts siehst du, wie viel von der beleuchteten Hälfte wir von der Erde aus sehen.'
     },
     sonne: {
-      aria: 'Sonnenbahn über dem Horizont eines wählbaren Ortes für ein wählbares Datum, darunter Sonnenaufgang, Sonnenuntergang und Tageslänge',
-      places: { offenbach: 'Offenbach', hamburg: 'Hamburg', muenchen: 'München', tromsoe: 'Tromsø', kapstadt: 'Kapstadt' },
-      placeAria: 'Ort',
+      aria: 'Sonnenbahn über dem Horizont für einen wählbaren Breitengrad und ein wählbares Datum, darunter Sonnenaufgang, Sonnenuntergang und Tageslänge',
+      sliderLat: 'Breitengrad',
+      north: 'N', south: 'S',
+      // LOCAL: Offenbach at 50° N is the station
+      latNames: { 0: 'Äquator', 23.5: 'Wendekreis', 50: 'Offenbach', 53.5: 'Hamburg', 66.5: 'Polarkreis', 69.5: 'Tromsø', '-34': 'Kapstadt', '-66.5': 'Südl. Polarkreis' },
+      infoLat: 'Der Breitengrad sagt, wie weit nördlich oder südlich vom Äquator ein Ort liegt: 0° ist der Äquator, 90° der Nordpol. Offenbach liegt bei rund 50° Nord. Je weiter weg vom Äquator, desto stärker unterscheiden sich Sommer- und Wintertage. Jenseits der Polarkreise (66,5°) geht die Sonne im Sommer gar nicht mehr unter und im Winter nicht mehr auf. Südlich des Äquators steht die Sonne mittags im Norden, und Sommer ist im Dezember.',
       sliderDate: 'Datum', sliderTime: 'Ortszeit',
-      infoTime: 'Die Uhrzeiten in der Grafik sind die wahre Ortszeit (Sonnenzeit): Um 12:00 Uhr steht die Sonne genau im Süden – südlich des Äquators im Norden – und am höchsten. Unsere Uhren zeigen dagegen eine Zonenzeit, die für ein ganzes Land gleich ist: in Deutschland MEZ, im Sommer MESZ (eine Stunde später). In Offenbach steht die Sonne darum erst gegen 12:25 Uhr MEZ bzw. 13:25 Uhr MESZ am höchsten; je nach Jahreszeit verschiebt sich das um bis zu 16 Minuten (Zeitgleichung). Die Uhrzeit des Ortes steht klein unter Aufgang und Untergang.',
+      infoTime: 'Die Uhrzeiten in der Grafik sind die wahre Ortszeit (Sonnenzeit): Um 12:00 Uhr steht die Sonne genau im Süden – südlich des Äquators im Norden – und am höchsten. Unsere Uhren zeigen dagegen eine Zonenzeit, die für ein ganzes Land gleich ist: in Deutschland MEZ, im Sommer MESZ (eine Stunde später). In Offenbach steht die Sonne darum erst gegen 12:25 Uhr MEZ bzw. 13:25 Uhr MESZ am höchsten; je nach Jahreszeit verschiebt sich das um bis zu 16 Minuten (Zeitgleichung). Bei 50° Nord (Offenbach) steht die Uhrzeit MEZ/MESZ klein unter Aufgang und Untergang.',
       btnPlay: ['Pause', 'Tag abspielen'],
       btnToday: 'Heute', btnMarch: '21. März', btnJune: '21. Juni', btnDec: '21. Dezember',
       clock: (hhmm, date) => hhmm + ' ORTSZEIT · ' + date,
@@ -450,15 +455,13 @@ window.TEXTS = {
       june: '21. JUNI', dec: '21. DEZ.',
       dirs: { 0: 'NORD', 45: 'NO', 90: 'OST', 135: 'SO', 180: 'SÜD', 225: 'SW', 270: 'WEST', 315: 'NW' },
       rise: 'AUFGANG', set: 'UNTERGANG', length: 'TAGESLÄNGE',
-      zoneStd: { offenbach: 'MEZ', hamburg: 'MEZ', muenchen: 'MEZ', tromsoe: 'MEZ', kapstadt: 'SAST' },
-      zoneSummer: { offenbach: 'MESZ', hamburg: 'MESZ', muenchen: 'MESZ', tromsoe: 'MESZ', kapstadt: 'SAST' },
       zoneTime: (hhmm, zone) => '= ' + hhmm + ' ' + zone,
       polarDay: 'MITTERNACHTSSONNE', polarNight: 'POLARNACHT',
       polarDayNote: 'Die Sonne geht nicht unter.', polarNightNote: 'Die Sonne geht nicht auf.',
       hm: (h, m) => h + ' h ' + m,
-      read: (date, place, rise, set, riseZ, setZ, zone, noon) => date + ', ' + place + ': Aufgang ' + rise + ' Uhr, Untergang ' + set + ' Uhr Ortszeit (' + riseZ + ' und ' + setZ + ' Uhr ' + zone + ') · mittags ' + noon + '° hoch',
+      read: (date, place, rise, set, riseZ, setZ, zone, noon) => date + ', ' + place + ': Aufgang ' + rise + ' Uhr, Untergang ' + set + ' Uhr Ortszeit' + (riseZ ? ' (' + riseZ + ' und ' + setZ + ' Uhr ' + zone + ')' : '') + ' · mittags ' + noon + '° hoch',
       readPolar: (date, place, what) => date + ', ' + place + ': ' + what + ' – die Sonne ' + (what === 'POLARNACHT' ? 'geht den ganzen Tag nicht auf.' : 'geht den ganzen Tag nicht unter.'),
-      hint: 'Wähle einen Ort und schieb das Datum durchs Jahr: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief. Gestrichelt: die Bahn am 21. Juni und am 21. Dezember.'
+      hint: 'Schieb den Breitengrad und das Datum: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief. Gestrichelt: die Bahn am 21. Juni und am 21. Dezember.'
     }
   },
 
