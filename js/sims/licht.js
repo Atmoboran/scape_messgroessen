@@ -1,7 +1,7 @@
 // LIGHT – lux and W/m²
 (() => {
   'use strict';
-  const { C, W, H, FS, clamp, rnd, fmt, text, circle, simShell, slider, button, seg } = MG;
+  const { C, W, H, FS, clamp, rnd, fmt, text, circle, simShell, slider, seg, select } = MG;
   const tx = MG.texts('licht');
 
   MG.sims.licht = host => {
@@ -26,18 +26,24 @@
     let src = 'sonne', logW = Math.log10(170);
     const P = [];
     const wFmt = w => fmt(w, w < 1 ? 3 : w < 10 ? 1 : 0);
+    // examples per source: [name, W/m² on the surface]
+    const EX = {
+      sonne: [[0, 0.0027], [1, 0.1], [2, 25], [3, 110], [4, 1050]],
+      led: [[0, 0.02], [1, 1], [2, 1.7], [3, 5], [4, 330]],
+      heizer: [[0, 100], [1, 300], [2, 800]]
+    };
+    const exName = (k, i) => tx('examples.' + k)[i];
+    const exOptions = k => [{ label: tx('pick'), value: '' }].concat(EX[k].map(([i, w]) => ({ label: exName(k, i), value: String(w) })));
     const r1 = ui.row();
-    const sg = seg(r1, ['sonne', 'led', 'heizer'].map(k => ({ label: SRC[k].name, value: k })), src, v => { src = v; }, tx('sourceAria'));
+    seg(r1, ['sonne', 'led', 'heizer'].map(k => ({ label: SRC[k].name, value: k })), src, v => {
+      src = v; ex.options(exOptions(v));
+      const [i, w] = EX[v][Math.min(1, EX[v].length - 1)];   // a typical example of the new source
+      logW = Math.log10(w); sW.set(logW); ex.set(String(w));
+    }, tx('sourceAria'));
     const r2 = ui.row();
-    const sW = slider(r2, { label: tx('slider'), min: -3, max: 3.1, step: 0.01, value: logW, format: v => tx('wm2', wFmt(Math.pow(10, v))), onInput: v => { logW = v; } });
+    const sW = slider(r2, { label: tx('slider'), min: -3, max: 3.1, step: 0.01, value: logW, info: tx('info'), format: v => tx('wm2', wFmt(Math.pow(10, v))), onInput: v => { logW = v; ex.set(''); } });
     const r3 = ui.row();
-    const names = tx('presets');
-    const preset = (i, s, w) => button(r3, names[i], () => { src = s; logW = Math.log10(w); sg.set(s); sW.set(logW); });
-    preset(0, 'sonne', 0.0027);
-    preset(1, 'led', 1);
-    preset(2, 'sonne', 110);
-    preset(3, 'sonne', 1050);
-    preset(4, 'heizer', 300);
+    const ex = select(r3, { label: tx('exampleLabel'), options: exOptions(src), value: '', onChange: v => { if (v) { logW = Math.log10(+v); sW.set(logW); } } });
     ui.readout();
     ui.hint(tx('hint'));
 
@@ -101,7 +107,7 @@
       });
       ctx.fillStyle = C.black; ctx.beginPath(); const my = Y(clamp(ll, lmin, lmax)); ctx.moveTo(sx + 28, my); ctx.lineTo(sx + 42, my - 8); ctx.lineTo(sx + 42, my + 8); ctx.closePath(); ctx.fill();
       // spectrum
-      const gx0 = 30, gx1 = 580, gy1 = 520, gy0 = 360;
+      const gx0 = 30, gx1 = 580, gy1 = 520, gy0 = 396;
       const X = l => gx0 + (l - L0) / (L1 - L0) * (gx1 - gx0);
       ctx.fillStyle = C.white; ctx.fillRect(0, TOP, W, H - TOP);
       ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, TOP); ctx.lineTo(W, TOP); ctx.stroke();
@@ -120,9 +126,11 @@
       text(ctx, tx('uv'), X(315), gy1 + 40, FS.s, C.black, 500, 'center');
       text(ctx, tx('visible'), X(580), gy1 + 40, FS.s, C.black, 500, 'center');
       text(ctx, tx('ir'), X(1150), gy1 + 40, FS.s, C.black, 500, 'center');
-      text(ctx, s.name.toUpperCase(), gx0, 334, FS.s, C.black);
-      ctx.fillStyle = C.yellowPastel; ctx.fillRect(300, 318, 18, 18); text(ctx, tx('eye'), 324, 334, FS.s, C.black);
-      ctx.fillStyle = C.orange; ctx.fillRect(400, 318, 18, 18); text(ctx, tx('counts'), 424, 334, FS.s, C.black);
+      text(ctx, tx('spectrum', s.name.toUpperCase()), gx0, 328, FS.s, C.black);
+      ctx.fillStyle = C.yellowPastel; ctx.fillRect(gx0, 340, 18, 18); ctx.strokeStyle = C.black; ctx.lineWidth = 1; ctx.strokeRect(gx0, 340, 18, 18);
+      text(ctx, tx('eye'), gx0 + 26, 356, FS.s, C.black);
+      ctx.fillStyle = C.orange; ctx.fillRect(gx0, 366, 18, 18);
+      text(ctx, tx('counts'), gx0 + 26, 382, FS.s, C.black);
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;

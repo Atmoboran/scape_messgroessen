@@ -17,6 +17,7 @@
     let from = 248, vane = 200, omega = 0;
     let meanS = 4, curS = 4;   // smoothed wind: number and length of the arrows (no flicker)
     let mean = 4, gusty = 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0, cur = mean;
+    let dn = 0, dir = from;   // the direction also wobbles: about as many degrees as the turbulence in % × 0.57
     const S = [];
     const streaks = Array.from({ length: 34 }, () => ({ x: rnd(0, W), y: rnd(0, TOP), l: rnd(0.8, 1.2) }));
     const r1 = ui.row();
@@ -39,16 +40,19 @@
       gust = Math.max(0, gust - dt / 1.4);
       const g = gust > 0 ? Math.sin(Math.PI * (1 - gust)) * (mean * 0.9 + 5) : 0;
       cur = Math.max(0, mean * (1 + x) + g);
+      // direction: its own Ornstein-Uhlenbeck noise, spread σ ≈ turbulence intensity in radians
+      dn += (-dn / 1.2) * dt + gusty * 57 * Math.sqrt(2 / 1.2 * dt) * (Math.random() + Math.random() + Math.random() - 1.5) * 2;
+      dir = (from + dn + 360) % 360;
       sampleT -= dt;
-      if (sampleT <= 0) { sampleT = 0.05; S.push({ t: now, v: cur }); while (S.length && S[0].t < now - WIN) S.shift(); }
+      if (sampleT <= 0) { sampleT = 0.05; S.push({ t: now, v: cur, d: dir }); while (S.length && S[0].t < now - WIN) S.shift(); }
       const recent = S.filter(s => s.t >= now - MEAN_WIN);
       const avg = recent.reduce((a, s) => a + s.v, 0) / Math.max(1, recent.length);
       let mx = 0, mxS = null; for (const s of S) if (s.v > mx) { mx = s.v; mxS = s; }
       // vane: damped turn into the wind (stands still without wind)
-      const diff = ((from - vane + 540) % 360) - 180;
+      const diff = ((dir - vane + 540) % 360) - 180;
       omega += (diff * 9 * clamp(cur / 2, 0, 1) - omega * 3.2) * dt;
       vane = (vane + omega * dt + 360) % 360;
-      const to = (from + 180) * Math.PI / 180, fx = Math.sin(to), fy = -Math.cos(to);
+      const to = (dir + 180) * Math.PI / 180, fx = Math.sin(to), fy = -Math.cos(to);
       // scene: air streaming in the wind direction, faster with stronger wind
       ctx.fillStyle = C.yellowPale; ctx.fillRect(0, 0, W, TOP);
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, TOP); ctx.clip();
@@ -102,10 +106,11 @@
       text(ctx, shown + '° ' + DIR16[dirIdx(shown)], 576, 36, FS.m, C.white, 500, 'right');
       text(ctx, tx('now'), 344, 72, FS.s, C.white);
       text(ctx, tx('ms', fmt(cur, 1)), 576, 108, 34, C.white, 300, 'right');
-      // course over 10 minutes
-      const gx0 = 52, gx1 = 584, gy0 = 360, gy1 = 548;
+      // course over 10 minutes: speed above, direction below
+      const gx0 = 52, gx1 = 510, gy0 = 346, gy1 = 428, dy0 = 458, dy1 = 562;
       const vmax = Math.max(10, Math.ceil((mx + 2) / 5) * 5);
       const X = tt => gx1 - (now - tt) / WIN * (gx1 - gx0), Y = v => gy1 - v / vmax * (gy1 - gy0);
+      const YD = d => dy1 - d / 360 * (dy1 - dy0);
       ctx.fillStyle = C.white; ctx.fillRect(0, TOP, W, H - TOP);
       ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, TOP); ctx.lineTo(W, TOP); ctx.stroke();
       ctx.lineWidth = 1.5;
@@ -113,19 +118,30 @@
         ctx.strokeStyle = v === 0 ? C.black : C.grey; ctx.beginPath(); ctx.moveTo(gx0, Y(v)); ctx.lineTo(gx1, Y(v)); ctx.stroke();
         text(ctx, String(v), gx0 - 8, Y(v) + 7, FS.s, C.black, 500, 'right');
       }
-      text(ctx, tx('unit'), gx0 - 8, gy0 - 14, FS.s, C.black, 500, 'right');
-      text(ctx, tx('ago'), gx0, 584, FS.s, C.black, 500, 'left');
-      text(ctx, tx('now'), gx1, 584, FS.s, C.black, 500, 'right');
+      text(ctx, tx('unit'), gx0 + 6, gy0 - 4, FS.s, C.black, 500, 'left');
       ctx.strokeStyle = C.black; ctx.lineWidth = 2; ctx.beginPath();
       S.forEach((s, i) => { const px = X(s.t), py = Y(s.v); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
       ctx.stroke();
+      // mean over the last 2 minutes, labelled at the right edge
       ctx.strokeStyle = C.orange; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.moveTo(X(now - MEAN_WIN), Y(avg)); ctx.lineTo(gx1, Y(avg)); ctx.stroke();
-      text(ctx, tx('mean'), X(now - MEAN_WIN) - 8, Y(avg) + 7, FS.s, C.black, 500, 'right');
+      text(ctx, tx('mean'), gx1 + 8, Y(avg) + 7, FS.s, C.orange, 500, 'left');
       if (mxS && mx > avg * 1.15) {
         circle(ctx, X(mxS.t), Y(mx), 8, C.red, C.black, 2);
-        text(ctx, tx('gust', fmt(mx, 1)), clamp(X(mxS.t), gx0 + 50, gx1 - 50), Y(mx) - 14, FS.s, C.black, 500, 'center');
+        text(ctx, tx('gust', fmt(mx, 1)), clamp(X(mxS.t), gx0 + 50, gx1 - 40), Y(mx) - 14, FS.s, C.black, 500, 'center');
       }
+      // direction: 0° … 360° (N, O, S, W, N)
+      ctx.lineWidth = 1.5;
+      [0, 90, 180, 270, 360].forEach((d, i) => {
+        ctx.strokeStyle = i % 4 === 0 ? C.black : C.grey; ctx.beginPath(); ctx.moveTo(gx0, YD(d)); ctx.lineTo(gx1, YD(d)); ctx.stroke();
+        if (d < 360) text(ctx, DIR16[d / 22.5], gx0 - 8, YD(d) + 7, FS.s, C.black, 500, 'right');
+      });
+      text(ctx, tx('dirAxis'), gx0 + 6, dy0 - 6, FS.s, C.black, 500, 'left');
+      ctx.fillStyle = C.purple2;
+      for (let i = 0; i < S.length; i += 2) ctx.fillRect(X(S[i].t) - 1.5, YD(S[i].d) - 1.5, 3, 3);
+      text(ctx, DIR16[dirIdx(from)], gx1 + 8, YD(from) + 7, FS.s, C.purple2, 500, 'left');
+      text(ctx, tx('ago'), gx0, 592, FS.s, C.black, 500, 'left');
+      text(ctx, tx('now'), gx1, 592, FS.s, C.black, 500, 'right');
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;

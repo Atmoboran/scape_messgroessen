@@ -1,8 +1,7 @@
-// HOW DOES IT FEEL? – the thermometer next to wind chill, apparent and felt
-// temperature; a person with a warm boundary layer, wind and sweat
+// HOW DOES IT FEEL? – the thermometer next to the felt temperature; a person with a warm boundary layer, wind and sweat
 (() => {
   'use strict';
-  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, tempColor, thermo, windChill, apparentT, feltT } = MG;
+  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, tempColor, thermo, feltT } = MG;
   // wet-bulb temperature (Stull 2011): the lowest temperature sweating can cool the skin to
   const wetBulb = (T, RH) => T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659)) + Math.atan(T + RH) - Math.atan(RH - 1.676331)
     + 0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH) - 4.686035;
@@ -41,7 +40,7 @@
     let readT = 0;
     function frame(dt) {
       if (!view.fit()) return;
-      const wc = windChill(T, v), at = apparentT(T, RH, v), fe = feltT(T, RH, v);
+      const fe = feltT(T, RH, v);
       layer += (18 / (1 + v * 0.45) - layer) * Math.min(1, dt * 2);
       ctx.fillStyle = T < 5 ? C.ice : T > 26 ? C.pink : C.yellowPale; ctx.fillRect(0, 0, SX, H);
       ctx.fillStyle = C.white; ctx.fillRect(SX, 0, W - SX, H);
@@ -82,8 +81,8 @@
         ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.quadraticCurveTo(w.x + 8, w.y - 10, w.x, w.y - 20); ctx.stroke();
       }
       // cold: how fast unprotected skin freezes at this wind chill (Environment Canada)
-      if (T < 10 && wc < 5) {
-        const lvl = wc <= -40 ? 3 : wc <= -28 ? 2 : wc <= -10 ? 1 : 0;
+      if (fe.mode === 'windChill') {
+        const wc = fe.t, lvl = wc <= -40 ? 3 : wc <= -28 ? 2 : wc <= -10 ? 1 : 0;
         const blink = lvl === 3 && Math.sin(performance.now() / 120) > 0;
         ctx.fillStyle = lvl === 3 ? (blink ? C.red : C.black) : lvl === 2 ? C.red : C.white;
         ctx.fillRect(10, 516, SX - 20, 72);
@@ -103,20 +102,17 @@
       }
       ctx.fillStyle = C.orange; ctx.fillRect(16, 22, 36, 12);
       tx('layer').forEach((l, i) => text(ctx, l, 60, 35 + i * 24, FS.s, C.black));
-      // four thermometers on the same scale: measured air, then the three computed values
+      // two thermometers on the same scale: the measured air and the felt temperature
       const lo = -50, hi = 60, names = tx('names');
-      thermo(ctx, 332, 120, 420, lo, hi, T, tempColor(T), names.air, fmt(T) + '°');
-      [[408, wc, names.windChill], [474, at, names.apparent], [540, fe.t, names.felt]].forEach(([x, val, nm]) =>
-        thermo(ctx, x, 120, 420, lo, hi, val, tempColor(val), nm, fmt(val) + '°', false));
-      ctx.fillStyle = C.black; ctx.fillRect(386, 30, 178, 4);
-      text(ctx, tx('computed'), 475, 22, FS.s, C.black, 500, 'center');
+      thermo(ctx, 368, 120, 420, lo, hi, T, tempColor(T), names.air, fmt(T, 1) + ' °C');
+      thermo(ctx, 506, 120, 420, lo, hi, fe.t, tempColor(fe.t), names.felt, fmt(fe.t, 1) + ' °C', false);
       ctx.fillStyle = C.black; ctx.fillRect(SX + 12, 516, W - SX - 22, 72);
       text(ctx, tx('range'), SX + 26, 544, FS.s, C.white);
       text(ctx, tx('modes.' + fe.mode).toUpperCase(), SX + 26, 574, FS.m, C.white);
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;
-        ui.setRead(tx('read', fmt(T, 1), fmt(wc, 1), fmt(at, 1), fmt(fe.t, 1), tx('modes.' + fe.mode)));
+        ui.setRead(tx('read', fmt(T, 1), fmt(fe.t, 1), tx('modes.' + fe.mode)));
       }
     }
     return { frame };

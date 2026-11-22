@@ -134,7 +134,8 @@ window.TEXTS = {
       messung: 'Die Station misst den absoluten Luftdruck am Standort und rechnet daraus den relativen Luftdruck auf Meereshöhe. Messbereich 300 bis 1100 hPa, Genauigkeit ±3 hPa.',
       einordnung: '1013,2 hPa gelten als Standard-Luftdruck auf Meereshöhe. Beispiel aus der Anleitung: In 305 m Höhe zeigt die Station absolut 969 hPa, auf Meereshöhe umgerechnet 1016 hPa.',
       hinweis: '„Hoch“ und „Tief“ beziehen sich auf den relativen, auf Meereshöhe umgerechneten Druck: Über 1013,2 hPa spricht die Anleitung von Hochdruck, darunter von Tiefdruck. Erst die Umrechnung macht Orte in verschiedenen Höhen vergleichbar.',
-      model: 'Die Unterschiede in der Teilchen-Ansicht sind stark übertrieben: Beim echten Wetter schwankt der Luftdruck nur um wenige Prozent. Die Höhen-Ansicht rechnet mit einer Normatmosphäre.'
+      model: 'In Wirklichkeit stecken in einem Kasten dieser Größe unvorstellbar viel mehr Teilchen: In einem einzigen Kubikzentimeter Luft (einem Zuckerwürfel) sind es etwa 27 Trillionen (2,7 · 10¹⁹), in einem Kubikmeter rund 25 Quadrillionen (2,5 · 10²⁵). Jede Sekunde prallen davon Milliarden von Milliarden auf jeden Quadratzentimeter Wand – darum spüren wir den Druck als gleichmäßige Kraft und nicht als einzelne Stöße. Die Unterschiede in der Teilchen-Ansicht sind stark übertrieben: Beim echten Wetter schwankt der Luftdruck nur um wenige Prozent. Die Höhen-Ansicht rechnet mit einer Normatmosphäre.',
+      formel: 'Druck = Kraft ÷ Fläche: p = F / A   (1 hPa = 100 N/m²)\nIdeales Gas: p = n · k · T   (n = Teilchen pro m³, k = 1,38 · 10⁻²³ J/K, T in Kelvin)\n→ doppelt so viele Teilchen oder (in Kelvin) doppelt so warm = doppelter Druck\nBarometrische Höhenformel (Normatmosphäre): p(h) = p₀ · (1 − 0,0065 · h / 288,15)^5,255\nFaustregel nahe dem Boden: etwa 1 hPa weniger pro 8 m Höhe'
     },
     niederschlag: {
       name: 'Niederschlag', unit: 'mm',
@@ -149,7 +150,8 @@ window.TEXTS = {
       messung: 'Ein Trichter sammelt den Niederschlag und leitet ihn in eine kleine Wippe. Bei jeweils 0,254 mm kippt sie, die Elektronik zählt das Kippen. Regen, Schnee oder Hagel erkennt das Gerät nicht automatisch. Mit „Messgerät der Station zeigen“ siehst du das in der Simulation.',
       einordnung: 'Bis 2,5 mm/h gilt Regen als leicht, bis 10 mm/h als mäßig, darüber als stark. Der DWD warnt ab 15 mm in einer Stunde vor Starkregen, ab 25 mm vor Unwetter und ab 40 mm vor extremem Unwetter. Weltrekord: rund 305 mm in einer Stunde (Holt, Missouri, USA, 1947).',
       hinweis: 'Ein Kipp-Regenmesser zählt Kippvorgänge, keine einzelnen Tropfen: Einmal Kippen = 0,254 mm = 254 Milliliter pro Quadratmeter. Was bei Schnee und Eis im Trichter passiert, beschreibt die Anleitung nicht – eine automatische Schneemessung gibt es also nicht.',
-      model: 'Das Wasser steigt in Echtzeit: Bei 30 mm/h dauert es wirklich eine Stunde, bis 30 mm erreicht sind (mit Zeitraffer eine Minute). Echter Regen ist nie eine Stunde lang gleich stark. Tropfen sind hier größer gezeichnet; echte Regentropfen sind höchstens etwa 5 mm groß und eher rund als spitz.'
+      model: 'Das Wasser steigt in Echtzeit: Bei 30 mm/h dauert es wirklich eine Stunde, bis 30 mm erreicht sind (mit Zeitraffer eine Minute). Echter Regen ist nie eine Stunde lang gleich stark. Tropfen sind hier größer gezeichnet; echte Regentropfen sind höchstens etwa 5 mm groß und eher rund als spitz.',
+      formel: '1 mm Niederschlag = 1 Liter Wasser pro Quadratmeter\nNiederschlagsmenge = Regenstärke × Dauer   (z. B. 30 mm/h × 2 h = 60 mm)\nWasser auf einer Fläche = Niederschlag in mm × Fläche in m²   (in Litern)\nKipp-Regenmesser: Niederschlag = Anzahl der Kippungen × 0,254 mm'
     },
     wind: {
       name: 'Wind', unit: '° · m/s',
@@ -164,22 +166,24 @@ window.TEXTS = {
       messung: 'Eine Windfahne dreht sich in die Strömung; der Sensor muss beim Aufbau genau nach Norden zeigen, sonst ist jede Richtung um denselben Winkel falsch. Drei Windschalen drehen sich umso schneller, je stärker der Wind ist. Die Station zeigt Mittelwerte über 2 oder 10 Minuten und die Böen als kurze Spitzen.',
       einordnung: '5 m/s = 18 km/h, 10 m/s = 36 km/h, 20 m/s = 72 km/h. Messbereich 0 bis 50 m/s. Die Richtung ist auf ±10° genau; auf dem 16-teiligen Kompass liegen die Himmelsrichtungen 22,5° auseinander.',
       hinweis: 'Windrichtungen werden nach ihrer Herkunft benannt: Ein Westwind kommt aus Westen und weht nach Osten. Bäume, Zelte und lose Gegenstände reagieren auf die kurzen Böen – nicht nur auf den Mittelwert.',
-      model: 'Der Verlauf läuft im Zeitraffer: 10 Minuten passen in 30 Sekunden. Die Schwankungen des Windes sind Zufallszahlen, keine echten Messwerte. Echter Wind dreht auch in der Richtung ständig ein wenig hin und her.'
+      model: 'Der Verlauf läuft im Zeitraffer: 10 Minuten passen in 30 Sekunden. Die Schwankungen des Windes sind Zufallszahlen, keine echten Messwerte. Echter Wind dreht auch in der Richtung ständig ein wenig hin und her.',
+      formel: 'Umrechnung: 1 m/s = 3,6 km/h\nMittelwert: v̄ = (v₁ + v₂ + … + vₙ) / n   (z. B. alle Messwerte der letzten 2 oder 10 Minuten)\nTurbulenzintensität: TI = σ / v̄   (σ = wie stark der Wind im Mittel um v̄ schwankt)\nBeaufort-Skala näherungsweise: v ≈ 0,836 · B^(3/2) m/s   (B = Windstärke)\nWindrichtung: der Winkel, aus dem der Wind kommt – 0° = Nord, 90° = Ost, 180° = Süd, 270° = West'
     },
     gefuehlt: {
       name: 'Wie fühlt es sich an?', unit: '°C',
       head: 'Wie fühlt es <br class="hy">sich an?',
-      lead: 'Wie warm oder kalt uns das Wetter vorkommt, hängt nicht nur vom Thermometer ab: Wind trägt Wärme von der Haut weg, feuchte Luft bremst das Verdunsten von Schweiß.',
+      lead: 'Wie warm oder kalt uns das Wetter vorkommt, hängt nicht nur vom Thermometer ab: Wind trägt Wärme von der Haut weg, feuchte Luft bremst das Verdunsten von Schweiß. Die gefühlte Temperatur fasst das in einer Zahl zusammen.',
       badge: 'Schieb den Regler „Wind“',
-      merke: 'Wind und feuchte Luft verändern, wie warm sich die Luft anfühlt. Windkühle, scheinbare und gefühlte Temperatur sind Rechenmodelle dafür – das Thermometer zeigt weiter dieselbe Temperatur. Bei feuchter Hitze kann der Körper sich irgendwann nicht mehr kühlen: Dann wird Hitze tödlich.',
+      merke: 'Wind und feuchte Luft verändern, wie warm sich die Luft anfühlt – das Thermometer zeigt trotzdem dieselbe Temperatur. Bei Kälte zählt vor allem der Wind, bei Hitze die Feuchte. Bei feuchter Hitze kann der Körper sich irgendwann nicht mehr kühlen: Dann wird Hitze tödlich.',
       tasks: {
-        chill: { q: 'Es ist 0 °C, der Wind weht mit 10 m/s. Wie kalt fühlt es sich an (Windkühle, ganze Grad)?', answer: -7, tol: 1, unit: '°C' },
+        chill: { q: 'Es ist 0 °C, der Wind weht mit 10 m/s. Welche gefühlte Temperatur zeigt die Simulation (ganze Grad)?', answer: -7, tol: 1, unit: '°C' },
         deadly: { q: 'Ab welcher Kühlgrenztemperatur ist Hitze nach wenigen Stunden tödlich?', options: ['25 °C', '35 °C', '45 °C'], answer: 1 }
       },
-      messung: 'Alle drei Werte sind berechnet: die Windkühle aus Temperatur und Wind, die scheinbare Temperatur (AT) aus Temperatur, Feuchte und Wind – in der Variante für Orte im Schatten, die dem Wind ausgesetzt sind. Die gefühlte Temperatur nutzt unter 4,4 °C die Windkühle, über 26,7 °C den Hitzeindex, dazwischen die Lufttemperatur.',
-      einordnung: 'Auch der DWD verwendet eine gefühlte Temperatur; sie berücksichtigt zusätzlich die Strahlung. Windkühle, AT und gefühlte Temperatur sind verschiedene Modelle – darum können sie sich unterscheiden.',
+      messung: 'Die gefühlte Temperatur ist berechnet, nicht gemessen. Die Station nutzt unter 4,4 °C die Windkühle (aus Temperatur und Wind), über 26,7 °C den Hitzeindex (aus Temperatur und Luftfeuchte) und dazwischen einfach die Lufttemperatur. Daneben kann die Station noch die Windkühle und eine „scheinbare Temperatur“ (AT) anzeigen – das sind verwandte Rechenmodelle.',
+      einordnung: 'Auch der DWD verwendet eine gefühlte Temperatur; sie berücksichtigt zusätzlich die Sonnenstrahlung und die Kleidung. Darum kann sie von der Zahl der Station abweichen.',
       hinweis: 'Diese Zahlen beschreiben, wie Wetter auf Menschen wirkt – nicht, wie warm die Luft ist. Ein Thermometer zeigt bei Wind dieselbe Temperatur wie ohne.',
-      model: 'Windkühle nach dem kanadischen und US-Wetterdienst, scheinbare Temperatur nach Steadman, Hitzeindex nach dem US-Wetterdienst. Sonne und Kleidung fehlen in diesen Rechnungen. Warme Luftschicht und Schweißtropfen sind stark vergrößert gezeichnet.'
+      model: 'Windkühle nach dem kanadischen und US-Wetterdienst, Hitzeindex nach dem US-Wetterdienst, Kühlgrenztemperatur nach Stull. Sonne und Kleidung fehlen in diesen Rechnungen. Warme Luftschicht und Schweißtropfen sind stark vergrößert gezeichnet.',
+      formel: 'Unter 4,4 °C – Windkühle: WCT = 13,12 + 0,6215·T − 11,37·v^0,16 + 0,3965·T·v^0,16   (T in °C, v in km/h)\nÜber 26,7 °C – Hitzeindex: eine lange Formel aus Temperatur und relativer Feuchte (Rothfusz, US-Wetterdienst)\nDazwischen: gefühlt = Lufttemperatur\nKühlgrenztemperatur (Näherung nach Stull): Tw ≈ T·atan(0,152·√(RH + 8,3)) + atan(T + RH) − atan(RH − 1,68) + 0,0039·RH^1,5·atan(0,023·RH) − 4,69'
     },
     'uv-index': {
       name: 'UV-Index', unit: '',
@@ -206,7 +210,8 @@ window.TEXTS = {
       messung: 'Der Außensensor hat einen eigenen Lichtsensor. Die Einheit lässt sich zwischen W/m², foot-candle und Lux umschalten. Messbereich: 0 bis 200 kLux.',
       einordnung: '1 kLux = 1000 Lux. Der Messbereich reicht bis 200 kLux, also 200.000 Lux – so hell wird es draußen höchstens in praller Sonne.',
       hinweis: 'Steht auf dem Display kLux, heißt das „tausend Lux“ – also sichtbare Helligkeit. Steht dort W/m², geht es um Strahlungsleistung. Lux und W/m² lassen sich nicht einfach ineinander umrechnen.',
-      model: 'Vergleich mal Sonne, LED und Wärmestrahler: Der Wärmestrahler liefert viel Leistung, aber kaum Lux. Die Spektren sind vereinfacht – Sonne und Wärmestrahler als ideale Wärmestrahler, die LED als zwei Glockenkurven.'
+      model: 'Vergleich mal Sonne, LED und Wärmestrahler: Der Wärmestrahler liefert viel Leistung, aber kaum Lux. Die Spektren sind vereinfacht – Sonne und Wärmestrahler als ideale Wärmestrahler, die LED als zwei Glockenkurven.',
+      formel: 'Strahlungsleistung: E = ∫ S(λ) dλ   in W/m²  (alle Wellenlängen zählen gleich)\nBeleuchtungsstärke: Eᵥ = 683 lm/W · ∫ S(λ) · V(λ) dλ   in Lux  (V = Empfindlichkeit des Auges, am größten bei 555 nm)\n1 lx = 1 lm/m², 1 kLux = 1000 Lux\nLichtausbeute = Lux pro W/m²: Sonne ≈ 90–100, weiße LED ≈ 300, Wärmestrahler nur wenige'
     },
     mondphase: {
       name: 'Mondphase', unit: '',
@@ -323,23 +328,23 @@ window.TEXTS = {
       slider: 'Regenstärke',
       rate: v => v + ' mm/h',
       info: 'mm/h heißt: So viele Millimeter hoch stünde das Wasser nach einer Stunde auf dem Boden, wenn nichts abfließt oder versickert – 1 mm ist 1 Liter auf jedem Quadratmeter. Nach DWD gilt Regen bis 2,5 mm/h als leicht, bis 10 mm/h als mäßig, darüber als stark. Ab 15 mm in einer Stunde warnt der DWD vor Starkregen, ab 25 mm vor Unwetter, ab 40 mm vor extremem Unwetter. Der Weltrekord für eine Stunde liegt bei rund 305 mm (Holt, Missouri, USA, 1947).',
-      btnGauge: ['Messgerät ausblenden', 'Messgerät der Station zeigen'],
-      btnFast: ['Echtzeit', 'Zeitraffer (1 s = 1 min)'],
+      btnGauge: ['Messgerät', 'Messgerät'],
+      btnFast: ['Zeitraffer', 'Zeitraffer'],
       btnReset: 'Neu starten',
+      lin: 'LIN', log: 'LOG',
       classes: ['Kein Regen', 'Nieselregen', 'Leichter Regen', 'Mäßiger Regen', 'Starker Regen', 'Starkregen', 'Unwetter', 'Extremes Unwetter', 'Wolkenbruch – fast Weltrekord'],
       funnel: 'TRICHTER', seesaw: 'WIPPE', tipped: 'GEKIPPT',
       times: n => n + ' ×',
       clockLabel: 'ES REGNET SEIT',
       fastNote: 'ZEITRAFFER 60×',
       mm: 'mm',
-      mmLog: 'mm (log.)',
       afterHour: ['NACH', '1 STUNDE'],
       floor: '1 m² BODEN',
       total: v => v + ' mm',
       perM2: v => '= ' + v + ' Liter auf 1 m²',
       read: (r, roof, tubs) => 'In einer Stunde: ' + r + ' Liter auf jedem Quadratmeter – auf ein Dach von 100 m² fallen ' + roof + ' Liter, so viel wie ' + tubs + ' volle Badewannen',
       readDry: 'Es regnet nicht.',
-      hint: 'Schieb die Regenstärke und schau rechts zu: Das Wasser steigt so schnell wie in echt – bei 30 mm/h stehen nach einer Stunde 3 cm Wasser auf dem Boden. Die Skala ist logarithmisch: Jeder Strich bedeutet zehnmal so viel Wasser.'
+      hint: 'Schieb die Regenstärke und schau rechts zu: Das Wasser steigt so schnell wie in echt – bei 30 mm/h stehen nach einer Stunde 3 cm Wasser auf dem Boden. Mit LIN/LOG oben am Gefäß schaltest du die Skala um – logarithmisch bedeutet jeder Strich zehnmal so viel Wasser.'
     },
     wind: {
       aria: 'Windfahne im Kompass und Schalenkreuz von oben, darunter der Verlauf der Windgeschwindigkeit – zieh am Kompass, um die Windrichtung zu ändern',
@@ -353,27 +358,27 @@ window.TEXTS = {
       direction: 'RICHTUNG', now: 'JETZT',
       ms: v => v + ' m/s', unit: 'm/s',
       ago: '−10 MIN',
-      mean: 'MITTEL 2 MIN',
+      mean: 'MITTEL',
+      dirAxis: 'RICHTUNG',
       gust: v => 'BÖE ' + v,
       read: (dirName, deg, avg, avgKmh, bft, mx, mxKmh) => dirName + 'wind aus ' + deg + '° · Mittel ' + avg + ' m/s = ' + avgKmh + ' km/h (' + bft + ' Bft) · stärkste Böe ' + mx + ' m/s = ' + mxKmh + ' km/h',
       hint: 'Zieh am Kompass: Dort, wo du hinziehst, kommt der Wind her – die Windfahne dreht ihre Spitze in den Wind. Mit der Turbulenz stellst du ein, wie stark der Wind schwankt; unten siehst du Mittelwert (orange) und stärkste Böe (rot).'
     },
     koerper: {
-      aria: 'Eine Person im Wind mit warmer Luftschicht um die Haut, daneben das Thermometer und drei berechnete Werte',
+      aria: 'Eine Person im Wind mit warmer Luftschicht um die Haut, daneben das Thermometer und die gefühlte Temperatur',
       sliderT: 'Lufttemperatur', sliderV: 'Wind', sliderRh: 'Luftfeuchte',
-      names: { air: 'LUFT', windChill: 'WIND–\nKÜHLE', apparent: 'AT', felt: 'GE–\nFÜHLT' },
-      computed: 'BERECHNET',
+      names: { air: 'THERMO–\nMETER', felt: 'GEFÜHLT' },
       modes: { windChill: 'Windkühle', heatIndex: 'Hitzeindex', air: 'Lufttemperatur' },
       infoT: 'Bei Hitze kühlt sich der Körper, indem Schweiß verdunstet. Das klappt nur, solange die Luft trocken genug ist. Ein Maß dafür ist die Kühlgrenztemperatur: Liegt sie bei 35 °C oder mehr, kann der Körper seine Wärme nicht mehr loswerden – auch im Schatten nach wenigen Stunden tödlich; neuere Messungen zeigen Lebensgefahr schon ab etwa 31 °C. Bei Kälte verliert der Körper Wärme, besonders mit Wind: Ab einer Windkühle von etwa −28 °C kann ungeschützte Haut in 10 bis 30 Minuten erfrieren, ab −40 °C schon in wenigen Minuten (kanadischer Wetterdienst).',
       infoV: 'Um die Haut liegt eine dünne Schicht warmer Luft, die isoliert. Wind bläst sie weg und bringt ständig neue, kalte Luft an die Haut – der Körper verliert schneller Wärme. Darum fühlt sich Wind bei Kälte kälter an (Windkühle). Bei Hitze hilft Wind dagegen, weil Schweiß schneller verdunstet. Die Lufttemperatur selbst ändert sich durch Wind nicht.',
       infoRh: 'Schweiß kühlt nur, wenn er verdunsten kann. Je feuchter die Luft, desto schlechter klappt das – darum fühlt sich feuchte Hitze (Schwüle) heißer an als trockene. Hitzeindex und scheinbare Temperatur rechnen das mit ein. Bei Kälte spielt die Luftfeuchte in diesen Formeln kaum eine Rolle.',
-      chillBox: v => 'WINDKÜHLE ' + v + ' °C',
+      chillBox: v => 'GEFÜHLT ' + v + ' °C',
       cold: ['KEINE GEFAHR', 'KALT: WARM ANZIEHEN', 'ERFRIERUNG IN 30 MIN', 'ERFRIERUNG IN MINUTEN'],
       wetBulb: v => 'KÜHLGRENZE ' + v + ' °C',
       danger: ['KÖRPER KÜHLT NOCH', 'LEBENSGEFAHR', 'TÖDLICH IN STUNDEN'],
       layer: ['WARME', 'LUFTSCHICHT'],
       range: 'GEFÜHLT RECHNET MIT:',
-      read: (tt, wc, at, fe, mode) => 'Luft ' + tt + ' °C · Windkühle ' + wc + ' °C · scheinbar (AT) ' + at + ' °C · gefühlt ' + fe + ' °C (' + mode + ')',
+      read: (tt, fe, mode) => 'Luft ' + tt + ' °C · gefühlt ' + fe + ' °C (gerechnet mit: ' + mode + ')',
       hint: 'Wind bläst die warme Luftschicht (orange) von der Haut, feuchte Luft lässt Schweiß schlechter verdunsten. Das Thermometer ganz links bleibt dabei stehen.'
     },
     uv: {
@@ -403,13 +408,21 @@ window.TEXTS = {
       sourceAria: 'Lichtquelle',
       slider: 'Strahlung',
       wm2: v => v + ' W/m²',
-      presets: ['Vollmondnacht', 'Wohnzimmer', 'Bedeckter Tag', 'Pralle Sonne', 'Wärmestrahler'],
+      exampleLabel: 'Beispiel',
+      pick: 'Beispiel wählen …',
+      examples: {
+        sonne: ['Vollmondnacht (Mondlicht ist Sonnenlicht)', 'Dämmerung', 'Trüber Wintertag', 'Bedeckter Sommertag', 'Pralle Sommersonne'],
+        led: ['Nachtlicht', 'Wohnzimmer', 'Büro', 'Sportplatz mit Flutlicht', 'OP-Leuchte'],
+        heizer: ['Heizpanel an der Wand', 'Heizstrahler auf der Terrasse', 'Direkt vor der Glut']
+      },
+      info: 'W/m² (Watt pro Quadratmeter) ist die Strahlungsleistung, die auf eine Fläche trifft – egal ob wir sie sehen oder nicht. Mit dem Regler stellst du sie ein, im Menü darunter findest du typische Beispiele für die gewählte Lichtquelle. Wie viel Lux daraus werden, hängt davon ab, wie viel der Strahlung im sichtbaren Bereich liegt.',
+      spectrum: name => 'SPEKTRUM: ' + name,
       m2: '1 m²',
       lux: 'LUX', over: 'ÜBER MAX.',
       klx: v => v + ' klx', lx: v => v + ' lx',
       scale: ['Mond 0,2 lx', 'Zimmer 300 lx', 'bedeckt 10 klx', 'Sonne 100 klx', 'max. 200 klx'],
       uv: 'UV', visible: 'SICHTBAR', ir: 'INFRAROT (WÄRME)',
-      eye: 'AUGE', counts: 'ZÄHLT (LUX)',
+      eye: 'Bereich, den das Auge sehen kann', counts: 'Bereich, der für die Lux-Berechnung zählt',
       read: (name, w, lux, eff) => name + ': ' + w + ' W/m² Strahlung → ' + lux + ' Lux sichtbares Licht (≈ ' + eff + ' Lux pro W/m²)',
       hint: 'Lux zählt nur das Licht, das unser Auge sieht – gewichtet mit seiner Empfindlichkeit (gelbe Kurve). W/m² zählt die ganze Strahlungsleistung.'
     },

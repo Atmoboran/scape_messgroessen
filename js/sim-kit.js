@@ -176,6 +176,55 @@
     return { set };
   }
 
+  // pictograms for icon buttons (24 × 24, stroked with the text colour)
+  const ICON = {
+    play: '<path d="M7 4 L20 12 L7 20 Z" fill="currentColor" stroke="none"/>',
+    pause: '<path d="M6 4 H10 V20 H6 Z M14 4 H18 V20 H14 Z" fill="currentColor" stroke="none"/>',
+    reset: '<path d="M5 12 a7 7 0 1 0 2.2 -5.1"/><path d="M4 3 V8 H9"/>',
+    fast: '<path d="M3 5 L11 12 L3 19 Z M12 5 L20 12 L12 19 Z" fill="currentColor" stroke="none"/>',
+    realtime: '<circle cx="12" cy="12" r="8"/><path d="M12 7 V12 L15.5 14"/>',
+    gauge: '<path d="M3 4 H21 L14 12 V15 H10 V12 Z"/><path d="M6 20 H18 M12 15 V20"/>',
+    today: '<rect x="4" y="5" width="16" height="15"/><path d="M4 10 H20 M8 3 V7 M16 3 V7"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/>'
+  };
+  // button with a pictogram and a small caption below; with toggle: [icons on/off], [captions on/off]
+  function iconButton(row, icon, label, onClick, opts = {}) {
+    const b = el('button', 'btn icon-btn' + (opts.cls ? ' ' + opts.cls : ''));
+    b.type = 'button';
+    let state = !!opts.state;
+    const upd = () => {
+      const ic = opts.toggle ? (state ? icon[0] : icon[1]) : icon;
+      const lb = opts.toggle ? (state ? label[0] : label[1]) : label;
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">${ICON[ic] || ''}</svg><span></span>`;
+      b.lastChild.textContent = lb;
+      b.setAttribute('aria-label', lb);
+      if (opts.toggle && opts.pressed !== false) b.setAttribute('aria-pressed', state ? 'true' : 'false');
+    };
+    b.addEventListener('click', () => { if (opts.toggle) { state = !state; upd(); onClick(state); } else onClick(); });
+    upd();
+    row.appendChild(b);
+    return { el: b, set(v) { state = v; upd(); }, label(t) { b.lastChild.textContent = t; b.setAttribute('aria-label', t); } };
+  }
+
+  // dropdown with a label: options [{ label, value }]
+  function select(row, o) {
+    const id = 'r' + (++uid);
+    const w = el('div', 'select');
+    w.innerHTML = `<label for="${id}"></label><select id="${id}"></select>`;
+    $('label', w).textContent = o.label || '';
+    if (!o.label) $('label', w).hidden = true;
+    const s = $('select', w);
+    if (o.aria) s.setAttribute('aria-label', o.aria);
+    const fill = opts => {
+      s.innerHTML = '';
+      for (const op of opts) { const x = document.createElement('option'); x.value = op.value; x.textContent = op.label; s.appendChild(x); }
+    };
+    fill(o.options);
+    if (o.value != null) s.value = o.value;
+    s.addEventListener('change', () => o.onChange(s.value));
+    row.appendChild(w);
+    return { el: s, set(v) { s.value = v; }, options: fill };
+  }
+
   // dragging on the canvas (mouse, finger, pen)
   function dragOn(view, h) {
     let active = false;
@@ -380,7 +429,7 @@
 
   Object.assign(MG, {
     C, W, H, FS, TAU, clamp, rnd, lerp, fmt, texts,
-    makeView, text, arrow, circle, el, simShell, slider, button, toggle, seg, dragOn,
+    makeView, text, arrow, circle, el, simShell, slider, button, toggle, seg, dragOn, iconButton, select, ICON,
     tempColor, thermo, collide, speedColor, particle, speedLegend,
     satVap, satDens, dewPoint, beaufort, windChill, heatIndex, apparentT, feltT,
     SYN, moonAge, moonName, drawMoonFace,

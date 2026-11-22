@@ -3,7 +3,7 @@
 // station is shown.
 (() => {
   'use strict';
-  const { C, W, H, FS, clamp, rnd, lerp, fmt, text, circle, simShell, slider, button, toggle } = MG;
+  const { C, W, H, FS, clamp, rnd, lerp, fmt, text, circle, simShell, slider, iconButton } = MG;
   const tx = MG.texts('regen');
 
   // a falling rain drop: round at the bottom, pointed at the top
@@ -29,16 +29,22 @@
     const STEP = 0.254;                       // mm per tip of the seesaw
     const SX = 372, GROUND = 548;             // scene on the left
     let rate = 4, seconds = 0, total = 0, tips = 0, fill = 0, tilt = 1, anim = 0;
-    let gauge = false, fast = false;
+    let gauge = false, fast = false, logScale = true;
     const drops = [], splash = [], spill = [];
     const PIV = { x: 186, y: 420 }, A = 0.32, ARM = 66;
     const FUN = { x0: 86, x1: 286, y: 220, neck: 310 };   // funnel
     const r1 = ui.row();
     slider(r1, { label: tx('slider'), min: 0, max: 1000, step: 1, value: Math.round(posOf(rate)), info: tx('info'), format: v => tx('rate', fmtRate(rateOf(v))), onInput: v => { rate = rateOf(v); } });
     const r2 = ui.row();
-    toggle(r2, tx('btnGauge'), gauge, v => { gauge = v; });
-    toggle(r2, tx('btnFast'), fast, v => { fast = v; });
-    button(r2, tx('btnReset'), () => { seconds = 0; total = 0; tips = 0; fill = 0; });
+    iconButton(r2, ['gauge', 'gauge'], tx('btnGauge'), v => { gauge = v; }, { toggle: true, state: gauge });
+    iconButton(r2, ['fast', 'fast'], tx('btnFast'), v => { fast = v; }, { toggle: true, state: fast });
+    iconButton(r2, 'reset', tx('btnReset'), () => { seconds = 0; total = 0; tips = 0; fill = 0; });
+    // switch between logarithmic and linear scale: the button sits on the display itself
+    const LOGBTN = { x: 384, y: 122, w: 96, h: 34 };
+    view.canvas.addEventListener('pointerdown', e => {
+      const p = view.local(e);
+      if (p.x >= LOGBTN.x && p.x <= LOGBTN.x + LOGBTN.w && p.y >= LOGBTN.y && p.y <= LOGBTN.y + LOGBTN.h) logScale = !logScale;
+    });
     ui.readout();
     ui.hint(tx('hint'));
 
@@ -133,25 +139,38 @@
       const hh = Math.floor(seconds / 3600), mi = Math.floor(seconds / 60) % 60, se = Math.floor(seconds) % 60;
       text(ctx, hh + ':' + String(mi).padStart(2, '0') + ':' + String(se).padStart(2, '0'), X0, 66, 32, C.black, 300);
       if (fast) text(ctx, tx('fastNote'), X0, 92, FS.s, C.red);
-      // logarithmic scale 0,01 … 300 mm: every step is ten times as much water
-      const LMIN = -2, LMAX = Math.log10(300), top = 150, by = 492;
-      const yOf = v => by - (clamp(Math.log10(Math.max(v, 1e-9)), LMIN, LMAX) - LMIN) / (LMAX - LMIN) * (by - top);
-      const tx0 = X0 + 66, tx1 = W - 52;
+      // scale: logarithmic 0,01 … 300 mm (every main tick ten times as much water) or linear
+      const top = 170, by = 492, tx0 = X0 + 66, tx1 = W - 52;
+      const LMIN = -2, LMAX = Math.log10(300);
+      const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 5, 10]) if (m * p >= v) return m * p; return 10 * p; };
+      const hmax = nice(Math.max(1, rate, total) * 1.05);
+      const yOf = logScale
+        ? v => by - (clamp(Math.log10(Math.max(v, 1e-9)), LMIN, LMAX) - LMIN) / (LMAX - LMIN) * (by - top)
+        : v => by - clamp(v, 0, hmax) / hmax * (by - top);
       if (total > 0) { const y = yOf(total); ctx.fillStyle = C.blue2; ctx.fillRect(tx0, y, tx1 - tx0, by - y); }
       ctx.strokeStyle = C.black; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(tx0, top - 10); ctx.lineTo(tx0, by); ctx.lineTo(tx1, by); ctx.lineTo(tx1, top - 10); ctx.stroke();
       ctx.lineWidth = 2;
-      for (const v of [0.01, 0.1, 1, 10, 100]) {
+      const ticks = logScale ? [0.01, 0.1, 1, 10, 100] : [0, 1, 2, 3, 4, 5].map(i => hmax * i / 5);
+      for (const v of ticks) {
         const y = yOf(v);
         ctx.beginPath(); ctx.moveTo(tx0 - 8, y); ctx.lineTo(tx0, y); ctx.stroke();
-        text(ctx, fmt(v, v < 1 ? (v < 0.1 ? 2 : 1) : 0), tx0 - 12, y + 7, FS.s, C.black, 500, 'right');
+        text(ctx, fmt(v, v > 0 && v < 1 ? (v < 0.1 ? 2 : 1) : (hmax < 5 && !logScale ? 1 : 0)), tx0 - 12, y + 7, FS.s, C.black, 500, 'right');
       }
-      ctx.lineWidth = 1;
-      for (let e = -2; e < 3; e++) for (let m = 2; m <= 9; m++) {   // small ticks in between
-        const v = m * Math.pow(10, e); if (v > 300) break;
-        const y = yOf(v); ctx.beginPath(); ctx.moveTo(tx0 - 4, y); ctx.lineTo(tx0, y); ctx.stroke();
+      if (logScale) {
+        ctx.lineWidth = 1;
+        for (let e = -2; e < 3; e++) for (let m = 2; m <= 9; m++) {   // small ticks in between
+          const v = m * Math.pow(10, e); if (v > 300) break;
+          const y = yOf(v); ctx.beginPath(); ctx.moveTo(tx0 - 4, y); ctx.lineTo(tx0, y); ctx.stroke();
+        }
       }
-      text(ctx, tx('mmLog'), X0, top - 22, FS.s, C.black, 500, 'left');
+      // the lin/log switch on the display
+      ctx.fillStyle = C.white; ctx.fillRect(LOGBTN.x, LOGBTN.y, LOGBTN.w, LOGBTN.h);
+      ctx.strokeStyle = C.black; ctx.lineWidth = 2; ctx.strokeRect(LOGBTN.x, LOGBTN.y, LOGBTN.w, LOGBTN.h);
+      ctx.fillStyle = C.black; ctx.fillRect(logScale ? LOGBTN.x + LOGBTN.w / 2 : LOGBTN.x, LOGBTN.y, LOGBTN.w / 2, LOGBTN.h);
+      text(ctx, tx('lin'), LOGBTN.x + LOGBTN.w / 4, LOGBTN.y + 24, FS.s, logScale ? C.black : C.white, 500, 'center');
+      text(ctx, tx('log'), LOGBTN.x + LOGBTN.w * 3 / 4, LOGBTN.y + 24, FS.s, logScale ? C.white : C.black, 500, 'center');
+      text(ctx, tx('mm'), LOGBTN.x + LOGBTN.w + 10, LOGBTN.y + 24, FS.s, C.black, 500, 'left');
       if (rate > 0) {
         const y = yOf(rate);
         ctx.setLineDash([7, 6]); ctx.strokeStyle = C.red; ctx.lineWidth = 3;
