@@ -12,7 +12,7 @@ window.TEXTS = {
   locale: 'de-DE',
   pageTitle: 'Messgrößen der Wetterstation',
   // LOCAL: the station stands outside the museum
-  description: 'Vertiefung zur Wetterstation: Was misst die Station vor dem Museum? Alle Messgrößen mit kleinen interaktiven Simulationen.',
+  description: 'Vertiefung zur Wetterstation: Was misst die Station vor dem Museum? Zehn Themen mit kleinen interaktiven Simulationen.',
 
   // Texts of the shared kit (js/view.js, js/kit.js).
   kit: {
@@ -199,7 +199,8 @@ window.TEXTS = {
       einordnung: 'Ab UV-Index 3 empfiehlt die WHO Sonnenschutz. In Süddeutschland liegen die sommerlichen Tageshöchstwerte laut DWD im Mittel um 7 bis 8 – tropische Werte sind deutlich höher.',
       hinweis: 'Die UV-Strahlung hängt von Sonnenstand, Ozon, Wolken und Staub in der Luft ab. An einem kühlen, klaren Tag kann der UV-Index höher sein als an einem heißen, bewölkten.',
       // LOCAL: sun heights in Offenbach
-      model: 'Die Sonne steht im Sommer mittags in Offenbach etwa 63° hoch, im Winter nur etwa 17°. Die Atmosphäre ist im Bild viel dicker gezeichnet, als sie ist. Der UV-Index wird mit einer einfachen Näherung berechnet: Sonnenhöhe, Ozon und Wolken, dazu etwa +10 % pro 1000 m Höhe, eine Abschwächung durch Smog und ein Zuschlag für die Reflexion des Bodens (bei Neuschnee bis zu etwa +45 %).'
+      model: 'Die Sonne steht im Sommer mittags in Offenbach etwa 63° hoch, im Winter nur etwa 17°. Die Atmosphäre ist im Bild viel dicker gezeichnet, als sie ist. Der UV-Index wird mit einer einfachen Näherung berechnet: Sonnenhöhe, Ozon und Wolken, dazu etwa +10 % pro 1000 m Höhe, eine Abschwächung durch Smog und ein Zuschlag für die Reflexion des Bodens (bei Neuschnee bis zu etwa +45 %).',
+      formel: 'UV-Index = 40 · erythemwirksame Bestrahlungsstärke in W/m²   (die UV-Strahlung, gewichtet nach ihrer Wirkung auf die Haut)\nNäherung in der Simulation: UVI ≈ 12,5 · (sin h)^2,42 · (Ozon / 300 DU)^−1,23 · Wolkenfaktor · Höhenfaktor · Smogfaktor · Bodenfaktor\nWolkenfaktor ≈ 1 − 0,75 · (Bewölkung)^3,4   ·   Höhenfaktor ≈ 1 + 0,1 pro 1000 m   ·   Bodenfaktor ≈ 1 + 0,5 · Albedo'
     },
     lichtintensitaet: {
       name: 'Lichtintensität', unit: 'kLux',
@@ -224,9 +225,10 @@ window.TEXTS = {
         new: { q: 'Wo steht der Mond bei Neumond?', options: ['Zwischen Sonne und Erde', 'Hinter der Erde, von der Sonne aus gesehen', 'Genau neben der Erde'], answer: 0 }
       },
       messung: 'Gar nicht gemessen: Die Station berechnet die Mondphase aus dem Kalenderdatum – von Neumond über die Viertel bis zum Vollmond.',
-      einordnung: 'Von einem Neumond zum nächsten vergehen im Mittel etwa 29,5 Tage – der synodische Monat. Die Mondphase ist ein regelmäßiger, vorhersagbarer Zyklus.',
-      hinweis: 'Die Mondphase sagt nicht, wie viel Mondlicht wirklich am Messort ankommt. Dafür zählen auch die Höhe des Mondes, Wolken, Gebäude und andere Hindernisse.',
-      model: 'Die Station rechnet die Phase einfach aus dem Datum aus. Abstände und Größen sind nicht maßstäblich: In Wirklichkeit ist der Mond etwa 30 Erddurchmesser von der Erde entfernt.'
+      einordnung: 'Von einem Neumond zum nächsten vergehen im Mittel etwa 29,5 Tage – der synodische Monat. Die Mondphase ist ein regelmäßiger, vorhersagbarer Zyklus. Warum gibt es nicht bei jedem Neumond eine Sonnenfinsternis und bei jedem Vollmond eine Mondfinsternis? Die Mondbahn ist um gut 5° gegen die Erdbahn gekippt. Meist zieht der Mond deshalb knapp über oder unter Sonne bzw. Erdschatten vorbei. Nur etwa zweimal im Jahr liegen Neu- oder Vollmond genau auf der Linie – dann gibt es irgendwo auf der Erde eine Finsternis.',
+      hinweis: 'Die Mondphase sagt nicht, wie viel Mondlicht wirklich am Messort ankommt. Dafür zählen auch die Höhe des Mondes, Wolken, Gebäude und andere Hindernisse. Die Phase ist überall auf der Erde gleich – egal, von wo und zu welcher Uhrzeit man hinschaut. Nur die Lage ändert sich: Auf der Südhalbkugel steht der Mond „auf dem Kopf“ (zunehmend links hell), am Äquator liegt die Sichel fast waagerecht wie ein Schiffchen.',
+      model: 'Die Station rechnet die Phase einfach aus dem Datum aus. Abstände und Größen sind nicht maßstäblich: In Wirklichkeit ist der Mond etwa 30 Erddurchmesser von der Erde entfernt. Die Seitenansicht ist stark überhöht: In Wirklichkeit ist der Mond etwa 380.000 km entfernt und die 5° Neigung entsprechen bis zu 35.000 km über oder unter der Erdbahn. Ob eine Finsternis stattfindet, ist hier vereinfacht abgeschätzt.',
+      formel: 'Synodischer Monat (Neumond bis Neumond): 29,53 Tage\nPhasenwinkel: φ = 360° × (Tage seit Neumond) / 29,53\nBeleuchteter Anteil der sichtbaren Seite: k = (1 − cos φ) / 2   (0 = Neumond, 1 = Vollmond)\nHöhe des Mondes über der Erdbahn (Näherung): β ≈ 5,13° · sin F   (F = Abstand vom Knoten der Mondbahn)\nFinsternis möglich, wenn bei Neu- oder Vollmond |β| kleiner als etwa 1–1,5° ist'
     },
     sonnenaufgang: {
       name: 'Sonnenaufgang & -untergang', unit: 'Uhr',
@@ -242,7 +244,8 @@ window.TEXTS = {
       // LOCAL: day lengths in Offenbach
       einordnung: 'In Offenbach (rund 50° Nord) dauert der längste Tag um den 21. Juni gut 16 Stunden, der kürzeste um den 21. Dezember nur rund 8 Stunden. Um den 21. März und den 23. September sind Tag und Nacht überall etwa gleich lang. Jenseits des Polarkreises (66,5°) geht die Sonne im Sommer wochenlang nicht unter, im Winter nicht auf – in Tromsø (70° Nord) etwa zwei Monate lang.',
       hinweis: 'Als Sonnenaufgang gilt der Moment, in dem der obere Rand der Sonne am Horizont auftaucht. Weil die Luft das Licht etwas bricht, sehen wir die Sonne schon, wenn sie eigentlich noch knapp unter dem Horizont steht. Berge und Häuser verschieben den Moment, in dem man sie wirklich sieht.',
-      model: 'Die Grafik zeigt die wahre Ortszeit: 12 Uhr heißt, die Sonne steht am höchsten. Bei 50° Nord steht darunter die Uhrzeit, die die Uhren in Offenbach zeigen (MEZ/MESZ). Die Himmelsrichtungen sind auseinandergezogen, damit die ganze Sonnenbahn ins Bild passt.'
+      model: 'Die Grafik zeigt die wahre Ortszeit: 12 Uhr heißt, die Sonne steht am höchsten. Bei 50° Nord steht darunter die Uhrzeit, die die Uhren in Offenbach zeigen (MEZ/MESZ). Du schaust immer in die Richtung, in der die Sonne mittags steht – meist nach Süden, südlich des Äquators und in den Tropen manchmal nach Norden. Der Himmel ist auf eine senkrechte Fläche vor dir abgebildet; was hinter dir liegt, ist dünn gepunktet.',
+      formel: 'Deklination der Sonne (Näherung): δ ≈ 23,44° · sin(360° · (Tag des Jahres − 81) / 365)\nMittagshöhe der Sonne: h = 90° − |φ − δ|   (φ = Breitengrad)\nTageslänge (ohne Lichtbrechung): 2 · arccos(−tan φ · tan δ) / 15° Stunden\nMitternachtssonne, wenn |φ| > 90° − |δ| ist (am 21. Juni: nördlich von 66,6°)\nOrtszeit → Uhrzeit: Uhrzeit = Ortszeit − Zeitgleichung + 4 min · (15° − Längengrad) (+ 1 h Sommerzeit)'
     }
   },
 
@@ -256,7 +259,7 @@ window.TEXTS = {
       slow: 'LANGSAM',
       fast: 'SCHNELL',
       thermometer: 'THERMO–\nMETER',
-      degC: v => v + ' °C'
+      degC: v => v + ' °C',
     },
     temperatur: {
       aria: 'Luftteilchen in einem Kasten, ein Thermometer und darunter die Maxwell-Boltzmann-Verteilung der Geschwindigkeiten echter Luftteilchen',
@@ -427,28 +430,41 @@ window.TEXTS = {
       hint: 'Lux zählt nur das Licht, das unser Auge sieht – gewichtet mit seiner Empfindlichkeit (gelbe Kurve). W/m² zählt die ganze Strahlungsleistung.'
     },
     mond: {
-      aria: 'Mondbahn von oben und der Mond, wie wir ihn von der Erde sehen',
+      aria: 'Mondbahn von oben, der Mond, wie man ihn von der gewählten Erdhalbkugel sieht, und eine Seitenansicht der gekippten Mondbahn',
+      viewLabel: 'Blick von',
+      views: { nord: 'Nordhalbkugel (z. B. Offenbach)', aequator: 'Äquator', sued: 'Südhalbkugel (z. B. Kapstadt)' },
+      viewsShort: { nord: 'NORDHALBKUGEL', aequator: 'ÄQUATORLINIE', sued: 'SÜDHALBKUGEL' },
       slider: 'Tage seit Neumond',
-      btnToday: 'Heute',
-      btnPlay: ['Pause', 'Monat abspielen'],
+      btnToday: d => 'Heute · ' + d,
+      btnPlay: ['Pause', 'Abspielen'],
       sunlight: 'SONNENLICHT', earth: 'ERDE', moon: 'MOND', topView: 'BLICK VON OBEN',
-      asSeen: 'SO SEHEN WIR IHN',
+      asSeen: 'SO SIEHT MAN IHN VON DER',
       lit: p => p + ' % beleuchtet',
-      newMoon: 'NEUMOND', fullMoon: 'VOLLMOND',
-      read: (name, age, pct, left) => name + ' · ' + age + ' Tage nach Neumond · ' + pct + ' % der sichtbaren Seite beleuchtet · ' + left + ' Tage bis zum nächsten Neumond',
-      hint: 'Zieh den Mond auf seiner Bahn um die Erde. Die Sonne scheint von links – rechts siehst du, wie viel von der beleuchteten Hälfte wir von der Erde aus sehen.'
+      sideView: 'SEITENANSICHT: DIE MONDBAHN IST UM 5° GEKIPPT',
+      shadow: 'ERDSCHATTEN',
+      lat: (v, above) => v + '° ' + (above ? 'darüber' : 'darunter'),
+      status: {
+        solar: 'NEUMOND GENAU IN LINIE: SONNENFINSTERNIS!',
+        lunar: 'VOLLMOND IM ERDSCHATTEN: MONDFINSTERNIS!',
+        miss: 'Mond zieht vorbei – keine Finsternis'
+      },
+      read: (name, date, age, pct, left) => name + ' am ' + date + ' · ' + age + ' Tage nach Neumond · ' + pct + ' % beleuchtet · noch ' + left + ' Tage bis zum nächsten Neumond',
+      hint: 'Zieh den Mond auf seiner Bahn oder spiel die Monate ab. Rechts siehst du, wie viel von der beleuchteten Hälfte wir von der Erde aus sehen; unten, warum es trotzdem nicht jeden Monat eine Finsternis gibt.'
     },
     sonne: {
       aria: 'Sonnenbahn über dem Horizont für einen wählbaren Breitengrad und ein wählbares Datum, darunter Sonnenaufgang, Sonnenuntergang und Tageslänge',
       sliderLat: 'Breitengrad',
       north: 'N', south: 'S',
       // LOCAL: Offenbach at 50° N is the station
-      latNames: { 0: 'Äquator', 23.5: 'Wendekreis', 50: 'Offenbach', 53.5: 'Hamburg', 66.5: 'Polarkreis', 69.5: 'Tromsø', '-34': 'Kapstadt', '-66.5': 'Südl. Polarkreis' },
+      latNames: { 0: 'Äquator', 23.5: 'Wendekreis', 50: 'Offenbach', 66.5: 'Polarkreis', '-66.5': 'Südl. Polarkreis' },
       infoLat: 'Der Breitengrad sagt, wie weit nördlich oder südlich vom Äquator ein Ort liegt: 0° ist der Äquator, 90° der Nordpol. Offenbach liegt bei rund 50° Nord. Je weiter weg vom Äquator, desto stärker unterscheiden sich Sommer- und Wintertage. Jenseits der Polarkreise (66,5°) geht die Sonne im Sommer gar nicht mehr unter und im Winter nicht mehr auf. Südlich des Äquators steht die Sonne mittags im Norden, und Sommer ist im Dezember.',
       sliderDate: 'Datum', sliderTime: 'Ortszeit',
       infoTime: 'Die Uhrzeiten in der Grafik sind die wahre Ortszeit (Sonnenzeit): Um 12:00 Uhr steht die Sonne genau im Süden – südlich des Äquators im Norden – und am höchsten. Unsere Uhren zeigen dagegen eine Zonenzeit, die für ein ganzes Land gleich ist: in Deutschland MEZ, im Sommer MESZ (eine Stunde später). In Offenbach steht die Sonne darum erst gegen 12:25 Uhr MEZ bzw. 13:25 Uhr MESZ am höchsten; je nach Jahreszeit verschiebt sich das um bis zu 16 Minuten (Zeitgleichung). Bei 50° Nord (Offenbach) steht die Uhrzeit MEZ/MESZ klein unter Aufgang und Untergang.',
-      btnPlay: ['Pause', 'Tag abspielen'],
-      btnToday: 'Heute', btnMarch: '21. März', btnJune: '21. Juni', btnDec: '21. Dezember',
+      btnPlay: ['Pause', 'Abspielen'],
+      cityAria: 'Ort wählen', pickCity: 'Ort wählen …',
+      cities: { offenbach: 'Offenbach', tromsoe: 'Tromsø (Norwegen)', newyork: 'New York', kairo: 'Kairo', singapur: 'Singapur (fast am Äquator)', sydney: 'Sydney' },
+      dayAria: 'Tag wählen', pickDay: 'Tag wählen …',
+      days: { today: d => 'Heute (' + d + ')', march: '21. März – Tagundnachtgleiche', june: '21. Juni – Sonnenwende', sept: '23. September – Tagundnachtgleiche', dec: '21. Dezember – Sonnenwende' },
       clock: (hhmm, date) => hhmm + ' ORTSZEIT · ' + date,
       time: hhmm => hhmm + ' Uhr',
       june: '21. JUNI', dec: '21. DEZ.',
@@ -460,12 +476,12 @@ window.TEXTS = {
       hm: (h, m) => h + ' h ' + m,
       read: (date, place, rise, set, riseZ, setZ, zone, noon) => date + ', ' + place + ': Aufgang ' + rise + ' Uhr, Untergang ' + set + ' Uhr Ortszeit' + (riseZ ? ' (' + riseZ + ' und ' + setZ + ' Uhr ' + zone + ')' : '') + ' · mittags ' + noon + '° hoch',
       readPolar: (date, place, what) => date + ', ' + place + ': ' + what + ' – die Sonne ' + (what === 'POLARNACHT' ? 'geht den ganzen Tag nicht auf.' : 'geht den ganzen Tag nicht unter.'),
-      hint: 'Schieb den Breitengrad und das Datum: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief. Gestrichelt: die Bahn am 21. Juni und am 21. Dezember.'
+      hint: 'Schieb den Breitengrad und das Datum: Im Sommer steht die Sonne mittags hoch und der Tag ist lang, im Winter bleibt sie tief. Gestrichelt: die Bahn am 21. Juni und am 21. Dezember; dünn gepunktet: der Teil der Bahn hinter dir.'
     }
   },
 
   foot: {
     // LOCAL: the station of SCAPE° and the source of the texts
-    sources: 'Gerätedaten: Bedienungsanleitung der BRESSER 7-in-1 LORA Profi-Wetterstation Terral (Art. 15013). Vergleichswerte: Deutscher Wetterdienst (DWD), Weltgesundheitsorganisation (WHO, UV-Index). Die Werte auf dem Display sind Beispielwerte, keine Live-Daten.'
+    sources: 'Gerätedaten: Bedienungsanleitung der BRESSER 7-in-1 LORA Profi-Wetterstation Terral (Art. 15013). Vergleichswerte: Deutscher Wetterdienst (DWD), Weltgesundheitsorganisation (WHO, UV-Index).'
   }
 };
