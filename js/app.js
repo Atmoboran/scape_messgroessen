@@ -3,14 +3,13 @@
 // hash routing and the animation loop.
 (() => {
   'use strict';
-  const { data, sims, moonAge, moonName, drawMoonFace, sunTimes, dayOfYear, hhmm, C } = MG;
+  const { data, sims } = MG;
   const TH = THEME.messgroessen;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const VARS = data.topics.map((v, index) => ({ ...v, index }));
   const BY_ID = Object.fromEntries(VARS.map(v => [v.id, v]));
   const Q = id => window.TEXTS.topics[id] || {};
-  const TL = id => window.TEXTS.tiles[id] || {};
   const SUFFIX = THEME.brand.titleSuffix || '';
 
   // ---- poster headers: colour fields, solid shape, outline -----------------
@@ -20,54 +19,21 @@
     $('.l3', el).innerHTML = TH.outlines[l3] || '';
   }
 
-  // ---- start page: the display of the station, its fields grouped by topic ---
+  // ---- start page: one tile per topic --------------------------------------
   function buildDisplay() {
     const host = $('#display');
-    const now = new Date(), sun = sunTimes(dayOfYear(now));
     for (const v of VARS) {
-      const list = data.tiles.filter(x => x.topic === v.id);
-      const wrap = document.createElement('div');
-      wrap.className = 'group';
-      wrap.style.setProperty('--n', list.length);
-      const title = document.createElement('a');
-      title.className = 'gtitle';
-      title.href = '#' + v.id;
-      title.textContent = Q(v.id).name;
-      const tiles = document.createElement('div');
-      tiles.className = 'gtiles';
-      wrap.append(title, tiles);
-      for (const d of list) {
-        const q = TL(d.id);
-        const a = document.createElement('a');
-        a.className = 'tile';
-        a.href = '#' + v.id;
-        a.style.setProperty('--tile', TH.groups[v.theme].tile);
-        a.innerHTML = `<svg class="ic" viewBox="0 0 100 100" aria-hidden="true">${TH.icons[d.icon] || ''}</svg><span class="go" aria-hidden="true">→</span><span class="t-name"></span>`;
-        $('.t-name', a).textContent = q.tileName || q.name;
-        const val = document.createElement('span');
-        val.className = 't-val';
-        let shown;
-        if (d.live === 'moon') {
-          shown = moonName(moonAge(now));
-          val.classList.add('moon-val');
-          val.innerHTML = '<canvas class="moon" width="104" height="104" aria-hidden="true"></canvas><span class="t-note"></span>';
-          $('.t-note', val).textContent = shown;
-        } else {
-          const sample = d.live === 'rise' ? hhmm(sun.rise) : d.live === 'set' ? hhmm(sun.set) : q.sample;
-          val.innerHTML = '<span class="v"></span><span class="t-unit"></span>' + (q.sampleNote ? '<span class="t-note"></span>' : '');
-          $('.v', val).textContent = sample;
-          $('.t-unit', val).textContent = q.unit;
-          if (q.sampleNote) $('.t-note', val).textContent = q.sampleNote;
-          shown = sample ? sample + ' ' + q.unit : '';
-        }
-        a.setAttribute('aria-label', t('start.tileAria', q.name, shown, Q(v.id).name));
-        a.appendChild(val);
-        tiles.appendChild(a);
-      }
-      host.appendChild(wrap);
+      const q = Q(v.id);
+      const a = document.createElement('a');
+      a.className = 'tile';
+      a.href = '#' + v.id;
+      a.style.setProperty('--tile', TH.groups[v.theme].tile);
+      a.innerHTML = `<svg class="ic" viewBox="0 0 100 100" aria-hidden="true">${TH.icons[v.icon] || ''}</svg><span class="go" aria-hidden="true">→</span><span class="t-name"></span><span class="t-unit"></span>`;
+      $('.t-name', a).textContent = q.name;
+      $('.t-unit', a).textContent = q.unit || '';
+      a.setAttribute('aria-label', t('start.tileAria', q.name));
+      host.appendChild(a);
     }
-    const mc = $('#display canvas.moon');
-    if (mc) drawMoonFace(mc.getContext('2d'), 52, 52, 46, moonAge(now), C.black, C.white);
   }
 
   // ---- page of one topic ---------------------------------------------------
@@ -145,7 +111,7 @@
     $('#dHead').innerHTML = q.head;
     $('#dLead').textContent = q.lead;
     $('#dMerke').textContent = q.merke;
-    ['messung', 'einordnung', 'hinweis', 'model'].forEach(k => {
+    ['messung', 'einordnung', 'hinweis', 'model', 'formel'].forEach(k => {
       const d = $('#topic-' + k);
       d.open = false;
       $('.topic-body p', d).textContent = q[k] || '';
@@ -185,7 +151,6 @@
     $$('canvas', frame).forEach(cv => cv.remove());
     ctrl.innerHTML = '';
     sim = sims[v.sim]({ view: frame, ctrl });
-    badge.show(q.badge);
   }
 
   // ---- routing ----------------------------------------------------------------

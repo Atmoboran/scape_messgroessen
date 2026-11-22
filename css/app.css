@@ -8,34 +8,24 @@
 /* headline: on the desktop the slim band shows the name on one line */
 :root[data-view="desktop"] .poster.small .hy { display: none; }
 
-/* ---- start page: the display of the station ---- */
+/* ---- start page: one tile per topic ---- */
 .display-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 24px; margin-bottom: 12px; }
 .display-head .section-label { margin: 0; }
 .display-head p { font-size: 15px; }
-.display { border: 10px solid var(--display-bg); background: var(--display-bg); display: flex; flex-wrap: wrap; gap: 2px; }
-.group { display: flex; flex-direction: column; flex: var(--n) 1 calc(var(--n) * 190px); min-width: 0; }
-.gtitle { display: block; text-decoration: none; background: var(--display-bg); color: var(--display-ink); font-weight: var(--fw-medium); font-size: 12px; letter-spacing: .08em; text-transform: var(--caps); padding: 8px 10px 6px; }
-.gtiles { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 2px; flex: 1; }
+.display { border: 10px solid var(--display-bg); background: var(--display-bg); display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2px; }
 .tile {
   position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
-  min-height: 150px; padding: 14px 14px 12px; text-decoration: none; color: var(--ink); background: var(--tile);
+  min-height: 160px; padding: 14px 14px 12px; text-decoration: none; color: var(--ink); background: var(--tile);
 }
-.tile .t-name { font-weight: var(--fw-medium); font-size: 13px; letter-spacing: .05em; text-transform: var(--caps); line-height: 1.2; padding-right: 22px; overflow-wrap: anywhere; }
-.tile .t-val { font-weight: var(--fw-light); font-size: clamp(36px, 3.6vw, 52px); line-height: .9; white-space: nowrap; }
-.tile .t-unit { font-weight: var(--fw-medium); font-size: 15px; letter-spacing: .04em; margin-left: 4px; }
-.tile .t-note { font-weight: var(--fw-medium); font-size: 13px; letter-spacing: .05em; margin-left: 6px; }
-.tile .moon-val { display: flex; align-items: center; gap: 10px; }
-.tile .moon-val .t-note { margin: 0; white-space: normal; line-height: 1.15; }
-.tile svg.ic { position: absolute; z-index: -1; right: -22px; bottom: -22px; width: 96px; height: 96px; fill: none; stroke: currentColor; stroke-width: 1.2; opacity: .85; pointer-events: none; }
+.tile .t-name { font-weight: var(--fw-light); font-size: clamp(24px, 2.4vw, 34px); line-height: 1.05; padding-right: 26px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
+.tile .t-unit { font-weight: var(--fw-medium); font-size: 14px; letter-spacing: .04em; }
+.tile svg.ic { position: absolute; z-index: -1; right: -22px; bottom: -22px; width: 110px; height: 110px; fill: none; stroke: currentColor; stroke-width: 1.2; opacity: .85; pointer-events: none; }
 .tile .go { position: absolute; right: 12px; top: 10px; font-weight: var(--fw-medium); font-size: 18px; line-height: 1; }
 .tile:focus-visible { background: var(--active); color: var(--active-ink); outline: none; }
 :root[data-view="desktop"] .tile:hover { background: var(--active); color: var(--active-ink); }
-.tile canvas.moon { width: 52px; height: 52px; display: block; }
-:root[data-view="mobile"] .display { border-width: 6px; }
-:root[data-view="mobile"] .group { flex-basis: 100%; }
-:root[data-view="mobile"] .gtiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-:root[data-view="mobile"] .gtiles > .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+:root[data-view="mobile"] .display { border-width: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 :root[data-view="mobile"] .tile { min-height: 120px; }
+:root[data-view="mobile"] .tile .t-name { font-size: 21px; }
 
 /* ---- "Warum messen?" ---- */
 .why { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: var(--line-width) solid var(--line); border-bottom: var(--line-width) solid var(--line); }
@@ -65,7 +55,11 @@
 .topics { margin-top: 30px; }
 :root[data-view="mobile"] .pager .btn { font-size: 12.5px; padding: 8px 10px; }
 /* desktop: poster band and strip sit above the stage – keep it fully on screen */
-#page-detail { --fit-offset: 290px; }
+/* desktop: the stage is as large as the screen allows once the poster has
+   scrolled away (it sticks below the header) */
+#page-detail { --fit-offset: 48px; }
+:root[data-view="desktop"] #page-detail .page { max-width: 1680px; }
+:root[data-view="desktop"] #page-detail .lab { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); gap: 12px 28px; }
 /* the drawings use every corner, so the fullscreen button sits just outside
    the frame: below it on the phone, beside it on the desktop (inside it only
    in fullscreen) */
@@ -76,9 +70,6 @@
 /* phone: the first hint also sits below the drawing (next to the fullscreen
    button), so it does not hide the labels in the corners */
 :root[data-view="mobile"] #simFrame:not(:fullscreen):not(.is-full) > .hint-badge { top: calc(100% + 8px); left: -2px; transform: none; max-width: calc(100% - 52px); text-align: left; }
-/* long names on narrow tiles: smaller and hyphenated instead of broken anywhere */
-:root[data-view="mobile"] .tile .t-name { font-size: 11.5px; letter-spacing: .02em; padding-right: 16px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
-:root[data-view="mobile"] .tile .go { right: 8px; font-size: 15px; }
 
 /* tasks as a dropdown: closed by default, progress in the header */
 #tasksDrop > summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; font-weight: var(--fw-medium); font-size: 12px; letter-spacing: .08em; text-transform: var(--caps); }
@@ -98,3 +89,6 @@
 .quiz-fb.ok { color: var(--ink); }
 .quiz-fb.ok::before { content: "✓ "; }
 .quiz-fb.no { color: var(--c-red); }
+
+/* formulas: one per line, set a little apart */
+.topic-body.formel p { white-space: pre-line; font-variant-numeric: tabular-nums; line-height: 1.9; }

@@ -34,7 +34,7 @@ window.TEXTS = {
 
   nav: {
     aria: 'Hauptnavigation',
-    display: 'Display',
+    display: 'Übersicht',
     why: 'Warum messen?'
   },
   titles: {
@@ -48,12 +48,11 @@ window.TEXTS = {
     // LOCAL: the station stands outside the museum
     kicker: 'Vertiefung – Die Wetterstation vor dem Museum',
     headline: 'Was misst die Wetter–<br>station?',
-    // LOCAL
-    lead: 'Draußen vor dem Museum steht eine Wetterstation. Sie misst rund um die Uhr. Tippe auf einen Wert und finde heraus, was dahintersteckt.',
-    displayTitle: 'Das Display der Wetterstation',
-    displayNote: 'Die Zahlen sind Beispielwerte. Tippe auf ein Feld.',
-    displayAria: 'Display der Wetterstation mit allen Messgrößen',
-    tileAria: (name, value, topic) => name + (value ? ': ' + value : '') + ' – mehr zum Thema ' + topic
+    lead: 'Temperatur, Luftfeuchte, Luftdruck, Wind und mehr: Jede Größe hat ihre eigene kleine Simulation. Tippe auf ein Thema und finde heraus, was dahintersteckt.',
+    displayTitle: 'Die Themen',
+    displayNote: 'Tippe auf ein Feld.',
+    displayAria: 'Alle Themen',
+    tileAria: name => name + ' – Thema öffnen'
   },
 
   // ---- "Warum messen?" ----
@@ -76,14 +75,15 @@ window.TEXTS = {
     kicker: (nr, total, unit) => 'Thema ' + nr + ' von ' + total + (unit ? ' · Einheit: ' + unit : ''),
     stripAria: 'Alle Themen',
     stageAria: 'Simulation',
-    home: 'Display',
+    home: 'Übersicht',
     prevAria: name => 'Zurück zu ' + name,
     nextAria: name => 'Weiter zu ' + name,
     topics: {
       messung: 'So misst die Station',
       einordnung: 'Zum Einordnen',
       hinweis: 'Gut zu wissen',
-      model: 'Modell und Wirklichkeit'
+      model: 'Modell und Wirklichkeit',
+      formel: 'Formeln'
     }
   },
 
@@ -101,8 +101,9 @@ window.TEXTS = {
       messung: 'Draußen misst ein Thermo-Hygrometer im 7-in-1-Außensensor unter einer Abschirmung – vor direkter Sonne geschützt, gut belüftet und mindestens 1,5 m von Gebäuden, Boden und Dächern entfernt. Drinnen misst die Basisstation an ihrem Aufstellort (0 bis 60 °C, ±1 °C).',
       // LOCAL: DWD study in Offenbach
       einordnung: 'Eine DWD-Untersuchung in Offenbach: April bis September 2012/13 im Mittel 15,9 °C im Wetterpark, 17,3 °C in der Innenstadt. Drinnen gelten etwa 18 bis 22 °C als behaglich.',
-      hinweis: 'Temperatur ist eine lokale Größe. Sonne, Hauswände, Dächer, Heizung oder Fenster verändern die Luft schon auf wenigen Metern. Der Messort ist Teil der Messung – nach einem Standortwechsel braucht der Sensor etwa 30 Minuten, bis er stabil misst.',
-      model: 'In Wirklichkeit sind Luftteilchen winzig und viel schneller – hier sind sie riesig und stark verlangsamt. Die Farbe zeigt, wie schnell ein Teilchen gerade ist: blau langsam, grau mittel, rot schnell.'
+      hinweis: 'Temperatur ist eine lokale Größe. Sonne, Hauswände, Dächer, Heizung oder Fenster verändern die Luft schon auf wenigen Metern. Der Messort ist Teil der Messung – nach einem Standortwechsel braucht der Sensor etwa 30 Minuten, bis er stabil misst. Nicht alle Luftteilchen sind gleich schnell: Durch ständige Zusammenstöße sind manche langsam und manche sehr schnell. Wie häufig welche Geschwindigkeit ist, beschreibt die Maxwell-Boltzmann-Verteilung. Bei 14 °C sind die meisten Luftteilchen um die 400 m/s schnell, im Mittel rund 460 m/s – schneller als der Schall (340 m/s). Wird es wärmer, verschiebt sich die Kurve zu höheren Geschwindigkeiten und wird breiter.',
+      model: 'In Wirklichkeit sind Luftteilchen winzig und viel schneller – hier sind sie riesig und stark verlangsamt, und die Unterschiede zwischen kalt und warm sind übertrieben. In einem Kubikmeter Luft stecken etwa 25 Quadrillionen Teilchen (2,5 · 10²⁵). Die Kurve im Diagramm ist dagegen echt: Sie zeigt die Geschwindigkeiten von Luftteilchen bei der eingestellten Temperatur.',
+      formel: 'Temperatur in Kelvin: T [K] = T [°C] + 273,15\nMittlere Bewegungsenergie eines Teilchens: ½ · m · v² = 3/2 · k · T\nMittlere Geschwindigkeit: v̄ = √(8 · R · T / (π · M))   (Luft: M = 0,029 kg/mol, R = 8,314 J/(mol·K))\nHäufigste Geschwindigkeit: v = √(2 · R · T / M)\nMaxwell-Boltzmann-Verteilung: f(v) = 4π · (M / (2π·R·T))^(3/2) · v² · e^(−M·v² / (2·R·T))'
     },
     luftfeuchte: {
       name: 'Luftfeuchte', unit: '% · g/m³ · °C',
@@ -116,8 +117,9 @@ window.TEXTS = {
       },
       messung: 'Außensensor und Basisstation messen die relative Feuchte zusammen mit der Temperatur: 10 bis 99 %, ±5 % (garantiert zwischen 20 und 90 %). Der Taupunkt hat keinen eigenen Sensor – die Station berechnet ihn aus Temperatur und relativer Feuchte.',
       einordnung: 'DWD-Beispiel: Luft mit 10 °C und 100 % wird auf 20 °C erwärmt – die relative Feuchte sinkt auf etwa die Hälfte. Drinnen gelten 40 bis 60 % als behaglich. Bei 20 °C und 50 % liegt der Taupunkt bei etwa 9 °C; ab etwa 16 °C Taupunkt wirkt Luft deutlich feucht, bei 18 bis 21 °C schwül.',
-      hinweis: 'Ist eine Fensterscheibe kälter als der Taupunkt der Raumluft, beschlägt sie. Liegen Lufttemperatur und Taupunkt draußen nah beieinander, entstehen leicht Nebel oder Tau.',
-      model: 'Ein Punkt steht für eine kleine Menge Wasserdampf, nicht für ein einzelnes Teilchen. Höchstmenge und Taupunkt berechnet die Simulation mit der Magnus-Formel.'
+      hinweis: 'Ist eine Fensterscheibe kälter als der Taupunkt der Raumluft, beschlägt sie. Liegen Lufttemperatur und Taupunkt draußen nah beieinander, entstehen leicht Nebel oder Tau. Weil warme Luft mehr Wasserdampf halten kann – pro Grad etwa 7 % mehr –, kann sie auch mehr Wasser auf einmal abregnen. Darum fallen Gewitter und Starkregen in warmen Sommern oft besonders heftig aus. Mit dem Klimawandel wird die Luft wärmer: Starkregen werden dadurch häufiger und stärker, das zeigen auch die Messungen des DWD.',
+      model: 'Ein Punkt steht für eine kleine Menge Wasserdampf, nicht für ein einzelnes Teilchen. Höchstmenge und Taupunkt berechnet die Simulation mit der Magnus-Formel.',
+      formel: 'Relative Feuchte = absolute Feuchte ÷ höchstmögliche Feuchte × 100 %\nSättigungsdampfdruck (Magnus-Formel): E(T) = 6,112 hPa · e^(17,62 · T / (243,12 + T))   (T in °C)\nAbsolute Feuchte: ρ = 216,7 · e / (T + 273,15)   (e = Dampfdruck in hPa, ρ in g/m³)\nTaupunkt: Td = 243,12 · γ / (17,62 − γ)   mit γ = ln(RH / 100) + 17,62 · T / (243,12 + T)\nFaustregel (Clausius-Clapeyron): pro 1 °C wärmer passt etwa 7 % mehr Wasserdampf in die Luft'
     },
     luftdruck: {
       name: 'Luftdruck', unit: 'hPa',
@@ -239,31 +241,6 @@ window.TEXTS = {
     }
   },
 
-  // ---- The fields of the station display (examples, not live data; moon
-  // phase and sunrise/sunset are computed for today). Every field opens its
-  // topic. name (tileName: with soft hyphens for the narrow tiles), unit, sample.
-  tiles: {
-    aussentemperatur: { name: 'Außentemperatur', tileName: 'Außen­temperatur', unit: '°C', sample: '14,2' },
-    innentemperatur: { name: 'Innentemperatur', tileName: 'Innen­temperatur', unit: '°C', sample: '21,4' },
-    'luftfeuchte-aussen': { name: 'Luftfeuchtigkeit außen', tileName: 'Luft­feuchtigkeit außen', unit: '%', sample: '72' },
-    'luftfeuchte-innen': { name: 'Luftfeuchtigkeit innen', tileName: 'Luft­feuchtigkeit innen', unit: '%', sample: '48' },
-    'taupunkt-aussen': { name: 'Taupunkt außen', unit: '°C', sample: '9,2' },
-    'taupunkt-innen': { name: 'Taupunkt innen', unit: '°C', sample: '10,0' },
-    luftdruck: { name: 'Luftdruck', unit: 'hPa', sample: '1016' },
-    niederschlag: { name: 'Niederschlagsmenge', tileName: 'Niederschlags­menge', unit: 'mm', sample: '2,3' },
-    windrichtung: { name: 'Windrichtung', tileName: 'Wind­richtung', unit: '°', sample: '248', sampleNote: 'WSW' },
-    windgeschwindigkeit: { name: 'Windgeschwindigkeit (Mittel)', tileName: 'Wind­geschwindigkeit (Mittel)', unit: 'm/s', sample: '3,4' },
-    windboeen: { name: 'Windböen', unit: 'm/s', sample: '7,9' },
-    windkuehle: { name: 'Windkühle', unit: '°C', sample: '13,6' },
-    'scheinbare-temperatur': { name: 'Scheinbare Temperatur (AT)', tileName: 'Scheinbare Temp. (AT)', unit: '°C', sample: '11,7' },
-    'gefuehlte-temperatur': { name: 'Gefühlte Temperatur', unit: '°C', sample: '14,2' },
-    'uv-index': { name: 'UV-Index', unit: '', sample: '3' },
-    lichtintensitaet: { name: 'Lichtintensität', tileName: 'Licht­intensität', unit: 'kLux', sample: '18,5' },
-    mondphase: { name: 'Mondphase', unit: '' },
-    sonnenaufgang: { name: 'Sonnenaufgang', tileName: 'Sonnen­aufgang', unit: 'Uhr' },
-    sonnenuntergang: { name: 'Sonnenuntergang', tileName: 'Sonnen­untergang', unit: 'Uhr' }
-  },
-
   moon: {
     names: ['Neumond', 'Zunehmende Sichel', 'Erstes Viertel', 'Zunehmender Mond', 'Vollmond', 'Abnehmender Mond', 'Letztes Viertel', 'Abnehmende Sichel']
   },
@@ -277,18 +254,23 @@ window.TEXTS = {
       degC: v => v + ' °C'
     },
     temperatur: {
-      aria: 'Luftteilchen in einem Kasten, daneben ein Thermometer',
+      aria: 'Luftteilchen in einem Kasten, ein Thermometer und darunter die Maxwell-Boltzmann-Verteilung der Geschwindigkeiten echter Luftteilchen',
       slider: 'Temperatur',
-      info: 'Temperatur ist ein Maß dafür, wie schnell sich die Teilchen im Mittel bewegen. Wird die Luft wärmer, bewegen sie sich schneller und stoßen heftiger zusammen; wird sie kälter, werden sie langsamer. Am absoluten Nullpunkt (−273,15 °C) stünden sie still. Ein Thermometer nimmt diese Bewegung auf: Die Teilchen stoßen an den Fühler und übertragen ihre Energie.',
-      read: (tt, ms, kmh) => tt + ' °C · Echte Luftteilchen sind dabei im Mittel rund ' + ms + ' m/s schnell – etwa ' + kmh + ' km/h',
-      hint: 'Schieb den Regler: Bei Wärme flitzen die Teilchen, bei Kälte werden sie träge. Ein Thermometer misst diese mittlere Bewegung.'
+      info: 'Temperatur ist ein Maß dafür, wie schnell sich die Teilchen im Mittel bewegen. Nicht alle sind gleich schnell: Manche sind langsam, manche sehr schnell. Wie viele Teilchen welche Geschwindigkeit haben, zeigt die Maxwell-Boltzmann-Verteilung unten. Wird die Luft wärmer, rutscht die Kurve nach rechts und wird breiter und flacher. Am absoluten Nullpunkt (−273,15 °C) stünden alle Teilchen still. Du kannst die Temperatur auch einstellen, indem du im Diagramm ziehst.',
+      mean: v => 'Ø ' + v + ' m/s',
+      axisV: 'GESCHWINDIGKEIT (m/s)',
+      cold: '−20 °C', hot: '40 °C',
+      read: (tt, peak, mean, kmh) => tt + ' °C · echte Luftteilchen: am häufigsten ' + peak + ' m/s, im Mittel ' + mean + ' m/s – etwa ' + kmh + ' km/h',
+      hint: 'Schieb den Regler oder zieh im Diagramm: Bei Wärme flitzen die Teilchen, bei Kälte werden sie träge. Das Diagramm zeigt, wie viele echte Luftteilchen wie schnell sind.'
     },
     feuchte: {
       aria: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge zeigt; dazu relative und absolute Luftfeuchtigkeit und der Taupunkt',
-      sliderT: 'Temperatur', sliderW: 'Wasserdampf',
+      sliderT: 'Temperatur', sliderW: 'Wasserdampf', sliderRh: 'Relative Feuchte',
+      temp: 'TEMPERATUR',
       info: {
         t: 'Warme Luft kann mehr Wasserdampf aufnehmen als kalte: Wird die Luft wärmer, wächst das Gefäß (die Höchstmenge) – die relative Luftfeuchtigkeit sinkt, obwohl genauso viel Wasserdampf da ist wie vorher. Kühlt die Luft ab, schrumpft das Gefäß. Am Taupunkt ist es genau voll (100 %); wird es noch kälter, kondensiert der Überschuss zu Tröpfchen.',
-        w: 'Hier änderst du, wie viel Wasserdampf in einem Kubikmeter Luft steckt – etwa durch Verdunstung, Kochen oder Duschen. Mehr Wasserdampf heißt: Die absolute und die relative Luftfeuchtigkeit steigen, und der Taupunkt liegt höher. Passt mehr hinein, als bei dieser Temperatur höchstens möglich ist, kondensiert der Überschuss zu Tröpfchen.'
+        w: 'Hier änderst du, wie viel Wasserdampf in einem Kubikmeter Luft steckt – etwa durch Verdunstung, Kochen oder Duschen. Mehr Wasserdampf heißt: Die absolute und die relative Luftfeuchtigkeit steigen, und der Taupunkt liegt höher. Passt mehr hinein, als bei dieser Temperatur höchstens möglich ist, kondensiert der Überschuss zu Tröpfchen.',
+        rh: 'Hier stellst du die relative Luftfeuchtigkeit direkt ein: wie voll das Gefäß bei der aktuellen Temperatur ist. Die Simulation rechnet daraus, wie viel Wasserdampf in der Luft steckt (absolute Feuchte) – und wo der Taupunkt liegt. 100 % heißt: Die Luft ist gesättigt, mehr Wasserdampf passt nicht hinein.',
       },
       air: '1 m³ LUFT',
       at: tt => 'BEI ' + tt + ' °C',

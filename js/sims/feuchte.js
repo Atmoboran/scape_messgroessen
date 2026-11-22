@@ -10,7 +10,7 @@
     const box = { x0: 16, y0: 110, x1: 344, y1: 584 };
     let T = 14, Wt = 8.7;
     let Tt = T, Wtt = Wt;
-    const PX = 8, GB = 584, GX0 = 384, GX1 = 584;  // vessel: units per g/m³, bottom, width
+    const PX = 7, GB = 584, GX0 = 384, GX1 = 584;  // vessel: units per g/m³, bottom, width
     const P = [];
     for (let i = 0; i < 110; i++) {
       const a = rnd(0, TAU);
@@ -20,6 +20,9 @@
     const sT = slider(r1, { label: tx('sliderT'), min: -10, max: 35, step: 0.5, value: T, info: tx('info.t'), format: v => fmt(v, 1) + ' °C', onInput: v => { Tt = T = v; } });
     const r2 = ui.row();
     const sW = slider(r2, { label: tx('sliderW'), min: 0, max: 30, step: 0.1, value: Wt, info: tx('info.w'), format: v => fmt(v, 1) + ' g/m³', onInput: v => { Wtt = Wt = v; } });
+    // relative humidity directly: sets the water vapour for the current temperature
+    const r3 = ui.row();
+    const sR = slider(r3, { label: tx('sliderRh'), min: 1, max: 100, step: 1, value: Math.round(Wt / satDens(T) * 100), info: tx('info.rh'), format: v => v + ' %', onInput: v => { Wtt = Wt = Math.min(30, +(satDens(T) * v / 100).toFixed(2)); sW.set(Math.round(Wt * 10) / 10); } });
     ui.readout();
     ui.hint(tx('hint'));
 
@@ -48,21 +51,23 @@
         if (p.y < box.y0 + 10) { p.y = box.y0 + 10; p.vy = Math.abs(p.vy); }
         if (p.y > box.y1 - 10) { p.y = box.y1 - 10; p.vy = -Math.abs(p.vy); }
       }
+      if (document.activeElement !== sR.input) sR.set(Math.round(rh));
       // header
       ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
-      text(ctx, tx('air'), 16, 34, FS.l, C.black);
-      text(ctx, tx('at', fmt(T, 1)), 16, 64, FS.m, C.black);
-      circle(ctx, 24, 88, 7, C.teal); text(ctx, tx('vapour'), 40, 95, FS.s, C.black);
-      // the three values: relative, absolute, dew point
-      if (blink) { ctx.fillStyle = C.yellow; ctx.fillRect(GX0 - 6, 2, W - GX0 + 4, 98); }
-      tx('rh').forEach((l, i) => text(ctx, l, GX0, 22 + i * 22, FS.s, C.black));
-      text(ctx, fmt(rh) + ' %', GX0, 92, 46, blink ? C.red : C.black, 300);
-      tx('abs').forEach((l, i) => text(ctx, l, GX0, 124 + i * 22, FS.s, C.black));
-      text(ctx, fmt(vap, 1) + ' g/m³', GX0, 176, FS.l, C.black);
-      text(ctx, tx('dew'), GX0, 208, FS.s, C.black);
-      text(ctx, fmt(td, 1) + ' °C', GX0, 236, FS.l, C.black);
+      text(ctx, tx('air'), 16, 42, FS.l, C.black);
+      circle(ctx, 24, 82, 7, C.teal); text(ctx, tx('vapour'), 40, 89, FS.s, C.black);
+      // the four values: temperature, relative and absolute humidity, dew point
+      text(ctx, tx('temp'), GX0, 22, FS.s, C.black);
+      text(ctx, fmt(T, 1) + ' °C', GX0, 52, FS.l, C.black);
+      if (blink) { ctx.fillStyle = C.yellow; ctx.fillRect(GX0 - 6, 64, W - GX0 + 4, 88); }
+      tx('rh').forEach((l, i) => text(ctx, l, GX0, 82 + i * 22, FS.s, C.black));
+      text(ctx, fmt(rh) + ' %', GX0, 144, 42, blink ? C.red : C.black, 300);
+      tx('abs').forEach((l, i) => text(ctx, l, GX0, 172 + i * 22, FS.s, C.black));
+      text(ctx, fmt(vap, 1) + ' g/m³', GX0, 222, FS.l, C.black);
+      text(ctx, tx('dew'), GX0, 250, FS.s, C.black);
+      text(ctx, fmt(td, 1) + ' °C', GX0, 278, FS.l, C.black);
       // box
-      ctx.fillStyle = T > 22 ? C.pink : T > 8 ? C.paleGreen : C.ice;
+      ctx.fillStyle = C.ice;
       ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
       for (let i = 0; i < nV + nL; i++) {
         const p = P[i];
