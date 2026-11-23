@@ -15,10 +15,10 @@
   MG.sims.uv = host => {
     const ui = simShell(host, { label: tx('aria') });
     const { view, ctx } = ui;
-    const CX = 300, CY = 1620, RE = 1100, RCL = RE + 75, RATM = RE + 175;
+    const CX = 300, RE = 1100, CY = 540 + RE, RCL = RE + 100, RATM = RE + 400;
     const D = { elev: 45, cloud: 0, ozone: 320, alt: 100, smog: 10, albedo: 3 };
     let { elev, cloud, ozone, alt, smog, albedo } = D;
-    const ozR = () => [RE + 130, RE + 130 + (ozone - 200) / 250 * 44];
+    const ozR = () => [RE + 240, RE + 240 + (ozone - 200) / 250 * 44];
     const P = [];
     const sl = {};
     const add = (key, o) => { const r = ui.row(); sl[key] = slider(r, o); };
@@ -28,6 +28,8 @@
     add('alt', { label: tx('sliderAlt'), min: 0, max: 5000, step: 50, value: alt, info: tx('info.alt'), format: v => fmt(v) + ' m', onInput: v => { alt = v; } });
     add('smog', { label: tx('sliderSmog'), min: 0, max: 100, step: 1, value: smog, info: tx('info.smog'), format: v => v + ' %', onInput: v => { smog = v; } });
     add('albedo', { label: tx('sliderAlbedo'), min: 0, max: 90, step: 1, value: albedo, info: tx('info.albedo'), format: v => v + ' % · ' + tx('ground')[v < 6 ? 0 : v < 13 ? 1 : v < 30 ? 2 : v < 60 ? 3 : 4], onInput: v => { albedo = v; } });
+    // the albedo output names the ground: fixed width, so the slider does not jump
+    sl.albedo.input.parentElement.querySelector('output').style.minWidth = '9.6em';
     const r4 = ui.row();
     const preset = (l, e, c) => button(r4, l, () => {
       Object.assign(D, { elev: e, cloud: c });
@@ -62,7 +64,7 @@
       if (!view.fit()) return;
       const u = uvi();
       const e = elev * Math.PI / 180, dx = -Math.cos(e), dy = -Math.sin(e); // direction to the sun
-      const mh = alt / 5000 * 130;                                          // mountain under the person
+      const mh = alt / 1000 * 9;                                            // mountain under the person (to scale with the atmosphere)
       const gx = 300, gy = CY - RE - mh;
       const [o0, o1] = ozR();
       const tSun = backT(gx, gy, dx, dy, RATM + 60) + 30;
@@ -135,11 +137,10 @@
       circle(ctx, gx, gy - 36, 8, C.black); ctx.fillStyle = C.black; ctx.fillRect(gx - 7, gy - 26, 14, 26);
       const ozY = CY - Math.sqrt(o1 * o1 - (CX - 20) * (CX - 20));
       text(ctx, tx('ozone'), 20, ozY + 4, FS.s, C.black, 500, 'left', 'top');
-      text(ctx, tx('atmosphere'), 20, 470, FS.s, C.black, 500);
-      if (smog > 15) text(ctx, tx('smogLabel'), 20, 500, FS.s, C.black, 500);
+      if (smog > 15) text(ctx, tx('smogLabel'), 20, 506, FS.s, C.black, 500);
       // UV scale
       const bx = 482, by0 = 52, bh = 22;
-      ctx.fillStyle = C.white; ctx.fillRect(bx - 16, 10, 124, bh * 12 + 56);
+      ctx.fillStyle = C.white; ctx.fillRect(bx - 16, 10, 124, bh * 12 + 56 + (u.v >= 2.5 ? 66 : 0));
       text(ctx, tx('index'), bx - 6, by0 - 14, FS.s, C.black);
       const val = Math.round(u.v);
       for (let k = 11; k >= 0; k--) {
@@ -149,10 +150,7 @@
         text(ctx, k === 11 ? '11+' : String(k), bx + 42, y + 18, FS.s, C.black);
         if (k === Math.min(11, val)) { ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(bx - 4, y - 3, 40, bh + 4); }
       }
-      ctx.fillStyle = C.black; ctx.fillRect(10, 10, 190, 86);
-      text(ctx, tx('atGround'), 22, 38, FS.s, C.white);
-      text(ctx, fmt(u.v, 1), 22, 84, 42, C.white, 300);
-      if (u.v >= 2.5) { ctx.fillStyle = C.yellow; ctx.fillRect(10, 100, 190, 36); text(ctx, tx('protect'), 105, 126, FS.s, C.black, 500, 'center'); }
+      if (u.v >= 2.5) { ctx.fillStyle = C.yellow; ctx.fillRect(bx - 8, by0 + bh * 12 + 4, 108, 58); tx('protect').forEach((l, i) => text(ctx, l, bx + 46, by0 + bh * 12 + 27 + i * 24, FS.s, C.black, 500, 'center')); }
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;

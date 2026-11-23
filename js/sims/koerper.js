@@ -102,13 +102,14 @@
       }
       ctx.fillStyle = C.orange; ctx.fillRect(16, 22, 36, 12);
       tx('layer').forEach((l, i) => text(ctx, l, 60, 35 + i * 24, FS.s, C.black));
-      // two thermometers on the same scale: the measured air and the felt temperature
-      const lo = -50, hi = 60, names = tx('names');
-      thermo(ctx, 368, 120, 420, lo, hi, T, tempColor(T), names.air, fmt(T, 1) + ' °C');
-      thermo(ctx, 506, 120, 420, lo, hi, fe.t, tempColor(fe.t), names.felt, fmt(fe.t, 1) + ' °C', false);
-      ctx.fillStyle = C.black; ctx.fillRect(SX + 12, 516, W - SX - 22, 72);
-      text(ctx, tx('range'), SX + 26, 544, FS.s, C.white);
-      text(ctx, tx('modes.' + fe.mode).toUpperCase(), SX + 26, 574, FS.m, C.white);
+      // two thermometers sharing one scale (numbers at the right one): the measured air and the felt temperature
+      const lo = -50, hi = 80, names = tx('names');
+      thermo(ctx, 362, 120, 470, lo, hi, T, tempColor(T), names.air, fmt(T, 1) + ' °C', false);
+      thermo(ctx, 522, 120, 470, lo, hi, fe.t, tempColor(fe.t), names.felt, fmt(fe.t, 1) + ' °C');
+      // the shared axis: tick marks reach across from the left thermometer to the right one
+      ctx.strokeStyle = C.grey; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+      for (let tt = lo; tt <= hi; tt += 10) { const yy = 470 - (tt - lo) / (hi - lo) * 350; ctx.beginPath(); ctx.moveTo(382, yy); ctx.lineTo(510, yy); ctx.stroke(); }
+      ctx.setLineDash([]);
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;

@@ -32,12 +32,17 @@
   // texts of one simulation: const tx = MG.texts('druck'); tx('low')
   const texts = name => (key, ...args) => t('sims.' + name + '.' + key, ...args);
 
-  function makeView(canvas, w, h) {
+  function makeView(canvas, w, h, frameEl = null, mobileH = 0) {
     const ctx = canvas.getContext('2d');
     let lw = 0, lh = 0;
     return {
       ctx, W: w, H: h, canvas,
       fit() {
+        // on phones some drawings are taller than wide (mobileH units high)
+        if (mobileH && frameEl) {
+          const nh = document.documentElement.dataset.view === 'mobile' ? mobileH : W;
+          if (nh !== h) { h = this.H = nh; frameEl.style.aspectRatio = w + ' / ' + h; }
+        }
         const cw = canvas.clientWidth, ch = canvas.clientHeight;
         if (!cw || !ch) return false;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -93,13 +98,14 @@
   let uid = 0;
   // Frame of every simulation: square canvas in host.view (the .stage-frame),
   // rows of controls, readout and hint in host.ctrl.
-  function simShell(host, { label = '', drag = false } = {}) {
+  function simShell(host, { label = '', drag = false, mobileH = 0 } = {}) {
     const canvas = el('canvas', drag ? 'drag' : '');
     canvas.width = W; canvas.height = H;
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', label);
     host.view.insertBefore(canvas, host.view.firstChild);
-    const view = makeView(canvas, W, H);
+    host.view.style.aspectRatio = '';
+    const view = makeView(canvas, W, H, host.view, mobileH);
     const ctrl = host.ctrl;
     let readEl = null, lastRead = '';
     return {

@@ -1,5 +1,5 @@
 // WIND – direction, speed and gusts: wind vane and cup anemometer seen from
-// above, the course over 10 minutes below
+// above, the course over 10 minutes below (on phones the drawing is 25 % taller)
 (() => {
   'use strict';
   const { C, W, H, FS, TAU, clamp, rnd, fmt, text, arrow, circle, simShell, slider, button, dragOn, beaufort } = MG;
@@ -7,13 +7,14 @@
   const dirIdx = deg => Math.round((((deg % 360) + 360) % 360) / 22.5) % 16;
 
   MG.sims.wind = host => {
-    const ui = simShell(host, { label: tx('aria'), drag: true });
+    const ui = simShell(host, { label: tx('aria'), drag: true, mobileH: 750 });
     const { view, ctx } = ui;
     const DIR16 = tx('dir16'), DIR16L = tx('dir16Long');
     const SIM_PER_S = 20, WIN = 600 / SIM_PER_S, MEAN_WIN = 120 / SIM_PER_S; // 10 min course, 2 min mean
-    const TOP = 318;                         // scene above, course below
-    const KX = 150, KY = 158, KR = 100;      // compass
-    const AX = 450, AY = 158;                // cup anemometer
+    let TOP = 318;                           // scene above, course below (scaled with the height of the drawing)
+    const KX = 150, KR = 100;                // compass
+    const AX = 450;                          // cup anemometer
+    let KY = 158, AY = 158;
     let from = 248, vane = 200, omega = 0;
     let meanS = 4, curS = 4;   // smoothed wind: number and length of the arrows (no flicker)
     let mean = 4, gusty = 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0, cur = mean;
@@ -34,6 +35,8 @@
     let readT = 0;
     function frame(dt) {
       if (!view.fit()) return;
+      const HH = view.H, k = HH / 600;
+      TOP = 318 * k; KY = AY = 158 * k;
       now += dt;
       // speed: Ornstein-Uhlenbeck noise + gust pulse
       x += (-x / 0.5) * dt + gusty * Math.sqrt(2 / 0.5 * dt) * (Math.random() + Math.random() + Math.random() - 1.5) * 2;
@@ -88,23 +91,32 @@
       ctx.restore();
       circle(ctx, KX, KY, 7, C.white, C.black, 2.5);
       text(ctx, tx('vane'), KX, TOP - 8, FS.s, C.black, 500, 'center');
-      // cup anemometer
-      rot += cur * 0.45 * dt * TAU / 3;
-      ctx.strokeStyle = C.black; ctx.lineWidth = 5;
+      // cup anemometer seen from above: three half-spherical cups on arms. Each cup
+      // shows its round back in the direction of travel; the open side trails, so
+      // the cup whose opening faces into the wind is pushed – it turns anticlockwise
+      // whatever the direction of the wind.
+      rot -= cur * 0.45 * dt * TAU / 3;
       for (let i = 0; i < 3; i++) {
-        const a = rot + i * TAU / 3, ex = AX + Math.cos(a) * 56, ey = AY + Math.sin(a) * 56;
-        ctx.beginPath(); ctx.moveTo(AX, AY); ctx.lineTo(ex, ey); ctx.stroke();
-        ctx.fillStyle = C.orange; ctx.beginPath(); ctx.arc(ex, ey, 18, a + Math.PI / 2, a + Math.PI * 1.5); ctx.closePath(); ctx.fill();
-        ctx.lineWidth = 2.5; ctx.stroke(); ctx.lineWidth = 5;
+        const a = rot + i * TAU / 3, ca = Math.cos(a), sa = Math.sin(a);
+        const ex = AX + ca * 74, ey = AY + sa * 74, rc = 26;
+        ctx.strokeStyle = C.black; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(AX, AY); ctx.lineTo(AX + ca * 50, AY + sa * 50); ctx.stroke();
+        // the cup: half circle (back) and its open rim along the arm
+        ctx.fillStyle = C.orange; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(ex, ey, rc, a - Math.PI, a); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = C.cream;
+        ctx.beginPath(); ctx.ellipse(ex, ey, rc, 6, a, 0, TAU); ctx.fill();
+        ctx.lineWidth = 3.5; ctx.stroke();
       }
-      circle(ctx, AX, AY, 9, C.black);
+      circle(ctx, AX, AY, 13, C.grey, C.black, 3);
+      circle(ctx, AX, AY, 4, C.black);
       text(ctx, tx('cups'), AX, TOP - 8, FS.s, C.black, 500, 'center');
       // course over 10 minutes: speed above, direction below
-      const gx0 = 52, gx1 = 510, gy0 = 346, gy1 = 428, dy0 = 458, dy1 = 562;
+      const gx0 = 52, gx1 = 510, gy0 = 346 * k, gy1 = 428 * k, dy0 = 458 * k, dy1 = 562 * k;
       const vmax = Math.max(10, Math.ceil((mx + 2) / 5) * 5);
       const X = tt => gx1 - (now - tt) / WIN * (gx1 - gx0), Y = v => gy1 - v / vmax * (gy1 - gy0);
       const YD = d => dy1 - d / 360 * (dy1 - dy0);
-      ctx.fillStyle = C.white; ctx.fillRect(0, TOP, W, H - TOP);
+      ctx.fillStyle = C.white; ctx.fillRect(0, TOP, W, HH - TOP);
       ctx.strokeStyle = C.black; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, TOP); ctx.lineTo(W, TOP); ctx.stroke();
       ctx.lineWidth = 1.5;
       for (let v = 0; v <= vmax; v += vmax > 20 ? 10 : 5) {
@@ -133,8 +145,8 @@
       ctx.fillStyle = C.purple2;
       for (let i = 0; i < S.length; i += 2) ctx.fillRect(X(S[i].t) - 1.5, YD(S[i].d) - 1.5, 3, 3);
       [0, 90, 180, 270, 360].forEach(d => text(ctx, d + '°', gx1 + 8, YD(d) + 7, FS.s, C.black, 500, 'left'));   // right axis in degrees
-      text(ctx, tx('ago'), gx0, 592, FS.s, C.black, 500, 'left');
-      text(ctx, tx('now'), gx1, 592, FS.s, C.black, 500, 'right');
+      text(ctx, tx('ago'), gx0, HH - 8, FS.s, C.black, 500, 'left');
+      text(ctx, tx('now'), gx1, HH - 8, FS.s, C.black, 500, 'right');
       readT -= dt;
       if (readT <= 0) {
         readT = 0.25;
