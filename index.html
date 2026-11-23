@@ -16,10 +16,6 @@
 <header class="top">
   <a class="logo" href="#start" data-brand="logo"></a>
   <div class="top-right">
-    <nav class="nav" data-t-aria="nav.aria">
-      <a href="#start" data-route="start" data-t="nav.display"></a>
-      <a href="#warum" data-route="warum" data-t="nav.why"></a>
-    </nav>
     <button type="button" class="view-toggle"></button>
   </div>
 </header>
@@ -43,31 +39,19 @@
         <p data-t="start.displayNote"></p>
       </div>
       <div class="display" id="display" role="group" data-t-aria="start.displayAria"></div>
+      <details class="topic why-drop" id="whyDrop">
+        <summary data-t="why.headline"></summary>
+        <div class="topic-body">
+          <p data-t="why.lead"></p>
+          <h3 data-t="why.t1"></h3><p data-t="why.p1"></p>
+          <h3 data-t="why.t2"></h3><p data-t="why.p2"></p>
+          <h3 data-t="why.t3"></h3><p data-t="why.p3"></p>
+        </div>
+      </details>
     </div>
   </section>
 
   <!-- ================= Warum messen? ================= -->
-  <section class="view-page" id="page-warum" hidden>
-    <div class="poster" data-poster="warum">
-      <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
-      <svg class="l2" viewBox="0 0 100 100" aria-hidden="true"></svg>
-      <svg class="l3" viewBox="0 0 400 400" aria-hidden="true"></svg>
-      <div class="poster-text">
-        <p class="kicker" data-t="why.kicker"></p>
-        <h1 class="headline" data-t="why.headline"></h1>
-        <p class="lead" data-t="why.lead"></p>
-      </div>
-    </div>
-    <div class="why">
-      <div><h2 class="n" data-t="why.t1"></h2><p data-t="why.p1"></p></div>
-      <div><h2 class="n" data-t="why.t2"></h2><p data-t="why.p2"></p></div>
-      <div><h2 class="n" data-t="why.t3"></h2><p data-t="why.p3"></p></div>
-    </div>
-    <div class="page">
-      <p class="next-part"><a class="btn" href="#start" data-t="why.toDisplay"></a></p>
-    </div>
-  </section>
-
   <!-- ================= One quantity ================= -->
   <section class="view-page" id="page-detail" hidden>
     <div class="poster small" id="dPoster">
@@ -85,7 +69,7 @@
       <div class="lab">
         <div class="lab-stage">
           <!-- the simulation puts its canvas in here -->
-          <div class="stage-frame square fit" id="simFrame"></div>
+          <div class="stage-frame square fit" id="simFrame" data-no-fs></div>
         </div>
         <div class="lab-post">
           <div id="simCtrl"></div>
@@ -121,7 +105,6 @@
 </main>
 
 <footer class="foot">
-  <p class="sources" data-t="foot.sources"></p>
   <p class="brand-line" data-brand="line"></p>
 </footer>
 

@@ -45,7 +45,7 @@
       const p = view.local(e);
       if (p.x >= LOGBTN.x && p.x <= LOGBTN.x + LOGBTN.w && p.y >= LOGBTN.y && p.y <= LOGBTN.y + LOGBTN.h) logScale = !logScale;
     });
-    ui.readout();
+    ui.readout({ keep: true });   // the roof and bathtub comparison is not in the drawing
     ui.hint(tx('hint'));
 
     // intensity classes (DWD): name for the current rate

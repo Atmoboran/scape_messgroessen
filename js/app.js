@@ -49,11 +49,7 @@
   }
 
   const frame = $('#simFrame'), ctrl = $('#simCtrl');
-  const badge = SCAPE.badge(frame);
   const tasksBox = $('#mg-tasks'), merke = $('.merke[data-for="mg-tasks"]');
-  // the first hint disappears with the first touch on the simulation or its controls
-  frame.addEventListener('pointerdown', () => badge.hide());
-  ['input', 'click', 'pointerdown'].forEach(ev => ctrl.addEventListener(ev, () => badge.hide()));
 
   let sim = null, tasks = null;
   // progress in the header of the closed task dropdown, e.g. "1/2"
@@ -158,7 +154,8 @@
   function route() {
     let id = location.hash.replace('#', '') || 'start';
     if (data.alias[id]) { location.replace('#' + data.alias[id]); return; }
-    if (id !== 'start' && id !== 'warum' && !(id in BY_ID)) id = 'start';
+    if (id === 'warum') { $('#whyDrop').open = true; id = 'start'; }   // old link: open the dropdown on the overview
+    if (id !== 'start' && !(id in BY_ID)) id = 'start';
     if (id === current) { window.scrollTo(0, 0); return; }
     current = id;
     const page = id in BY_ID ? 'detail' : id;
@@ -172,14 +169,14 @@
       sim = null;
       $$('canvas', frame).forEach(cv => cv.remove());
       ctrl.innerHTML = '';
-      document.title = t(page === 'warum' ? 'titles.why' : 'titles.start') + SUFFIX;
+      document.title = t('titles.start') + SUFFIX;
     }
     window.scrollTo(0, 0);
     window.dispatchEvent(new Event('resize'));   // header height / stage size
   }
 
   // ---- start ------------------------------------------------------------------
-  for (const [key, p] of Object.entries(TH.posters)) paintPoster($(`[data-poster="${key}"]`), p, p.l2, p.l3);
+  for (const [key, p] of Object.entries(TH.posters)) { const el = $(`[data-poster="${key}"]`); if (el) paintPoster(el, p, p.l2, p.l3); }
   buildDisplay();
   buildStrip();
   window.addEventListener('hashchange', route);

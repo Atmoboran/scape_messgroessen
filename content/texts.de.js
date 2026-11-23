@@ -134,8 +134,8 @@ window.TEXTS = {
       messung: 'Die Station misst den absoluten Luftdruck am Standort und rechnet daraus den relativen Luftdruck auf Meereshöhe. Messbereich 300 bis 1100 hPa, Genauigkeit ±3 hPa.',
       einordnung: '1013,2 hPa gelten als Standard-Luftdruck auf Meereshöhe. Beispiel aus der Anleitung: In 305 m Höhe zeigt die Station absolut 969 hPa, auf Meereshöhe umgerechnet 1016 hPa.',
       hinweis: '„Hoch“ und „Tief“ beziehen sich auf den relativen, auf Meereshöhe umgerechneten Druck: Über 1013,2 hPa spricht die Anleitung von Hochdruck, darunter von Tiefdruck. Erst die Umrechnung macht Orte in verschiedenen Höhen vergleichbar.',
-      model: 'In Wirklichkeit stecken in einem Kasten dieser Größe unvorstellbar viel mehr Teilchen: In einem einzigen Kubikzentimeter Luft (einem Zuckerwürfel) sind es etwa 27 Trillionen (2,7 · 10¹⁹), in einem Kubikmeter rund 25 Quadrillionen (2,5 · 10²⁵). Jede Sekunde prallen davon Milliarden von Milliarden auf jeden Quadratzentimeter Wand – darum spüren wir den Druck als gleichmäßige Kraft und nicht als einzelne Stöße. Die Unterschiede in der Teilchen-Ansicht sind stark übertrieben: Beim echten Wetter schwankt der Luftdruck nur um wenige Prozent. Die Höhen-Ansicht rechnet mit einer Normatmosphäre.',
-      formel: 'Druck = Kraft ÷ Fläche: p = F / A   (1 hPa = 100 N/m²)\nIdeales Gas: p = n · k · T   (n = Teilchen pro m³, k = 1,38 · 10⁻²³ J/K, T in Kelvin)\n→ doppelt so viele Teilchen oder (in Kelvin) doppelt so warm = doppelter Druck\nBarometrische Höhenformel (Normatmosphäre): p(h) = p₀ · (1 − 0,0065 · h / 288,15)^5,255\nFaustregel nahe dem Boden: etwa 1 hPa weniger pro 8 m Höhe'
+      model: 'So rechnet die Teilchen-Ansicht: Die Zahl am Zeiger kommt aus der Gasgleichung – Druck ist proportional zur Teilchenzahl mal der absoluten Temperatur (in Kelvin). 70 Teilchen bei 15 °C entsprechen 1013 hPa; doppelt so viele Teilchen ergeben doppelten Druck. Die Stöße pro Sekunde auf die Messfläche zählt die Simulation dagegen wirklich mit. Sie wachsen mit der Teilchenzahl, aber mit der Temperatur nur langsam (wie die Geschwindigkeit, mit der Wurzel der Temperatur) – dafür prallt jedes schnellere Teilchen auch heftiger auf. Beides zusammen ergibt den Druck. In Wirklichkeit stecken in einem Kasten dieser Größe unvorstellbar viel mehr Teilchen: In einem einzigen Kubikzentimeter Luft (einem Zuckerwürfel) sind es etwa 27 Trillionen (2,7 · 10¹⁹), in einem Kubikmeter rund 25 Quadrillionen (2,5 · 10²⁵). Darum spüren wir den Druck als gleichmäßige Kraft und nicht als einzelne Stöße. Die Höhen-Ansicht rechnet mit einer Normatmosphäre.',
+      formel: 'Druck = Kraft ÷ Fläche: p = F / A   (1 hPa = 100 N/m²)\nIdeales Gas: p = n · k · T   (n = Teilchen pro m³, k = 1,38 · 10⁻²³ J/K, T in Kelvin)\nIn der Teilchen-Ansicht: p = 1013 hPa · (Teilchenzahl / 70) · (T / 288,15 K)\nStöße pro Sekunde ∝ Teilchenzahl · Geschwindigkeit, Wucht eines Stoßes ∝ Geschwindigkeit → p ∝ n · v² ∝ n · T\nBarometrische Höhenformel (Normatmosphäre): p(h) = p₀ · (1 − 0,0065 · h / 288,15)^5,255'
     },
     niederschlag: {
       name: 'Niederschlag', unit: 'mm',
@@ -264,7 +264,8 @@ window.TEXTS = {
     temperatur: {
       aria: 'Luftteilchen in einem Kasten, ein Thermometer und darunter die Maxwell-Boltzmann-Verteilung der Geschwindigkeiten echter Luftteilchen',
       slider: 'Temperatur',
-      info: 'Temperatur ist ein Maß dafür, wie schnell sich die Teilchen im Mittel bewegen. Nicht alle sind gleich schnell: Manche sind langsam, manche sehr schnell. Wie viele Teilchen welche Geschwindigkeit haben, zeigt die Maxwell-Boltzmann-Verteilung unten. Wird die Luft wärmer, rutscht die Kurve nach rechts und wird breiter und flacher. Am absoluten Nullpunkt (−273,15 °C) stünden alle Teilchen still. Du kannst die Temperatur auch einstellen, indem du im Diagramm ziehst.',
+      info: 'Temperatur ist ein Maß dafür, wie schnell sich die Teilchen im Mittel bewegen. Nicht alle sind gleich schnell: Manche sind langsam, manche sehr schnell. Wie viele Teilchen welche Geschwindigkeit haben, zeigt die Maxwell-Boltzmann-Verteilung unten. Wird die Luft wärmer, rutscht die Kurve nach rechts und wird breiter und flacher. Der Regler reicht vom absoluten Nullpunkt (−273,15 °C), an dem alle Teilchen stillstünden, bis 100 °C. Die Geschwindigkeit wächst mit der Wurzel der absoluten Temperatur (in Kelvin) – darum ändert sie sich zwischen −20 °C und 40 °C nur um etwa 10 %. Die Farbe zeigt die Geschwindigkeit eines Teilchens: blau langsam, grau etwa so schnell wie im Mittel bei 14 °C, rot schnell. Du kannst die Temperatur auch einstellen, indem du im Diagramm ziehst.',
+      zero: '−273 °C (0 K)', zeroShort: '−273 °C',
       mean: v => 'Ø ' + v + ' m/s',
       axisV: 'GESCHWINDIGKEIT (m/s)',
       cold: '−20 °C', hot: '40 °C',
@@ -272,27 +273,22 @@ window.TEXTS = {
       hint: 'Schieb den Regler oder zieh im Diagramm: Bei Wärme flitzen die Teilchen, bei Kälte werden sie träge. Das Diagramm zeigt, wie viele echte Luftteilchen wie schnell sind.'
     },
     feuchte: {
-      aria: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge zeigt; dazu relative und absolute Luftfeuchtigkeit und der Taupunkt',
-      sliderT: 'Temperatur', sliderW: 'Wasserdampf', sliderRh: 'Relative Feuchte',
-      temp: 'TEMPERATUR',
+      aria: 'Ein Kubikmeter Luft mit Wasserdampf und ein Gefäß, das die Höchstmenge bei der eingestellten Temperatur zeigt',
+      sliderT: 'Temperatur', sliderRh: 'Relative Feuchte', sliderW: 'Absolute Feuchte', sliderTd: 'Taupunkt',
       info: {
         t: 'Warme Luft kann mehr Wasserdampf aufnehmen als kalte: Wird die Luft wärmer, wächst das Gefäß (die Höchstmenge) – die relative Luftfeuchtigkeit sinkt, obwohl genauso viel Wasserdampf da ist wie vorher. Kühlt die Luft ab, schrumpft das Gefäß. Am Taupunkt ist es genau voll (100 %); wird es noch kälter, kondensiert der Überschuss zu Tröpfchen.',
-        w: 'Hier änderst du, wie viel Wasserdampf in einem Kubikmeter Luft steckt – etwa durch Verdunstung, Kochen oder Duschen. Mehr Wasserdampf heißt: Die absolute und die relative Luftfeuchtigkeit steigen, und der Taupunkt liegt höher. Passt mehr hinein, als bei dieser Temperatur höchstens möglich ist, kondensiert der Überschuss zu Tröpfchen.',
+        w: 'Die absolute Luftfeuchtigkeit sagt, wie viel Wasserdampf in einem Kubikmeter Luft steckt (in g/m³). Hier änderst du sie – etwa durch Verdunstung, Kochen oder Duschen. Mehr Wasserdampf heißt: Die absolute und die relative Luftfeuchtigkeit steigen, und der Taupunkt liegt höher. Passt mehr hinein, als bei dieser Temperatur höchstens möglich ist, kondensiert der Überschuss zu Tröpfchen.',
+        td: 'Der Taupunkt ist die Temperatur, auf die man die Luft abkühlen müsste, bis sie gesättigt ist. Er hängt nur davon ab, wie viel Wasserdampf in der Luft steckt – nicht von der Temperatur. Stellst du ihn höher, gibst du also Wasserdampf dazu. Höher als die Lufttemperatur kann er nicht werden: Dann ist die Luft gesättigt.',
         rh: 'Hier stellst du die relative Luftfeuchtigkeit direkt ein: wie voll das Gefäß bei der aktuellen Temperatur ist. Die Simulation rechnet daraus, wie viel Wasserdampf in der Luft steckt (absolute Feuchte) – und wo der Taupunkt liegt. 100 % heißt: Die Luft ist gesättigt, mehr Wasserdampf passt nicht hinein.',
       },
+      wWithDrops: (vap, liq) => vap + ' + ' + liq + ' g',
       air: '1 m³ LUFT',
-      at: tt => 'BEI ' + tt + ' °C',
       vapour: 'WASSERDAMPF',
-      rh: ['RELATIVE', 'LUFTFEUCHTIGKEIT'],
-      abs: ['ABSOLUTE', 'LUFTFEUCHTIGKEIT'],
-      dew: 'TAUPUNKT',
-      droplets: 'TRÖPFCHEN (NEBEL)',
+      droplets: 'TRÖPFCHEN (KONDENSIERT)',
       condensing: ['JETZT KONDENSIERT', 'WASSERDAMPF!'],
       atMost: g => 'HÖCHSTENS ' + g + ' g',
-      surplus: g => 'ÜBERSCHUSS + ' + g + ' g',
-      fullAt: tt => 'VOLL BEI ' + tt + ' °C',
-      read: (rh, abs, td, liq) => 'Relative Luftfeuchtigkeit ' + rh + ' % · absolute Luftfeuchtigkeit ' + abs + ' g/m³ · Taupunkt ' + td + ' °C' + (liq ? ' · ' + liq + ' g/m³ kondensiert' : ''),
-      hint: 'Ändere nur die Temperatur: Die relative Luftfeuchtigkeit springt, die absolute bleibt gleich. Am Taupunkt ist das Gefäß genau voll – noch kälter, und es bilden sich Tröpfchen.'
+      surplus: ['ÜBERSCHUSS', g => '+ ' + g + ' g'],
+      fullAt: tt => 'VOLL BEI ' + tt + ' °C'
     },
     druck: {
       aria: 'Luftdruck: Teilchen stoßen gegen eine Messfläche, oder: eine Landschaft mit Bergen, in der ein Ballon aufsteigt',

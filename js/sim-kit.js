@@ -106,9 +106,10 @@
       view, ctx: view.ctx, canvas, ctrl,
       done: id => { if (host.done) host.done(id); },
       row() { const r = el('div', 'controls'); ctrl.appendChild(r); return r; },
-      readout() { readEl = el('p', 'readout'); readEl.setAttribute('aria-live', 'polite'); ctrl.appendChild(readEl); },
+      // the line of current values below the controls is only shown where it adds something the drawing does not show
+      readout(opts = {}) { if (!opts.keep) return; readEl = el('p', 'readout'); readEl.setAttribute('aria-live', 'polite'); ctrl.appendChild(readEl); },
       setRead(s) { if (readEl && s !== lastRead) { readEl.textContent = s; lastRead = s; } },
-      hint(s) { const p = el('p', 'hint'); p.textContent = s; ctrl.appendChild(p); return p; }
+      hint() { return el('p', 'hint'); }   // hints below the controls are no longer shown
     };
   }
 
@@ -243,8 +244,8 @@
   // CD temperature scale for a temperature between tMin (blue) and tMax (red)
   const tempColor = (T, tMin = -20, tMax = 40) => THEME.tempColor((T - tMin) / (tMax - tMin));
 
-  // vertical thermometer; ticks = false leaves out the scale numbers
-  function thermo(ctx, x, top, bottom, tMin, tMax, T, color, label, value, ticks = true) {
+  // vertical thermometer; ticks = false leaves out the scale numbers, step = distance of the ticks
+  function thermo(ctx, x, top, bottom, tMin, tMax, T, color, label, value, ticks = true, step = 10) {
     const w = 24, br = 20;
     const yOf = tt => bottom - (clamp(tt, tMin, tMax) - tMin) / (tMax - tMin) * (bottom - top);
     ctx.fillStyle = C.white; ctx.fillRect(x - w / 2, top, w, bottom - top + 6);
@@ -253,7 +254,7 @@
     ctx.strokeStyle = C.black; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(x - w / 2, bottom + 2); ctx.lineTo(x - w / 2, top); ctx.lineTo(x + w / 2, top); ctx.lineTo(x + w / 2, bottom + 2); ctx.stroke();
     ctx.lineWidth = 2;
-    for (let tt = Math.ceil(tMin / 10) * 10; tt <= tMax; tt += 10) {
+    for (let tt = Math.ceil(tMin / step) * step; tt <= tMax; tt += step) {
       const yy = yOf(tt);
       ctx.beginPath(); ctx.moveTo(x + w / 2, yy); ctx.lineTo(x + w / 2 + 8, yy); ctx.stroke();
       if (ticks) text(ctx, fmt(tt), x + w / 2 + 11, yy + 7, FS.s, C.black, 500);

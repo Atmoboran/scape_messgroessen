@@ -2,7 +2,7 @@
 // distribution of the speeds of real air particles
 (() => {
   'use strict';
-  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, simShell, slider, dragOn, tempColor, thermo, collide, particle, speedLegend, speedColor } = MG;
+  const { C, W, H, FS, TAU, clamp, rnd, fmt, text, circle, simShell, slider, dragOn, thermo, collide } = MG;
   const tx = MG.texts('temperatur');
   const R_GAS = 8.314, M_AIR = 0.02896;              // J/(mol·K), kg/mol
   const K = T => T + 273.15;
@@ -11,14 +11,22 @@
   const vMean = T => Math.sqrt(8 * R_GAS * K(T) / (Math.PI * M_AIR));
   const vPeak = T => Math.sqrt(2 * R_GAS * K(T) / M_AIR);
   const vRms = T => Math.sqrt(3 * R_GAS * K(T) / M_AIR);
-  const TMIN = -20, TMAX = 40;
+  const TMIN = -273, TMAX = 100, TREF = [-20, 40];
+  // thermometer colour from absolute zero to 100 °C: blue – grey – red on the CD temperature
+  // scale, centred on everyday temperatures and saturating towards the extremes
+  const tcol = T => THEME.tempColor(0.5 + 0.5 * Math.tanh((T - 14) / 35));
+  // particle colour from the real speed v (m/s), the same scale in the box and the diagram:
+  // 0 m/s blue, the mean speed at 14 °C (≈ 460 m/s) grey, twice that red
+  const vcol = v => THEME.tempColor(v / (2 * vMean(14)));
 
   MG.sims.temperatur = host => {
     const ui = simShell(host, { label: tx('aria'), drag: true });
     const { view, ctx } = ui;
     const box = { x0: 16, y0: 16, x1: 400, y1: 318 };
     const R = 7;
-    const speedOf = T => 40 + 6 * (T + 20);            // shown: −20 °C → 40 px/s, 40 °C → 400 px/s
+    // speed in the drawing grows with the square root of the absolute temperature, as for real particles
+    const V14 = 200, speedOf = T => V14 * Math.sqrt(Math.max(0, K(T)) / K(14));
+    const realOf = s => s * vRms(14) / V14;                   // drawn speed → real speed in m/s
     let T = 14;
     const P = [];
     for (let i = 0; i < 52; i++) {
@@ -26,14 +34,14 @@
       P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R });
     }
     const r = ui.row();
-    const sT = slider(r, { label: tx('slider'), min: TMIN, max: TMAX, step: 1, value: T, info: tx('info'), format: v => fmt(v) + ' °C', onInput: v => { T = v; } });
-    ui.readout();
-    ui.hint(tx('hint'));
+    const sT = slider(r, { label: tx('slider'), min: TMIN, max: TMAX, step: 1, value: T, info: tx('info'), format: v => v <= TMIN ? tx('zero') : fmt(v) + ' °C', onInput: v => { T = v; } });
 
     // diagram: speeds 0 … 1400 m/s
     const G = { x0: 40, x1: 560, y0: 400, y1: 540, vmax: 1400 };
     const X = v => G.x0 + v / G.vmax * (G.x1 - G.x0);
-    const yMax = mb(vPeak(TMIN), TMIN) * 1.08;          // the coldest curve is the highest
+    // height: the reference curves fit; a very cold, very narrow curve may run out at the top
+    const refPeak = mb(vPeak(TREF[0]), TREF[0]);
+    let yMax = refPeak * 1.08;
     const Y = f => G.y1 - f / yMax * (G.y1 - G.y0);
     // drag in the diagram: the mean speed follows the finger, the temperature follows
     const tOfMean = v => v * v * Math.PI * M_AIR / (8 * R_GAS) - 273.15;
@@ -50,7 +58,8 @@
       let rms = 0;
       for (const p of P) rms += p.vx * p.vx + p.vy * p.vy;
       rms = Math.sqrt(rms / P.length);
-      const f = 1 + (speedOf(T) / rms - 1) * Math.min(1, dt * 3);
+      if (rms < 0.5 && speedOf(T) > 0.5) for (const p of P) { const a = rnd(0, TAU); p.vx = Math.cos(a); p.vy = Math.sin(a); rms = 1; }   // start again from standstill
+      const f = rms < 0.5 ? 0 : 1 + (speedOf(T) / rms - 1) * Math.min(1, dt * 3);
       for (const p of P) {
         p.vx *= f; p.vy *= f;
         p.x += p.vx * dt; p.y += p.vy * dt;
@@ -69,27 +78,33 @@
       ctx.stroke(); ctx.setLineDash([]);
     }
 
-    let readT = 0;
     function frame(dt) {
       if (!view.fit()) return;
       step(dt / 2); step(dt / 2);
       ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = C.yellowPale; ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
-      for (const p of P) particle(ctx, p);
+      // every particle in the colour of its speed
+      for (const p of P) circle(ctx, p.x, p.y, p.r, vcol(realOf(Math.hypot(p.vx, p.vy))), C.black, 1.2);
       ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
-      thermo(ctx, 500, 70, 262, TMIN, TMAX, T, tempColor(T), t('sims.common.thermometer'), fmt(T) + ' °C');
-      speedLegend(ctx, 208, 344);
-      // Maxwell-Boltzmann: the area under the curve coloured like the particles
-      // (the drawing exaggerates the speed differences, so the colours use the same scale as the box)
-      const toShown = speedOf(T) / vRms(T);
-      for (let v = 0; v < G.vmax; v += 20) {
-        const f = mb(v + 10, T);
-        ctx.fillStyle = speedColor((v + 10) * toShown);
-        ctx.fillRect(X(v), Y(f), X(v + 20) - X(v) + 0.5, G.y1 - Y(f));
+      thermo(ctx, 500, 70, 262, TMIN, TMAX, T, tcol(T), t('sims.common.thermometer'), T <= TMIN ? tx('zeroShort') : fmt(T) + ' °C', true, 50);
+      // legend: slow – fast in the same colours
+      const lx = 208 - 2 * 26;
+      text(ctx, t('sims.common.slow'), lx - 18, 351, FS.s, C.black, 500, 'right');
+      [0, 0.25, 0.5, 0.75, 1].forEach((f, i) => circle(ctx, lx + i * 26, 344, 9, THEME.tempColor(f), C.black, 1.2));
+      text(ctx, t('sims.common.fast'), lx + 4 * 26 + 18, 351, FS.s, C.black, 500, 'left');
+      // Maxwell-Boltzmann: the area under the curve in the colour of each speed
+      const peakNow = mb(vPeak(T), T);
+      yMax = Math.max(refPeak, Math.min(peakNow, 3 * refPeak)) * 1.08;
+      ctx.save(); ctx.beginPath(); ctx.rect(G.x0, G.y0 - 30, G.x1 - G.x0 + 20, G.y1 - G.y0 + 30); ctx.clip();
+      for (let v = 0; v < G.vmax; v += 10) {
+        const f = mb(v + 5, T);
+        ctx.fillStyle = vcol(v + 5);
+        ctx.fillRect(X(v), Y(f), X(v + 10) - X(v) + 0.5, G.y1 - Y(f));
       }
-      curve(TMIN, C.blue2, 2, [6, 5]);
-      curve(TMAX, C.red, 2, [6, 5]);
+      curve(TREF[0], C.blue2, 2, [6, 5]);
+      curve(TREF[1], C.red, 2, [6, 5]);
       curve(T, C.black, 3);
+      ctx.restore();
       // mean speed
       const vm = vMean(T);
       ctx.strokeStyle = C.black; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
@@ -103,13 +118,8 @@
         text(ctx, String(v), X(v), G.y1 + 26, FS.s, C.black, 500, 'center');
       }
       text(ctx, tx('axisV'), G.x1, G.y1 + 52, FS.s, C.black, 500, 'right');
-      text(ctx, tx('cold'), X(vPeak(TMIN)) - 40, Y(mb(vPeak(TMIN), TMIN)) - 6, FS.s, C.blue2, 500, 'right');
-      text(ctx, tx('hot'), X(1000), Y(mb(1000, TMAX)) - 14, FS.s, C.red, 500, 'left');
-      readT -= dt;
-      if (readT <= 0) {
-        readT = 0.3;
-        ui.setRead(tx('read', fmt(T), fmt(Math.round(vPeak(T) / 5) * 5), fmt(Math.round(vm / 5) * 5), fmt(Math.round(vm * 3.6 / 50) * 50)));
-      }
+      text(ctx, tx('cold'), X(vPeak(TREF[0])) - 40, Y(mb(vPeak(TREF[0]), TREF[0])) - 6, FS.s, C.blue2, 500, 'right');
+      text(ctx, tx('hot'), X(1000), Y(mb(1000, TREF[1])) - 14, FS.s, C.red, 500, 'left');
     }
     return { frame };
   };

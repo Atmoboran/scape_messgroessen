@@ -29,7 +29,7 @@
     // --- particle view
     const box = { x0: 16, y0: 16, x1: 392, y1: 540 }, R = 7, MEM = [190, 370];
     const N0 = 70;
-    const speedOf = T => 40 + 6 * (T + 20);
+    const speedOf = T => 200 * Math.sqrt((T + 273.15) / 288.15);   // like real particles: speed ∝ √(absolute temperature)
     let n = N0, T = 15, rate = 0, flash = 0;
     const P = [];
     const add = () => { const a = rnd(0, TAU), s = speedOf(T); P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R }); };
@@ -98,6 +98,7 @@
       const hits = stepGas(dt / 2) + stepGas(dt / 2);
       rate += (hits / dt - rate) * Math.min(1, dt * 1.2);
       if (hits) flash = 1; else flash = Math.max(0, flash - dt * 6);
+      // gas law: pressure ∝ number of particles × absolute temperature; 70 particles at 15 °C = 1013 hPa
       const p = P0 * (n / N0) * ((T + 273.15) / 288.15);
       ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = C.lavender; ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
