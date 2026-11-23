@@ -3,6 +3,7 @@
 //                             build a sentence around runtime values.
 // Placeholders in the HTML are filled on load:
 //   data-t="key"        → textContent      data-t-html="key"  → innerHTML
+//   data-t-md="key"     → text with **bold** parts
 //   data-t-aria="key"   → aria-label       data-t-title="key" → title
 // A missing key prints a warning in the console.
 (() => {
@@ -12,7 +13,10 @@
     if (v === undefined) { console.warn('content/texts: missing "' + path + '"'); return ''; }
     return typeof v === 'function' ? v(...args) : v;
   };
+  // plain text with **bold** parts → safe HTML
+  window.tmd = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   const fill = (root = document) => {
+    root.querySelectorAll('[data-t-md]').forEach(el => { el.innerHTML = window.tmd(window.t(el.dataset.tMd)); });
     root.querySelectorAll('[data-t]').forEach(el => { el.textContent = window.t(el.dataset.t); });
     root.querySelectorAll('[data-t-html]').forEach(el => { el.innerHTML = window.t(el.dataset.tHtml); });
     root.querySelectorAll('[data-t-aria]').forEach(el => { el.setAttribute('aria-label', window.t(el.dataset.tAria)); });

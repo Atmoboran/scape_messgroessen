@@ -13,7 +13,7 @@
     const SIM_PER_S = 20, WIN = 600 / SIM_PER_S, MEAN_WIN = 120 / SIM_PER_S; // 10 min course, 2 min mean
     const TOP = 318;                         // scene above, course below
     const KX = 150, KY = 158, KR = 100;      // compass
-    const AX = 462, AY = 214;                // cup anemometer
+    const AX = 450, AY = 158;                // cup anemometer
     let from = 248, vane = 200, omega = 0;
     let meanS = 4, curS = 4;   // smoothed wind: number and length of the arrows (no flicker)
     let mean = 4, gusty = 0.25, x = 0, gust = 0, rot = 0, now = 0, sampleT = 0, cur = mean;
@@ -21,7 +21,7 @@
     const S = [];
     const streaks = Array.from({ length: 34 }, () => ({ x: rnd(0, W), y: rnd(0, TOP), l: rnd(0.8, 1.2) }));
     const r1 = ui.row();
-    slider(r1, { label: tx('slider'), min: 0, max: 25, step: 0.5, value: mean, format: v => fmt(v, 1) + ' m/s', onInput: v => { mean = v; } });
+    slider(r1, { label: tx('slider'), min: 0, max: 25, step: 0.5, value: mean, info: tx('infoMean'), format: v => fmt(v, 1) + ' m/s', onInput: v => { mean = v; } });
     const r2 = ui.row();
     slider(r2, { label: tx('sliderTurb'), min: 0, max: 50, step: 1, value: Math.round(gusty * 100), info: tx('infoTurb'), format: v => v + ' %', onInput: v => { gusty = v / 100; } });
     const r3 = ui.row();
@@ -99,13 +99,6 @@
       }
       circle(ctx, AX, AY, 9, C.black);
       text(ctx, tx('cups'), AX, TOP - 8, FS.s, C.black, 500, 'center');
-      // display: direction and current speed
-      const shown = Math.round(vane) % 360;
-      ctx.fillStyle = C.black; ctx.fillRect(330, 10, 260, 112);
-      text(ctx, tx('direction'), 344, 36, FS.s, C.white);
-      text(ctx, shown + '° ' + DIR16[dirIdx(shown)], 576, 36, FS.m, C.white, 500, 'right');
-      text(ctx, tx('now'), 344, 72, FS.s, C.white);
-      text(ctx, tx('ms', fmt(cur, 1)), 576, 108, 34, C.white, 300, 'right');
       // course over 10 minutes: speed above, direction below
       const gx0 = 52, gx1 = 510, gy0 = 346, gy1 = 428, dy0 = 458, dy1 = 562;
       const vmax = Math.max(10, Math.ceil((mx + 2) / 5) * 5);
@@ -139,7 +132,7 @@
       text(ctx, tx('dirAxis'), gx0 + 6, dy0 - 6, FS.s, C.black, 500, 'left');
       ctx.fillStyle = C.purple2;
       for (let i = 0; i < S.length; i += 2) ctx.fillRect(X(S[i].t) - 1.5, YD(S[i].d) - 1.5, 3, 3);
-      text(ctx, DIR16[dirIdx(from)], gx1 + 8, YD(from) + 7, FS.s, C.purple2, 500, 'left');
+      [0, 90, 180, 270, 360].forEach(d => text(ctx, d + '°', gx1 + 8, YD(d) + 7, FS.s, C.black, 500, 'left'));   // right axis in degrees
       text(ctx, tx('ago'), gx0, 592, FS.s, C.black, 500, 'left');
       text(ctx, tx('now'), gx1, 592, FS.s, C.black, 500, 'right');
       readT -= dt;

@@ -123,9 +123,6 @@
           if (d.y > GROUND) { spill.splice(i, 1); continue; }
           circle(ctx, d.x, d.y, 4, C.blue2);
         }
-        ctx.fillStyle = C.black; ctx.fillRect(SX - 136, 128, 124, 64);
-        text(ctx, tx('tipped'), SX - 124, 152, FS.s, C.white);
-        text(ctx, tx('times', tips), SX - 124, 184, 28, C.white, 300);
       }
       // how strong is the rain?
       ctx.fillStyle = C.black; ctx.fillRect(12, 12, SX - 24, 92);

@@ -20,8 +20,8 @@
     }
     const state = () => { const ps = satDens(T), vap = Math.min(Wt, ps); return { ps, vap, liq: Wt - vap, rh: vap / ps * 100, td: dewPoint(T, vap / ps * 100) }; };
     const sT = slider(ui.row(), { label: tx('sliderT'), min: TMIN, max: TMAX, step: 0.5, value: T, info: tx('info.t'), format: v => fmt(v, 1) + ' °C', onInput: v => { T = v; } });
-    const sR = slider(ui.row(), { label: tx('sliderRh'), min: 1, max: 100, step: 1, value: Math.round(state().rh), info: tx('info.rh'), format: v => v + ' %', onInput: v => { Wt = satDens(T) * v / 100; } });
     const sW = slider(ui.row(), { label: tx('sliderW'), min: 0, max: WMAX, step: 0.1, value: Wt, info: tx('info.w'), format: v => fmt(v, 1) + ' g/m³', onInput: v => { Wt = v; } });
+    const sR = slider(ui.row(), { label: tx('sliderRh'), min: 1, max: 100, step: 1, value: Math.round(state().rh), info: tx('info.rh'), format: v => v + ' %', onInput: v => { Wt = satDens(T) * v / 100; } });
     const sD = slider(ui.row(), { label: tx('sliderTd'), min: -30, max: TMAX, step: 0.5, value: Math.round(state().td * 2) / 2, info: tx('info.td'), format: v => fmt(v, 1) + ' °C', onInput: v => { Wt = 216.7 * satVap(Math.min(v, T)) / (T + 273.15); } });   // vapour pressure at the dew point, density at the air temperature
     // while one slider is moved, the others follow
     const follow = (sl, v) => { if (document.activeElement !== sl.input) sl.set(v); };

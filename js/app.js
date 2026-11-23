@@ -110,7 +110,7 @@
     ['messung', 'einordnung', 'hinweis', 'model', 'formel'].forEach(k => {
       const d = $('#topic-' + k);
       d.open = false;
-      $('.topic-body p', d).textContent = q[k] || '';
+      $('.topic-body p', d).innerHTML = tmd(q[k] || '');
       d.hidden = !q[k];
     });
 

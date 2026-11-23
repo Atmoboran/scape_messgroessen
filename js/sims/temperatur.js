@@ -11,10 +11,9 @@
   const vMean = T => Math.sqrt(8 * R_GAS * K(T) / (Math.PI * M_AIR));
   const vPeak = T => Math.sqrt(2 * R_GAS * K(T) / M_AIR);
   const vRms = T => Math.sqrt(3 * R_GAS * K(T) / M_AIR);
-  const TMIN = -273, TMAX = 100, TREF = [-20, 40];
-  // thermometer colour from absolute zero to 100 °C: blue – grey – red on the CD temperature
-  // scale, centred on everyday temperatures and saturating towards the extremes
-  const tcol = T => THEME.tempColor(0.5 + 0.5 * Math.tanh((T - 14) / 35));
+  const TMIN = -50, TMAX = 50, TREF = [-20, 40];
+  // thermometer colour: blue – grey – red on the CD temperature scale
+  const tcol = T => THEME.tempColor((T - TMIN) / (TMAX - TMIN));
   // particle colour from the real speed v (m/s), the same scale in the box and the diagram:
   // 0 m/s blue, the mean speed at 14 °C (≈ 460 m/s) grey, twice that red
   const vcol = v => THEME.tempColor(v / (2 * vMean(14)));
@@ -34,7 +33,7 @@
       P.push({ x: rnd(box.x0 + R, box.x1 - R), y: rnd(box.y0 + R, box.y1 - R), vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: R });
     }
     const r = ui.row();
-    const sT = slider(r, { label: tx('slider'), min: TMIN, max: TMAX, step: 1, value: T, info: tx('info'), format: v => v <= TMIN ? tx('zero') : fmt(v) + ' °C', onInput: v => { T = v; } });
+    const sT = slider(r, { label: tx('slider'), min: TMIN, max: TMAX, step: 1, value: T, info: tx('info'), format: v => fmt(v) + ' °C', onInput: v => { T = v; } });
 
     // diagram: speeds 0 … 1400 m/s
     const G = { x0: 40, x1: 560, y0: 400, y1: 540, vmax: 1400 };
@@ -58,8 +57,7 @@
       let rms = 0;
       for (const p of P) rms += p.vx * p.vx + p.vy * p.vy;
       rms = Math.sqrt(rms / P.length);
-      if (rms < 0.5 && speedOf(T) > 0.5) for (const p of P) { const a = rnd(0, TAU); p.vx = Math.cos(a); p.vy = Math.sin(a); rms = 1; }   // start again from standstill
-      const f = rms < 0.5 ? 0 : 1 + (speedOf(T) / rms - 1) * Math.min(1, dt * 3);
+      const f = 1 + (speedOf(T) / rms - 1) * Math.min(1, dt * 3);
       for (const p of P) {
         p.vx *= f; p.vy *= f;
         p.x += p.vx * dt; p.y += p.vy * dt;
@@ -86,7 +84,7 @@
       // every particle in the colour of its speed
       for (const p of P) circle(ctx, p.x, p.y, p.r, vcol(realOf(Math.hypot(p.vx, p.vy))), C.black, 1.2);
       ctx.strokeStyle = C.black; ctx.lineWidth = 4; ctx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
-      thermo(ctx, 500, 70, 262, TMIN, TMAX, T, tcol(T), t('sims.common.thermometer'), T <= TMIN ? tx('zeroShort') : fmt(T) + ' °C', true, 50);
+      thermo(ctx, 500, 70, 262, TMIN, TMAX, T, tcol(T), t('sims.common.thermometer'), fmt(T) + ' °C', true, 10);
       // legend: slow – fast in the same colours
       const lx = 208 - 2 * 26;
       text(ctx, t('sims.common.slow'), lx - 18, 351, FS.s, C.black, 500, 'right');
